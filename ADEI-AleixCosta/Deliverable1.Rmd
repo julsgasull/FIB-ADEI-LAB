@@ -1,0 +1,723 @@
+---
+title: "Deliverable1"
+author: "Montserrrat Martinez i Aleix Costa"
+date: "21 de febrero de 2019"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+editor_options:
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+*Input variables:*
+
+  1. age (numeric)
+  2. job : type of job (categorical: 'admin.','blue-collar','entrepreneur','housemaid','management','retired','self-employed','services','student','technician','unemployed','unknown')
+  3. marital : marital status (categorical: 'divorced','married','single','unknown'; note: 'divorced' means divorced or widowed)
+  4. education (categorical:'basic.4y','basic.6y','basic.9y','high.school','illiterate','professional.course','university.degree','unknown')
+  5. default: has credit in default? (categorical: 'no','yes','unknown')
+  6. housing: has housing loan? (categorical: 'no','yes','unknown')
+  7. loan: has personal loan? (categorical: 'no','yes','unknown')# related with the last contact of the current campaign:
+  8. contact: contact communication type (categorical:'cellular','telephone')
+  9. month: last contact month of year (categorical: 'jan', 'feb', 'mar',..., 'nov', 'dec')
+  10. day_of_week: last contact day of the week (categorical:'mon','tue','wed','thu','fri')
+  11. duration: last contact duration, in seconds (numeric). Important note: this attribute highly affects the output target (e.g., if duration=0 then y='no'). Yet, the duration is not known before a call is performed. Also, after the end of the call y is obviously known. Thus, this input should only be included for benchmark purposes and should be discarded if the intention is to have a realistic predictive model.
+  12. campaign: number of contacts performed during this campaign and for this client (numeric, includes last contact)
+  13. pdays: number of days that passed by after the client was last contacted from a previous campaign (numeric; 999 means client was not previously contacted)
+  14. previous: number of contacts performed before this campaign and for this client (numeric)
+  15. poutcome: outcome of the previous marketing campaign (categorical: 'failure','nonexistent','success')# social and economic context attributes
+  16. emp.var.rate: employment variation rate - quarterly indicator (numeric)
+  17. cons.price.idx: consumer price index - monthly indicator (numeric)
+  18. cons.conf.idx: consumer confidence index - monthly indicator (numeric)
+  19. euribor3m: euribor 3 month rate - daily indicator (numeric)
+  20. nr.employed: number of employees - quarterly indicator (numeric)
+  21. y - has the client subscribed a term deposit? (binary: 'yes','no')
+
+# Package loading and set Working directory
+
+Carreguem els paquets necessaris i definim el nostre directori de treball
+```{r, include=FALSE}
+
+# Load Required Packages: to be increased over the course
+
+requiredPackages <- c("mvoutlier","chemometrics","mice","missForest","missMDA","DMwR","pbkrtest","jomo","readxl","haven","sf","rgdal","missMDA","effects","FactoMineR","car","factoextra","RColorBrewer","ggplot2","dplyr","data.table", "ggmap","ggthemes","knitr","MVA")
+missingPackages <- requiredPackages[!(requiredPackages %in% as.vector(installed.packages(lib.loc="~/R/win-library/3.5")[,"Package"]))]
+
+#if(length(missingPackages)) install.packages(missingPackages)
+install.packages(requiredPackages,dependencies = TRUE,repos = c("http://rstudio.org/_packages","http://cran.rstudio.com"))
+lapply(requiredPackages, require, character.only = TRUE)
+
+#file_path<-"C:/Users/montserrat.martinez.santamaria/Documents/ADEI/bank-additional/bank-additional"
+file_path<-"C:/Users/montsee/Desktop/ADEI/bank-additional/bank-additional"
+
+```
+
+# Loading data
+# Upload and select data
+
+A partir del banc de dades proposat, hem de seleccionar una mostra de 5000 registres de manera aleatoria per poder començar a analitzar les nostres dades
+```{r}
+#setwd("C:/Users/montserrat.martinez.santamaria/Documents/ADEI/bank-additional/bank-additional")
+#dirwd<-"C:/Users/montserrat.martinez.santamaria/Documents/ADEI/bank-additional/bank-additional"
+
+setwd("/Users/montsee/Desktop/ADEI/bank-additional/bank-additional")
+dirwd<-"/Users/montsee/Desktop/ADEI/bank-additional/bank-additional"
+
+# Data file already
+
+df<-read.table(paste0(dirwd,"/bank-additional-full.csv"),header=TRUE,sep=";",na.strings = "999")
+
+# Select your 5000 register sample (random sample)
+
+#nrow(df)
+#ncol(df)
+#dim(df) 
+
+set.seed(25071997)
+mostra<-as.vector(sort(sample(1:nrow(df),5000)))
+df<-df[mostra,]
+
+#Verificacio i guardat de la mostra
+
+dim(df) #Mostra la dimensi? de la mostra
+names(df) #Mostra els noms de les variables de la mostra
+summary(df)
+save.image("DadesBank_5000.RData")
+
+```
+
+# Inicialització dels vectors de missings, errors i outliers
+
+Inicialitzarem tres vectors per poder tenir un recompte del total dels errors, missings i outliers:
+```{r}
+num_total_missings<-rep(0,21)
+num_total_errors<-rep(0,21)
+num_total_outliers<-rep(0,21)
+```
+
+Inicialitzem les variables de contadors individuals per missings, errors i outliers:
+```{r}
+df$missings_indiv <- 0
+df$errors_indiv <- 0
+df$outliers_indiv <- 0
+```
+
+# Univariate Descriptive Analysis & Data Quality Report
+
+## Qualitative Variables (Factors) / Categorical
+
+Hem de fer un analisi de totes les variables per poder identificar missings, errors i els outliers. Tamba tractarem de factoritzar cada variable per a que sigui mes facil entendre la mostra
+
+### 2. Job
+### Type of job?
+```{r}
+df$job<-factor(df$job)
+levels(df$job)<-paste("Job_",sep="",levels(df$job))
+summary(df$job)
+barplot(summary(df$job),main="Job Barplot",col = "turquoise",cex.names=0.35)
+#Amb la comanda "factor" el que estem fent es factoritzar la variable que li passem i el valor que surt amb el "levels" es el numero total de les nostres 5000 observacions que tenen cada tipus de job i com podem veure tots els factors tenen valor i no tenim cap NA (data missing)
+```
+
+### 3. Marital
+### Marital status?
+```{r}
+df$marital<-factor(df$marital)
+levels(df$marital)<-paste("Marital_",sep="",levels(df$marital))
+summary(df$marital)
+barplot(summary(df$marital),main="Marital Barplot",col = "turquoise")
+
+sel<-which(df$marital=="Marital_unknown");length(sel)
+#sel
+df$marital[sel]<-NA
+summary(df$marital)
+#Podem veure que de la nostra mostra no tenim cap factor incorrecte i com en la nostra mostra la variable "marital_unkown" es molt petita s'han de posar com a NA
+```
+
+### 4. Education
+### Type of education?
+```{r}
+df$education<-factor(df$education)
+levels(df$education)<-paste("Education_",sep="",levels(df$education))
+summary(df$education)
+barplot(summary(df$education),main="Education Barplot",col="turquoise",cex.names = 0.3)
+
+sel<-which(df$education=="Education_unknown");length(sel)
+#sel
+df$education[sel]<-NA
+summary(df$education)
+#Quan observem tots els factors ens podem adonar que no hi ha cap NA (data missing) ni cap factor no contemplat, llavors no tenim cap error
+```
+
+### 5. Default
+### Has credit in default?
+```{r}
+df$default<-factor(df$default)
+levels(df$default)<-paste("Default_",sep="",levels(df$default))
+summary(df$default)
+barplot(summary(df$default),main="Default Barplot",col = "turquoise")
+#Quan acabem d'analitzar la mostra veiem que com en els casos anteriors no tenim cap NA (data missing) ni cap factor incomplet, llavors la nostra mostra es correcta i com en els casos anteriors hem posat nom al nostre barplot per tenir una millor visualitzacio
+```
+
+### 6. Housing
+### Has housing loan?
+```{r}
+df$housing<-factor(df$housing)
+levels(df$housing)<-paste("Housing_",sep="",levels(df$housing))
+summary(df$housing)
+barplot(summary(df$housing),main="Housing Barplot",col = "turquoise")
+#Com podem veure anteriorment tampoc tenim cap data missing ni cap factor amb valors estranys, pero podem veure que el factor "Housing_unknown" podria ser un possible outlier
+```
+
+### 7. Loan
+### Has personal loan?
+```{r}
+df$loan<-factor(df$loan)
+levels(df$loan)<-paste("Loan_",sep="",levels(df$loan))
+summary(df$loan)
+barplot(summary(df$loan),main="Loan Barplot",col = "turquoise")
+#Quan acabem d'analitzar la mostra veiem que com en els casos anteriors no tenim cap NA (data missing) ni cap factor incomplet, llavors la nostra mostra es correcta i com en els casos anteriors hem posat nom al nostre barplot per tenir una millor visualitzacio
+```
+
+### 8. Contact
+### Contact communication type?
+```{r}
+df$contact<-factor(df$contact)
+levels(df$contact)<-paste("Contact_",sep="",levels(df$contact))
+summary(df$contact)
+barplot(summary(df$contact),main="Contact Barplot",col = "turquoise")
+#Quan acabem d'analitzar la mostra veiem que com en els casos anteriors no tenim cap NA (data missing) ni cap factor incomplet, llavors la nostra mostra es correcta i com en els casos anteriors hem posat nom al nostre barplot per tenir una millor visualitzacio
+```
+
+### 9. Month
+### Last contact month of the year?
+```{r}
+df$month<-factor(df$month)
+levels(df$month)<-paste("Month_",sep="",levels(df$month))
+summary(df$month)
+barplot(summary(df$month),main="Month Barplot",col = "turquoise",cex.names = 0.5)
+summary(df)
+```
+
+### 10. Day_of_week
+### Last contact day of the week?
+```{r}
+df$day_of_week<-factor(df$day_of_week)
+levels(df$day_of_week)<-paste("Day_of_week_",sep="",levels(df$day_of_week))
+summary(df$day_of_week)
+barplot(summary(df$day_of_week),main="Day_of_week Barplot",col = "turquoise",cex.names=0.7)
+summary(df)
+#Com podem observar en els nostres factors no tenim cap valor missing i segons les nostres observacions tampoc tenim cap outlier destacat
+```
+
+### 15. Poutcome
+### Outcome of the previous marketing campaign?
+```{r}
+df$poutcome<-factor(df$poutcome)
+levels(df$poutcome)<-paste("Poutcome_",sep="",levels(df$poutcome))
+summary(df$poutcome)
+barplot(summary(df$poutcome),main="Poutcome Barplot",col = "turquoise")
+#Quan acabem d'analitzar la mostra veiem que com en els casos anteriors no tenim cap NA (data missing) ni cap factor incomplet, llavors la nostra mostra es correcta i com en els casos anteriors hem posat nom al nostre barplot per tenir una millor visualitzacio
+```
+
+### 21. Y
+### Has the client subscribed a term deposit?
+```{r}
+df$y<-factor(df$y)
+levels(df$y)<-paste("Y_",sep="",levels(df$y))
+summary(df$y)
+barplot(summary(df$y),main="Y Barplot",col = "turquoise")
+#Quan acabem d'analitzar la mostra veiem que com en els casos anteriors no tenim cap NA (data missing) ni cap factor incomplet, llavors la nostra mostra es correcta i com en els casos anteriors hem posat nom al nostre barplot per tenir una millor visualitzacio
+```
+
+## Quantitative Variables (Numerical)
+
+Hem de fer un analisi de totes les variables per poder identificar missings, errors i els outliers. Tambe farem una serie de boxplots i histogrames per analitzar i visualitzar millor les dades de la nostra mostra
+
+### 1. Age
+```{r}
+summary(df$age)
+hist(df$age,15,main="Histogram of age",col=heat.colors(17,alpha=1))
+#A partir del summary veiem que no hi ha cap mostra que contingui un NA (missing data) ni tampoc cap possible error ja que l'edat minima (17) i la maxima (98) son valors que s'adhereixen a la realitat. 
+boxplot(df$age)
+abline(h=84,col="green",lwd=3)
+
+#Amb la comanda abline el que volem fer es poder identificar de una manera mes facil els possibles outliers i poder tenir una millor visualitzacio, per aixo marco a l'altura dels 84 anys la nostra mostra, ja que aquests valors son els que s'allunyen una mica de la resta, llavors s'ahuran de fer una serie d'imputacions
+
+sel <- which(df$age >= 84);length(sel);sel
+summary(df$age)
+
+num_total_outliers[1] <- length(sel)
+df[sel, "age"] <- NA
+#Cuando eliminamos nuestros outliers lo que nos queda es que la edad máxima ahora es de 81 años y tenemos 7 NA's
+
+df[sel, "outliers_indiv"] <- df[sel, "outliers_indiv"] + 1
+summary(df$age)
+#Un cop els hem identificat, actualitzem les variables de control per tal de portar un seguiment correcte de la mostra i eliminem els 7 outliers considerats.
+```
+
+### 11. Duration
+### Last contact duration?
+```{r}
+summary(df$duration)
+hist(df$duration,15,main="Histogram of duration",col="turquoise")
+#A partir del summary executat podem observar que el temsp minim de la durada de una trucada es d'1 segon, i ja ens podem adonar que aquest valor no te molt sentit a l'hora de tractar-se una trucada no? No dona temps que el client escolti i penji i la durada maxima es de 3253 segons que son aproximadament uns 54 minuts i pot ser un valor real
+
+boxplot(df$duration)
+abline(h=2200,col="green",lwd=2)
+#Per tal d'identificar possibles outliers utilitzem l'eina Boxplot, tinguent en compte el significat de la variable marquem amb una linia vermella el valor 2200, a partir del qual definim els possibles outliers ja que considerem que les observacions que prenen un valor a partir de 2200 es desvien significativament de la resta
+
+sel <- which(df$duration >= 2200);length(sel);sel
+num_total_outliers[11] <- length(sel)
+df[sel, "outliers_indiv"] <- df[sel, "outliers_indiv"] + 1
+df <- df[-sel,]  
+summary(df$duration)
+#Un cop els hem identificat, actualitzem les variables de control per tal de portar un seguiment 
+#correcte de la mostra i eliminem els 18 outliers del nostre traget num?ric.
+```
+
+### 12. Campaign
+### Number of contacts performed during this campaign?
+```{r}
+summary(df$campaign)
+hist(df$campaign,15,main="Histogram of campaign",col="turquoise")
+#Quan fem el summary i el boxplot veiem que no hi ha cap mostra que contingui un NA (missing data) pero amb el boxplot si que veiem que hi han alguns valors que poden no ser molt realistes, ja que es una mica estrany que una campanya es contacti unes 40 vegades amb una mateixa persona, comptant que la mitjana són dues vegades, llavors eliminarem a partir d'unes 27 vegades/persona que es el que te mes sentit comu i es on veiem que disten de la resta
+#Aquestes dades de la mostra les considerem errors i les eliminarem de la mostra
+
+boxplot(df$campaign)
+abline(h=27,col="green",lwd=3)
+
+sel <- which(df$campaign > 27)
+length(sel);sel
+num_total_errors[12] <- length(sel)
+df[sel, "campaign"] <- NA
+df[sel, "errors_indiv"] <- df[sel, "errors_indiv"] + 1
+
+boxplot(df$campaign)
+abline(h=20,col="green",lwd=3)
+#Després de fer l'analisi de la mostra podem arribar a la conclusio que no es molt normal rebre contacte de la mateixa campanya mes de 15 cops, llavors haurem d'eliminar els possibles outliers de la mostra per tenir correcte el nostre traget numeric i veiem que eliminem 57 observacions
+
+sel <- which(df$campaign >= 15)
+length(sel);sel
+num_total_outliers[12] <- length(sel)
+df[sel, "campaign"] <- NA
+df[sel, "outliers_indiv"] <- df[sel, "outliers_indiv"] + 1
+df<-df[-sel,]
+summary(df$campaign)
+```
+
+### 13. Pdays
+### Number of days that passed by after the client was last contacted from a previous campaign?
+```{r}
+summary(df$pdays)
+hist(df$pdays,15,main="Histogram of pdays",col="turquoise")
+
+#Si analitzem aquesta variable veiem que tenir valor 0 significa que no ha passat cap dia des de que s'ha finalitzat la campanya anterior i s'ha contactat amb l'individu per aquesta campanya la qual cosa considerem que es tracta de un error per aixo procedim a identificar i comptabilitzar l'esmentat error a continuacio. 
+
+sel <- which(df$pdays == 0)
+length(sel);sel
+#A partir del summary veiem que hi han 2 observacions que tenen valor 0.
+num_total_errors[13] = length(sel)
+df[sel, "pdays"] <- NA
+df[sel, "errors_indiv"] <- df[sel, "errors_indiv"] + 1
+
+#Tambe podem observem que aquesta variable te un nombre molt elevat de NA's(missing data) aquestes situacions signifiquen que no s'ha contactat amb l'individu previament en cap altre campanya per aixo no pot existir cap valor amb els dies des de la ultima vegada que es va contactar.
+
+sel <- which(is.na(df$pdays))
+length(sel);#sel
+num_total_missings[13] = length(sel)
+df[sel, "missings_indiv"] <- df[sel, "missings_indiv"] + 1
+summary(df$pdays)
+
+boxplot(df$pdays)
+abline(h=16,col="green",lwd=2)
+sel <- which(df$pdays >= 16)
+length(sel);sel
+num_total_outliers[13] = length(sel)
+df[sel, "pdays"] <- NA
+df[sel, "outliers_indiv"] <- df[sel, "outliers_indiv"] + 1
+summary(df$pdays)
+
+#Un cop els hem identificat, actualitzem les variables de control per tal de portar un seguiment 
+#correcte de la mostra i eliminem els outliers del nostre target numeric.
+```
+
+### 14. Previous
+### Number of contacts performed before this campaign and for this client?
+```{r}
+summary(df$previous)
+hist(df$pdays,15,main="Histogram of previous",col="turquoise")
+
+#A partir del summary efectuat sobre la variable "Previous" podem veure que no tenim cap NA i podriem considerar que tampoc error perque ja que el nombre minim de ocntactes previs a la campanya actual amb l'individu es 0 i el maxim trobat es 5, que poden ser valors reals
+
+#Quan observem el boxplot i el summary veiem que la majoria de les nostres observacions son 0 i llavors no podem tenir o identificar rapidament els possibles outliers
+```
+
+### 16. Emp.var.rate
+### Employment variation rate?
+```{r}
+summary(df$emp.var.rate)
+hist(df$emp.var.rate,15,main="Histogram of emp.var.rate",col="turquoise")
+boxplot(df$emp.var.rate)
+#A partir del summary, l'histograma i el boxplot podem afirmar que no tenim cap missing ni error ni outlier, perque tots els valors agafats son realistes
+```
+
+### 17. Cons.price.idx
+### Consumer price index - monthly indicator?
+```{r}
+summary(df$cons.price.idx)
+hist(df$cons.price.idx,15,main="Histogram of cons.price.idx",col="turquoise")
+boxplot(df$cons.price.idx)
+#A partir del summary, l'histograma i el boxplot podem afirmar que no tenim cap missing ni error ni outlier, perque tots els valors agafats son realistes
+```
+
+### 18. Cons.conf.idx
+### Consumer confidence index - monthly indicator?
+```{r}
+summary(df$cons.conf.idx)
+hist(df$cons.conf.idx,15,main="Histogram of cons.conf.idx",col="turquoise")
+boxplot(df$cons.conf.idx)
+#Com podem veure després del boxplot hi han algunes observacions que podrien considerarse possibles outliers, llavors marquem -29 amb el abline
+
+abline(h=-29,col="green",lwd=3)
+
+sel <- which(df$cons.conf.idx >= -29)
+length(sel);sel
+num_total_outliers[18] = length(sel)
+df[sel, "cons.conf.idx"] <- NA
+df[sel, "outliers_indiv"] <- df[sel, "outliers_indiv"] + 1
+summary(df$cons.conf.idx)
+#Ara el que hem fet es veure que hi han uns 51 possibles outliers, llavors el que hem de fer es imputar-los i posar-los com a NA (missing values) i llavors els posem en el vector creat per tenir tots els outliers a ma i després incrementem el contador d'outliers
+```
+
+### 19. Euribor3m
+### Euribor 3 month rate - daily indicator?
+```{r}
+summary(df$euribor3m)
+hist(df$euribor3m,15,main="Histogram of euribor3m",col="turquoise")
+boxplot(df$euribor3m)
+#A partir del boxplot efectuat podem veure que els valors obtinguts son majoritariament menors que 5 i com s'observa la mitjana es troba molt a prop del maxim obtingut
+```
+
+### 20. Nr.employed
+### Number of employees - quarterly indicator?
+```{r}
+summary(df$nr.employed)
+hist(df$nr.employed,15,main="Histogram of nr.employed",col="turquoise")
+boxplot(df$nr.employed)
+#A partir del summary, l'histograma i el boxplot podem afirmar que no tenim cap missing ni error ni outlier.
+```
+
+### CONTAR NA's
+```{r}
+#Hem de contar el numero de NA's despres d'analitzar les dades i marcta els outliers, missings i errors
+miss_row <- rowSums(is.na(df))
+miss_col <- colSums(is.na(df))
+miss_col
+#Podem veure el numero de NA que tenim per cada variable
+summary(miss_row)
+```
+
+### Rank of variables
+
+Com hem fet abans ja tenim creades les variables on tenim emmagatzemats els errors, missing values i els outliers i ara el que farem es un ranking amb aquestes variables
+
+### Per individuals:
+```{r}
+#errors (la majoria de registres no tenen errors i els que tenen errors com a maxim nomes en tenen 1 )
+summary(df$errors_indiv)
+
+#outliers (el registres amb outliers com a maxim tenen 2 variables amb outlier)
+summary(df$outliers_indiv)
+
+#missings abans d'introduir manualment NA's per cada registre, nomes la variable pdays tenia missings des de un principi
+summary(df$missings_indiv)
+
+#despres de depurar les dades i introduir els NA`s
+#miss_col<-colSums(is.na(df))
+NAs_indiv <- rowSums(is.na(df))
+summary(df$NAs_indiv)
+
+```
+
+### Per variable:
+
+```{r}
+#Després de calcular tots el missings, outliers i errors fem el resum d'ells
+
+#num total missings
+data <- t(c(num_total_missings[13]))
+data
+barplot(data, main="Total missings", col=("turquoise"))
+
+#num total errors
+data <- t(c(num_total_errors[12:13]))
+data
+barplot(data, main="Total errors", col=("turquoise"))
+
+#num total outliers
+data <- t(c(num_total_outliers[1],num_total_outliers[11:14],num_total_outliers[18]))
+data
+barplot(data, main="Total outliers", col=("turquoise"))
+```
+
+### Imputation 
+
+Ara farem l'estudi per variables i tractarem d'imoutar les observacions que siguin necesasaries
+
+```{r}
+library(missMDA)
+
+# Numeric imputation
+vars_con<-names(df)[c(1,11:14,16:20)]
+vars_dis<-names(df)[c(2:10,15,21)] #solo 21
+summary(df[,vars_con])
+summary(df[,vars_dis])
+#aq.plot(df[,vars_con],delta=qchisq(0.995,df=ncol(x)))
+
+res.impn<-imputePCA(df[,vars_con],ncp=5) #vars_con=numericas 
+#res.impn<-imputePCA(df[,vars_dis],ncp=5)
+attributes(res.impn)
+
+#data.frame with all NA imputed: res.impn$completeObs
+#summary(res.impn$completeObs)
+
+df[,"age"] <- res.impn$completeObs[,"age"]
+df[,"campaign"] <- res.impn$completeObs[,"campaign"]
+df[,"pdays"] <- res.impn$completeObs[,"pdays"]
+df[,"cons.conf.idx"] <- res.impn$completeObs[,"cons.conf.idx"]
+df[,"euribor3m"] <- res.impn$completeObs[,"euribor3m"]
+miss_row <- rowSums(is.na(df))
+miss_col <- colSums(is.na(df))
+```
+
+
+```{r}
+summary(df$month)
+table (df$month)
+
+# Define new factor categories: 1- Spring 2-Summer 3-Resta
+df$season <- 3
+summary(df$season)
+
+# 1 level - spring 
+sel<-which(df$month %in% c("Month_mar","Month_apr","Month_may"))
+df$season[sel] <-1
+
+# 2 level - Summer 
+sel<-which(df$month %in% c("Month_jun","Month_jul","Month_aug"))
+df$season[sel] <-2
+
+table(df$season)
+summary(df$season)
+df$season<-factor(df$season,levels=1:3,labels=c("Spring","Summer","Aut-Win"))
+
+barplot(summary(df$season), main="Season of the Year", col=("turquoise"))
+```
+
+### Discretitzation
+
+Ara el que farem será la discretització de les variables numeriques i aixo ho farem convertint en factors els diferents rangs que tenim de les observacions corresponents a una variable numerica per tenir una visualitzacio mes clara
+
+```{r}
+vars_con<-names(df)[c(1,11:14,16:20)];
+vars_con
+summary(df[,vars_con])
+```
+
+### Factor Age
+```{r}
+# Trend and dispersion statistics
+quantile(df$age,na.rm=TRUE)
+quantile(df$age,seq(0,1,0.2),na.rm=TRUE)
+
+#Es crea una variable auxiliar per tenir els diferents rangs d'edat i fem els intervals per a que sigui mes sencilla i facil la visualitzacio de les diferents mostres
+df$varauxiliar<-factor(cut(df$age,include.lowest=T,breaks=c(17,31,36,41,49,81)))
+summary(df$varauxiliar)
+
+#Fem la mitjana amb els valors de les edats i els nostres intervals
+tapply(df$age,df$varauxiliar,median)
+
+#Ara li posem el nom de "factor_age" a la nostra variable per poder tenir una millor interpretacio i tornem a fer el mateix proces
+df$factor_age<-factor(cut(df$age,include.lowest=T,breaks=c(17,31,36,41,49,81)))
+levels(df$factor_age)<-paste("factor_age ",levels(df$factor_age),sep="")
+table(df$factor_age)
+barplot(summary(df$factor_age), main="Factor Age",col=("turquoise"),cex.names=0.75)
+```
+
+### Factor Duration
+```{r}
+# Trend and dispersion statistics
+quantile(df$duration,seq(0,1,0.125),na.rm=TRUE)
+
+df$factor_duration<-factor(cut(df$duration,include.lowest=T,breaks=c(1,68,104,139,182,236,329,504,2122)))
+summary(df$factor_duration)
+tapply(df$duration,df$factor_duration,median)
+
+levels(df$factor_duration)<-paste("factor_duration-",levels(df$factor_duration),sep="")
+table(df$factor_duration)
+barplot(summary(df$factor_duration), main="Factor Duration",col=("turquoise"),cex.names=0.3)
+```
+
+### Factor Campaign
+```{r}
+# Trend and dispersion statistics
+quantile(df$campaign,seq(0,1,0.2),na.rm=TRUE)
+df$factor_campaign<-factor(cut(df$campaign,include.lowest=T,breaks=c(1,2,3,14)))
+
+summary(df$factor_campaign)
+tapply(df$campaign,df$factor_campaign,median)
+
+levels(df$factor_campaign)<-paste("factor_campaign-",levels(df$factor_campaign),sep="")
+table(df$factor_campaign)
+barplot(summary(df$factor_campaign), main="Factor Campaign",col=("turquoise"),cex.names=0.8)
+```
+
+### Factor PDays
+```{r}
+quantile(df$pdays,seq(0,1,0.25),na.rm=TRUE)
+df$factor_Pdays<-factor(cut(df$pdays,include.lowest=T,breaks=c(1,5.347,5.657,5.99,15)))
+
+summary(df$factor_Pdays)
+tapply(df$pdays,df$factor_Pdays,median)
+
+levels(df$factor_Pdays)<-paste("factor_Pdays-",levels(df$factor_Pdays),sep="")
+table(df$factor_Pdays)
+barplot(summary(df$factor_Pdays), main="Factor Pdays",col=("turquoise"),cex.names=0.7)
+```
+
+### Factor Previous
+```{r}
+quantile(df$previous,seq(0,1,0.1),na.rm=TRUE)
+df$factor_Previous<-factor(cut(df$previous,include.lowest=T,breaks=c(0,1,5)))
+
+summary(df$factor_Previous)
+tapply(df$previous,df$factor_Previous,median)
+
+levels(df$factor_Previous)<-paste("factor_Previous-",levels(df$factor_Previous),sep="")
+table(df$factor_Previous)
+barplot(summary(df$factor_Previous), main="Factor Previous",col=("turquoise"),cex.names=1.0)
+
+#Amb aquesta discretitzacio podem comprobar que el nombre de cops que s'ha contactat previament amb l'individu es majoritariament 0 o 1 i com a maxim una mitja de 5 cops.
+```
+
+### Factor emp.var.rate
+```{r}
+quantile(df$emp.var.rate,seq(0,1,0.2),na.rm=TRUE)
+df$factor_emp.var.rate<-factor(cut(df$emp.var.rate,include.lowest=T,breaks=c(-3.4,-1.8,-0.1,1.4)))
+
+summary(df$factor_emp.var.rate)
+tapply(df$emp.var.rate,df$factor_emp.var.rate,median)
+
+levels(df$factor_emp.var.rate)<-paste("factor_emp.var.rate-",levels(df$factor_emp.var.rate),sep="")
+table(df$factor_emp.var.rate)
+barplot(summary(df$factor_emp.var.rate), main="Factor emp.var.rate",col=("turquoise"),cex.names=0.8)
+```
+
+### Factor cons.price.idx
+```{r}
+quantile(df$cons.price.idx,seq(0,1,0.2),na.rm=TRUE)
+df$factor_cons.price.idx<-factor(cut(df$cons.price.idx,include.lowest=T,breaks=c(92.201,92.963,93.444,93.918,93.994,94.767)))
+
+summary(df$factor_cons.price.idx)
+tapply(df$cons.price.idx,df$factor_cons.price.idx,median)
+
+levels(df$factor_cons.price.idx)<-paste("factor_cons.price.idx-",levels(df$factor_cons.price.idx),sep="")
+table(df$factor_cons.price.idx)
+barplot(summary(df$factor_cons.price.idx), main="Factor cons.price.idx",col=("turquoise"),cex.names=0.5)
+```
+
+### Factor cons.conf.idx
+```{r}
+quantile(df$cons.conf.idx,seq(0,1,0.2),na.rm=TRUE)
+df$factor_cons.conf.idx<-factor(cut(df$cons.conf.idx,include.lowest=T,breaks=c(-50.8,-46.2,-42,-40.3,-36.4,-29.8)))
+
+summary(df$factor_cons.conf.idx)
+tapply(df$cons.conf.idx,df$factor_cons.conf.idx,median)
+
+levels(df$factor_cons.conf.idx)<-paste("factor_cons.conf.idx-",levels(df$factor_cons.conf.idx),sep="")
+table(df$factor_cons.conf.idx)
+barplot(summary(df$factor_cons.conf.idx), main="Factor cons.conf.idx",col=("turquoise"),cex.names=0.4)
+```
+
+### Factor euribor3m
+```{r}
+quantile(df$euribor3m,seq(0,1,0.15),na.rm=TRUE)
+df$factor_euribor3m<-factor(cut(df$euribor3m,include.lowest=T,breaks=c(0.634,1.266,1.415,4.856,4.864,4.961,4.964)))
+
+summary(df$factor_euribor3m)
+tapply(df$euribor3m,df$factor_euribor3m,median)
+
+levels(df$factor_euribor3m)<-paste("factor_euribor3m-",levels(df$factor_euribor3m),sep="")
+table(df$factor_euribor3m)
+barplot(summary(df$factor_euribor3m), main="Factor euribor3m",col=("turquoise"),cex.names=0.3)
+```
+
+### Factor nr.employed
+```{r}
+quantile(df$nr.employed,seq(0,1,0.3),na.rm=TRUE)
+df$factor_nr.employed<-factor(cut(df$nr.employed,include.lowest=T,breaks=c(4963.6,5099.1,5228.1)))
+
+summary(df$factor_nr.employed)
+tapply(df$nr.employed,df$factor_nr.employed,median)
+
+levels(df$factor_nr.employed)<-paste("factor_nr.employed-",levels(df$factor_nr.employed),sep="")
+table(df$factor_nr.employed)
+barplot(summary(df$factor_nr.employed), main="Factor nr.employed",col=("turquoise"),cex.names=0.8)
+```
+
+### PROFILING
+
+### Numeric target (Duration)
+
+El profiling s'utilitza per acabar de perfilar la nostra mostra
+
+Ara procedirem a fer el profiling que ens demana del nostre target numeric (duration) i llavors hem d'utilitzar les variables originals i els factors menys el factor_duration, ja que es una variable que prove de la variable original i no volem aquesta informacio
+
+Per tal de observar la relacio del nostre target numeric amb les altres variables utilitzem la eina condes que ens proporciona informacio de les relacions entre les variables indicades i el target.
+```{r}
+df$varauxiliar <- NULL #borrem la variable auxiliar creada
+df$aux <- NULL
+#Despres de discretitzar les nostres variables tenim un total de 35 variables
+#names(df)
+
+#Description continuous by quantitative variables and/or by categorical variables
+library(FactoMineR)
+
+library(mvoutlier)
+
+vars_resu <-names(df)[c(1,11)]
+vars_resu
+
+summary(df[,vars_con])
+aq.plot(df[,vars_resu])
+#vars_res<-names(df)[c(11,21)]
+vars<-unique(c(vars_con,vars_dis))
+#vars
+
+condes(df, which(names(df) == "duration"))
+#S'utilitza per fer totes les combinacions possibles de variables numeriques i factorials
+#Tindrem les variables que tenen un pvalor a partir d'un llindar del pvalor acceptat. No ens surten totes les variables estudiades, només les que tenen una mena de relació
+#Con el p valor muy bajo entonces rechazamos la hipotesi nula
+
+#$quanti: Com podem observar la variable pdays es la que te mes relacio amb la nostra variable target (duration), es a dir, quant mes gran sigui la duracio de la trucada tenim una correlacio mes gran amb aquesta i veiem que com a relacio inversament proporcional tenim campaign
+#$quali: La variable qualitativa que te mes realcio amb el nostre target es el seu mateix factor (factor_duration) com es obvi, pero seguidament tenim el factor_Pdays i la nostra variable y
+#$category: Podem observar que tenim una relacio dependent molt forta dels mesos i ultims contactes, podem veure que ha tingut exit i majoritariament la y es yes
+
+```
+
+### Y (target qual)
+
+Per analitzar les relacions de la nostre variable qualitativa utilitzem l'eina catdes que de la mateixa manera que el condes ens mostrar? les seves relacions.
+
+```{r}
+df_catdes<-df[c(1:21)]
+catdes(df_catdes,21)
+
+#Podem veure que els factors que afecten mes a l'hora de que el individu contracti el producte promocionat (var Y = yes) son el exit o no de les anteriors campanyes, el nombre de contactes, la duracio i altres factors relacionats amb les epoques/mesos de l'any i l'status del individu.
+```
+
