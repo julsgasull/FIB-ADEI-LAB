@@ -3,13 +3,13 @@ title: "Deliverable 1"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
-  html_document:
-    toc: no
-    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
+  html_document:
+    toc: no
+    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
@@ -100,8 +100,8 @@ knitr::opts_chunk$set(echo = TRUE)
 # Load Required Packages for this deliverable
 We load the necessary packages and set working directory
 ```{r}
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -122,10 +122,10 @@ if(!is.null(dev.list())) dev.off()  # Clear plots
 rm(list=ls())                       # Clean workspace
 
 # green_tripdata_2016-01
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
-#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable1"
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
-filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1"
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable1"
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
+#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1"
 
 df<-read.table(paste0(filepath,"/green_tripdata_2016-01.csv"),header=T, sep=",")
 dim(df)       # Displays the sample size
@@ -180,7 +180,8 @@ countX <- function(x,X) {
 
 --------------------------------------------------------------------------------
 
-# Initialization of counts for missings, outliers and errors. All numerical variables have to be checked before
+# Initiating missings, outliers and errors 
+Initialization of counts for missings, outliers and errors. All numerical variables have to be checked before
 
 ```{r}
 imis<-rep(0,nrow(df))  # rows - trips
@@ -200,7 +201,7 @@ jerrs<-rep(0,2*ncol(df))  # columns - variables
 # Univariate Descriptive Analysis
 
 ## Qualitative Variables (Factors) / Categorical
-Description: Original numeric variables corresponding to qualitative concepts have to be converted to factors. New factors grouping original levels will be considered very positively.
+**Description**: Original numeric variables corresponding to qualitative concepts have to be converted to factors. New factors grouping original levels will be considered very positively.
 
 We need to do an analysis of all the variables to be able to identify missings, errors and outliers. We will also try to factorize each variable to make it easier to understand the sample.
 
@@ -216,9 +217,7 @@ df$VendorID<-factor(df$VendorID,labels=c("Mobile","VeriFone"))
 nlevels(df$VendorID)
 levels(df$VendorID)<-paste0("f.Vendor-",levels(df$VendorID))
 summary(df$VendorID)
-
 barplot(summary(df$VendorID),main="VendorID Barplot",col = "DarkOrchid")
-# With the "factor" command we factorize the variable.
 ```
 
 ### 8. RateCodeID
@@ -228,7 +227,9 @@ summary(df$RateCodeID)
 df$RateCodeID<-factor(df$RateCodeID)
 barplot(summary(df$RateCodeID),main="RateCodeID Barplot",col = "DarkOrchid")
 
-# We see that most samples are in RateCodeID = 1, which is what we are interested in. Therefore, we factorize and create only two groups, the one with RateCodeID = 1 and the rest.
+# We see that most samples are in RateCodeID = 1, which is what we are 
+# interested in. Therefore, we factorize and create only two groups, the 
+# one with RateCodeID = 1 and the rest.
 
 df$f.Rate<-1  # rep(1,nrow(df))
 ll<-which(df$RateCodeID != "1");length(ll)
@@ -258,7 +259,6 @@ barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkOrchid")
 levels(df$Payment_type) <- c("Credit card","Cash","No paid","No paid")
 summary(df$Payment_type)
 barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkOrchid")
-
 ```
 
 ### 21. Trip_type
@@ -267,14 +267,17 @@ This variable is categorical but it is expressed as numerical, so we need to fac
 df$Trip_type<-factor(df$Trip_type,labels=c("Street-Hail","Dispatch"))
 barplot(summary(df$Trip_type),main="Trip_type Barplot",col = "DarkOrchid")
 summary(df$Trip_type)
-# With the "factor" command we factorize the variable
 ```
 
-
-
-## Original numeric variables corresponding to real quantitative concepts are kept as numeric but additional factors should also be created as a discretization of each numeric variable.
+## Quantitative Variables
+**Description**: Original numeric variables corresponding to real quantitative concepts are kept as numeric but additional factors should also be created as a discretization of each numeric variable.
 
 We only keep the hours (variables 2 and 3) to be able to work with time slots in the future.
+
+```{r}
+summary(df)
+names(df)
+```
 
 ### 2. lpep_pickup_datetime
 ```{r}
@@ -292,20 +295,21 @@ df$dropoff<-substr(strptime(df$Lpep_dropoff_datetime, "%Y-%m-%d %H:%M:%S"), 12, 
 ```{r}
 summary(df$Passenger_count)
 
-# We set the 0 as an error because it is not possible to have a trip without passengers
-sel<-which(df$Passenger_count ==0)
+# we set the 0 as an error because it is not possible to 
+# have a trip without passengers
+sel<-which(df$Passenger_count == 0)
 ierrs[sel]<-ierrs[sel]+1
 names(df)
 jerrs[10]<-length(sel)
-sel                 
-#### sel contains the rownames of the individuals with "0" as  value for passengers
-df[sel,"Passenger_count"]<-NA    
+sel
+# sel contains the rownames of the individuals with "0" 
+# as value for passengers
+df[sel,"Passenger_count"]<-NA
 
-#We decided to create categorical for this variable so we categorize it. 
+# we decided to create categorical for this variable so we categorize it 
 df$Passenger_count<-factor(df$Passenger_count)
 
-#We see the barplot in order to see the distribution of passenger per trip
-
+# we see the barplot in order to see the distribution of passenger per trip
 barplot(table(df$Passenger_count),main="Passenger_count Barplot",col = "DarkOrchid")
 
 ```
@@ -313,10 +317,12 @@ barplot(table(df$Passenger_count),main="Passenger_count Barplot",col = "DarkOrch
 ### 5. Trip_distance
 ```{r}
 summary(df$Trip_distance)
-# We see on the summary that there are not NA values, so we proceed to the outlier and error detection.
+# we see on the summary that there are not NA values, so we 
+# proceed to the outlier and error detection.
 
 # Outlier detection
-# In order to evalute or data, we decide to set the maximum trip distance to 30, so we proceed to delete the outliers.
+## in order to evalute or data, we decide to set the maximum 
+## trip distance to 30, so we proceed to delete the outliers.
 Boxplot(df$Trip_distance)
 var_out<-calcQ(df$Trip_distance)
 abline(h=var_out$souts,col="red")
@@ -329,38 +335,41 @@ names(df)
 jouts[11]<-length(llout)
 
 # Error detection
-# We decide that an incorrect trip distance is the one with 0 miles or less. In order to be aware of this error we store it at ierrs, and jerrs. ierrs stores the number of errors in a row, and jerrs stores the total amount of errors in a variable.
-
+## we decide that an incorrect trip distance is the one with 0 
+## miles or less. In order to be aware of this error we store 
+## it at ierrs, and jerrs. ierrs stores the number of errors in
+## a row, and jerrs stores the total amount of errors in a variable.
 sel<-which(df$Trip_distance <= 0)
 ierrs[sel]<-ierrs[sel]+1
 names(df)
 jerrs[11]<-length(sel)
 sel 
 
-# Set NA values in order to remove errors and outliers from the dataset
-
+# Errors and outliers
+## now, we set NA values in order to remove errors and outliers 
+## from the dataset
 setNA<-which((df$Trip_distance<=0) | (df$Trip_distance > 30))
 df[setNA,"Trip_distance"]<-NA
 
-# We are going to set a categorical variable for the Trip_distance range. We decided to create 3 levels: "Short_dist", "Medium_dist" and "Long_dist".
-
-# Short_dist <= 2.5
-# Medium_dist 2.5 < Trip_distance <= 5
-# Long_dist > 5
+# Caterogial variable for Trip_distance
+## we are going to set a categorical variable for the Trip_distance 
+## range. 
+## we decided to create 3 levels: "Short_dist", "Medium_dist" and 
+## "Long_dist".
+### - Short_dist <= 2.5
+### - Medium_dist 2.5 < Trip_distance <= 5
+### - Long_dist > 5
 df$Trip_distance_range[df$Trip_distance <= 2.5] = "Short_dist"
 df$Trip_distance_range[(df$Trip_distance > 2.5) & (df$Trip_distance <= 5)] = "Medium_dist"
 df$Trip_distance_range[df$Trip_distance > 5] = "Long_dist"
 
 summary(df$Trip_distance_range)
 
-# We that it is not a factor yet, so we factor it.
-
+# we see, though, that it is not a factor yet, so we factor it.
 df$Trip_distance_range <- factor(df$Trip_distance_range)
 
-# We see a barplot for the factor we created.
-
+# we see a barplot for the factor we created.
 barplot(table(df$Trip_distance_range),main="Trip_distance_range Barplot",col = "DarkOrchid")
-
 ```
 
 ### 6. Pickup_longitude
@@ -370,30 +379,44 @@ We know that New York's longitude is -73.9385, so values that differ a lot from 
 ```{r}
 summary(df$Pickup_longitude)
 # 0.00 looks to be an error
-# Seeing the individuals with this "0" value:
+
+# seeing the individuals with this "0" value:
 df[which(df[,"Pickup_longitude"]==0),]
 
-# It is a quantitive variable.  Non-possible values will be recoded as errors, so will be transformed to NA.
-
+# it is a quantitive variable.  
+# non-possible values will be recoded as errors, 
+# so will be transformed to NA.
 sel<-which(df$Pickup_longitude == 0)
 ierrs[sel]<-ierrs[sel]+1
 names(df)
 jerrs[6]<-length(sel)
 sel                 
-#### sel contains the rownames of the individuals with "0" as value for longitude
-df[sel,"Pickup_longitude"]<-NA   # non-possible values are replaced by NA, missing value symbol in R
+# sel contains the rownames of the individuals with "0" 
+# as value for longitude
+df[sel,"Pickup_longitude"]<-NA   
+# non-possible values are replaced by NA, missing value 
+# symbol in R
 
-##### Which trips are not running in New-York?
-# Consider if, at least, one of the pick-up and drop-off points belong to New-York area. If not, this trip is an "out-of-scope" individual and has to be eliminated of the basis. Nevertheless, you have to justify this elimination and count how many individuals were in this situation
-# Look at that!! Possibly, starting from the outliers... "0" is missing value, outliers can help to detect trips running outside of New York...
+# Which trips are not running in New-York?
+## consider if, at least, one of the pick-up and drop-off 
+## points belong to New-York area. if not, this trip is 
+## an "out-of-scope" individual and has to be eliminated 
+## of the basis. Nevertheless, you have to justify this 
+## elimination and count how many individuals were in 
+## this situation.
+## look at that!! possibly, starting from the outliers... 
+## "0" is missing value, outliers can help to detect trips 
+## running outside of New York...
 
-#We are deleting trips from outside New York. This means we are not using longitudes bigger than -73.80 and smaller than -74.02
+# we are deleting trips from outside New York. This means 
+# we are not using longitudes bigger than -73.80 and smaller 
+# than -74.02
 llout <-which((df$Pickup_longitude < -74.02) | (df$Pickup_longitude > -73.80))
 iouts[llout]<-iouts[llout]+1
 names(df)
 jouts[6]<-length(llout)
 
-# Now that we have the outliers, we are setting them as NA
+# now that we have the outliers, we are setting them as NA
 df[llout,"Pickup_longitude"]<-NA
 
 ```
@@ -403,57 +426,69 @@ We know that New York's latitude is 40.6643, so values that differ a lot from th
 ```{r}
 summary(df$Pickup_latitude)
 # 0.00 looks to be an error
-# Seeing the individuals with this "0" value:
+
+# seeing the individuals with this "0" value:
 df[which(df[,"Pickup_latitude"]==0),]
 
-# It is a quantitive variable.  Non-possible values will be recoded as errors, so will be transformed to NA.
-
-sel<-which(df$Pickup_latitude ==0)
+# it is a quantitive variable.  
+# non-possible values will be recoded as errors, 
+# so will be transformed to NA.
+sel<-which(df$Pickup_latitude == 0)
 ierrs[sel]<-ierrs[sel]+1
 names(df)
 jerrs[7]<-length(sel)
-sel 
-#### sel contains the rownames of the individuals with "0" as  value for latitude
-df[sel,"Pickup_latitude"]<-NA    
-# non-possible values are replaced by NA, missing value symbol in R
+sel                 
+# sel contains the rownames of the individuals with "0" 
+# as value for longitude
+df[sel,"Pickup_longitude"]<-NA   
+# non-possible values are replaced by NA, missing value 
+# symbol in R
 
-#We are deleting trips from outside New York. This means we are not using latitudes bigger than 40.54 and smaller than 40.86
+# we are deleting trips from outside New York. This means 
+# we are not using latitudes bigger than 40.54 and smaller 
+# than 40.86
 llout <-which((df$Pickup_latitude < 40.54) | (df$Pickup_latitude > 40.86))
 iouts[llout]<-iouts[llout]+1
 names(df)
 jouts[7]<-length(llout)
 
-# Now that we have the outliers, we are setting them as NA
+# now that we have the outliers, we are setting them as NA
 df[llout,"Pickup_latitude"]<-NA
-
 ```
+
 ### 10. Dropoff_longitude
 We know that New York's longitude is -73.9385, so values that differ a lot from this value is an error or an outlier.
 ```{r}
 summary(df$Dropoff_longitude)
 # 0.00 looks to be an error
-# Seeing the individuals with this "0" value:
-df[which(df[,"Dropoff_longitude"]== 0),]
 
-# It is a quantitive variable.  Non-possible values will be recoded as errors, so will be transformed to NA.
+# seeing the individuals with this "0" value:
+df[which(df[,"Dropoff_longitude"]==0),]
+
+# it is a quantitive variable.  
+# non-possible values will be recoded as errors, 
+# so will be transformed to NA.
 sel<-which(df$Dropoff_longitude == 0)
 ierrs[sel]<-ierrs[sel]+1
 names(df)
 jerrs[8]<-length(sel)
 sel                 
-#### sel contains the rownames of the individuals with "0" as  value for longitude
-df[sel,"Dropoff_longitude"]<-NA    
-# non-possible values are replaced by NA, missing value symbol in R
+# sel contains the rownames of the individuals with "0" 
+# as value for longitude
+df[sel,"Dropoff_longitude"]<-NA   
+# non-possible values are replaced by NA, missing value 
+# symbol in R
 
-
-#We are deleting trips from outside New York. This means we are not using longitudes bigger than -73.80 and smaller than -74.02
+# we are deleting trips from outside New York. This means 
+# we are not using longitudes bigger than -73.80 and 
+# smaller than -74.02
 llout <-which((df$Dropoff_longitude < -74.02) | (df$Dropoff_longitude > -73.80))
 iouts[llout]<-iouts[llout]+1
 names(df)
 jouts[8]<-length(llout)
 llout
 
-# Now that we have the outliers, we are setting them as NA
+# now that we have the outliers, we are setting them as NA
 df[llout,"Dropoff_longitude"]<-NA
 
 ```
@@ -463,20 +498,27 @@ We know that New York's latitude is 40.6643, so values that differ a lot from th
 ```{r}
 summary(df$Dropoff_latitude)
 # 0.00 looks to be an error
-# Seeing the individuals with this "0" value:
-df[which(df[,"Dropoff_latitude"]== 0),]
 
+# seeing the individuals with this "0" value:
+df[which(df[,"Dropoff_latitude"]==0),]
+
+# it is a quantitive variable.  
+# non-possible values will be recoded as errors, 
+# so will be transformed to NA.
 sel<-which(df$Dropoff_latitude == 0)
 ierrs[sel]<-ierrs[sel]+1
 names(df)
-jerrs[9]<-length(sel)
-sel 
+jerrs[8]<-length(sel)
+sel                 
+# sel contains the rownames of the individuals with "0" 
+# as value for longitude
+df[sel,"Dropoff_latitude"]<-NA   
+# non-possible values are replaced by NA, missing value 
+# symbol in R
 
-#### sel contains the rownames of the individuals with "0" as  value for latitude
-df[sel,"Dropoff_latitude"]<-NA    
-# non-possible values are replaced by NA, missing value symbol in R
-
-#We are deleting trips from outside New York. This means we are not using latitude bigger than 40.54 and smaller than 40.86
+# we are deleting trips from outside New York. This means 
+# we are not using latitude bigger than 40.54 and smaller 
+# than 40.86
 llout <-which((df$Dropoff_latitude < 40.54) | (df$Dropoff_latitude > 40.86))
 iouts[llout]<-iouts[llout]+1
 names(df)
@@ -484,7 +526,7 @@ jouts[9]<-length(llout)
 
 llout
 
-# Now that we have the outliers, we are setting them as NA
+# now that we have the outliers, we are setting them as NA
 df[llout,"Dropoff_latitude"]<-NA
 
 ```
@@ -502,7 +544,8 @@ jerrs[12]<-length(sel)
 sel 
 
 df[sel,"Fare_amount"]<-NA    
-# non-possible values are replaced by NA, missing value symbol in R
+# non-possible values are replaced by NA, 
+# missing value symbol in R
 
 # Outlier detection
 Boxplot(df$Fare_amount)
@@ -511,8 +554,9 @@ abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
 abline(h=60,col="blue",lwd=2)
 
-# We decide to set outliers for fare amounts bigger than 60, because the majority of the values are concentrated between 0 and 60.
-
+# we decide to set outliers for fare amounts 
+# bigger than 60, because the majority of the 
+# values are concentrated between 0 and 60.
 llout<-which(df$Fare_amount>60)
 iouts[llout]<-iouts[llout]+1
 jouts[12]<-length(llout)
@@ -525,11 +569,14 @@ As this variable is price related, it cannot have negative values, so this indiv
 ```{r}
 summary(df$Extra)
 
-#We execute table in order to see every different value in the sample
+# we execute table in order to see every different 
+# value in the sample
 table(df$Extra)
 
-#As it is a price related variable, negative values should be treated as errors, and the other values are the ones defined for this variable, so there are not outliers.
-
+# as it is a price related variable, negative values 
+# should be treated as errors, and the other values 
+# are the ones defined for this variable, so there 
+# are not outliers.
 df[which(df[, "Extra"] < 0),]
 
 sel<-which(df$Extra < 0)
@@ -554,7 +601,7 @@ jerrs[14]<-length(sel)
 df[sel,"MTA_tax"]<-NA 
 sel
 
-#If we execute a summary, we'll see that every value should be 0.5
+# if we execute a summary, we'll see that every value should be 0.5
 summary(df$MTA_tax)
 ```
 
@@ -564,14 +611,16 @@ This variable corresponds to a charge that must be charged in every trip and its
 summary(df$improvement_surcharge)
 table(df$improvement_surcharge)
 
-#We know that this surcharge was leived in 2015, so we need to check if the 0 values correspond to trips before this year. That is what we are going to do.
+# we know that this surcharge was leived in 2015, so we 
+# need to check if the 0 values correspond to trips before 
+# this year. That is what we are going to do.
 df$yearGt2015[(df$lpep_pickup_datetime >= "2015-01-01 00:00:00") & (df$improvement_surcharge == 0.3)] = 1
 df$yearGt2015[(df$lpep_pickup_datetime < "2015-01-01 00:00:00") | (df$improvement_surcharge != 0.3)] = 0
 
 table(df$yearGt2015)
 
-#We see that the 0 individuals are errors, so we proceed to set them has NA.
-
+# we see that the 0 individuals are errors, so we 
+# proceed to set them has NA.
 sel<-which(df$improvement_surcharge <= 0)
 ierrs[sel]<-ierrs[sel]+1
 names(df)
@@ -592,12 +641,16 @@ As this is a price related variable, negative values should be considered as err
 ```{r}
 summary(df$Tip_amount)
 
-#We proceed to check if the 0 values are related with payment_type = "Credit card" and the passenger did not tip.
+# we proceed to check if the 0 values are related 
+# with payment_type = "Credit card" and the passenger 
+# did not tip.
 df$CashTips[(df$Tip_amount > 0) & (df$Payment_type == "Cash")] = 1
 df$CashTips[(df$Payment_type == "Credit card")] = 0
 table(df$CashTips)
 
-#We see that we have correct data, so we proceed to the outlier detection.
+# we see that we have correct data, so we proceed 
+# to the outlier detection.
+
 # Outlier detection
 Boxplot(df$Tip_amount)
 var_out<-calcQ(df$Tip_amount)
@@ -618,14 +671,18 @@ As this is a price related variable, negative values should be considered as err
 ```{r}
 summary(df$Tolls_amount)
 
-#We see that there are not negative values, so we do not have errors. We proceed now to the outlier detection.
+# we see that there are not negative values, so we 
+# do not have errors. We proceed now to the outlier 
+# detection.
 Boxplot(df$Tolls_amount)
 var_out<-calcQ(df$Tolls_amount)
 abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
 
 table(df$Tolls_amount)
-#As we see in the boxplot and the table, the majority of the individuals are 0, so the values bigger than 0 will be outliers.
+# as we see in the boxplot and the table, the majority 
+# of the individuals are 0, so the values bigger than 
+# 0 will be outliers.
 
 llout<-which(df$Tolls_amount>0)
 iouts[llout]<-iouts[llout]+1
@@ -641,9 +698,12 @@ llout
 This is a price related variable, so negative values should be treated as errors. Also, we need to sum the "Fare_amount", "Extra","MTA_tax", "Improvement_surcharge", "Tip_amount" and the "Tolls_amount" in order to see if the Total_amount matches with this sum.
 ```{r}
 summary(df$Total_amount)
-# negative values seem to be errors - 0 Total_amount is possible when Payment_type =="No charge"
+# negative values seem to be errors 
+# - 0 Total_amount is possible when Payment_type =="No charge"
 
-#We proceed to check if total amount is correct summing the other variables and checking negatives values:
+# we proceed to check if total amount is correct 
+# summing the other variables and checking negatives 
+# values:
 df$Sum_total_amount = (df$Fare_amount + df$Extra + df$MTA_tax + df$improvement_surcharge + df$Tip_amount + df$Tolls_amount)
 
 sel<-which((df$Total_amount != df$Sum_total_amount) | (df$Total_amount<0))
@@ -668,37 +728,3 @@ jouts[19]<-length(llout)
 df[llout,"Total_amount"]<-NA 
 ```
 
-
-
-## Exploratory Data Analysis for each variables (numeric summary and graphic support).
-```{r}
-
-```
-
-
-
---------------------------------------------------------------------------------
-# Initialization of counts for missings, outliers and errors. 
-All numerical variables have to be checked before
-```{r}
-
-#######################################################
-imis<-rep(0,nrow(df))  # rows - trips
-jmis<-rep(0,2*ncol(df))  # columns - variables
-######################################################
-mis1<-countNA(df)
-imis<-mis1$mis_ind
-mis1$mis_col # Number of missings for the current set of variables
-
-#######################################################
-iouts<-rep(0,nrow(df))  # rows - trips
-jouts<-rep(0,2*ncol(df))  # columns - variables
-######################################################
-
-#######################################################
-ierrs<-rep(0,nrow(df))  # rows - trips
-jerrs<-rep(0,2*ncol(df))  # columns - variables
-######################################################
-
-
-```
