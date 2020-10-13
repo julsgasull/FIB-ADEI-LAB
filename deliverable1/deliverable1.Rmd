@@ -218,7 +218,7 @@ levels(df$VendorID)<-paste0("f.Vendor-",levels(df$VendorID))
 summary(df$VendorID)
 
 barplot(summary(df$VendorID),main="VendorID Barplot",col = "DarkOrchid")
-# With the "factor" command what we are doing is factorizing the variable we pass to it and the value that comes out with the "levels" is the total number of our 5000 observations that each type of VendorID has and as we can see all the factors have value and we have no NA (data missing)
+# With the "factor" command we factorize the variable.
 ```
 
 ### 8. RateCodeID
@@ -259,6 +259,15 @@ levels(df$Payment_type) <- c("Credit card","Cash","No paid","No paid")
 summary(df$Payment_type)
 barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkOrchid")
 
+```
+
+### 21. Trip_type
+This variable is categorical but it is expressed as numerical, so we need to factor it in order to be able to work with it.
+```{r}
+df$Trip_type<-factor(df$Trip_type,labels=c("Street-Hail","Dispatch"))
+barplot(summary(df$Trip_type),main="Trip_type Barplot",col = "DarkOrchid")
+summary(df$Trip_type)
+# With the "factor" command we factorize the variable
 ```
 
 
@@ -404,11 +413,11 @@ ierrs[sel]<-ierrs[sel]+1
 names(df)
 jerrs[7]<-length(sel)
 sel 
-#### sel contains the rownames of the individuals with "0" as  value for longitude
+#### sel contains the rownames of the individuals with "0" as  value for latitude
 df[sel,"Pickup_latitude"]<-NA    
 # non-possible values are replaced by NA, missing value symbol in R
 
-#We are deleting trips from outside New York. This means we are not using longitudes bigger than 40.54 and smaller than 40.86
+#We are deleting trips from outside New York. This means we are not using latitudes bigger than 40.54 and smaller than 40.86
 llout <-which((df$Pickup_latitude < 40.54) | (df$Pickup_latitude > 40.86))
 iouts[llout]<-iouts[llout]+1
 names(df)
@@ -463,11 +472,11 @@ names(df)
 jerrs[9]<-length(sel)
 sel 
 
-#### sel contains the rownames of the individuals with "0" as  value for longitude
+#### sel contains the rownames of the individuals with "0" as  value for latitude
 df[sel,"Dropoff_latitude"]<-NA    
 # non-possible values are replaced by NA, missing value symbol in R
 
-#We are deleting trips from outside New York. This means we are not using longitudes bigger than 40.54 and smaller than 40.86
+#We are deleting trips from outside New York. This means we are not using latitude bigger than 40.54 and smaller than 40.86
 llout <-which((df$Dropoff_latitude < 40.54) | (df$Dropoff_latitude > 40.86))
 iouts[llout]<-iouts[llout]+1
 names(df)
@@ -481,27 +490,46 @@ df[llout,"Dropoff_latitude"]<-NA
 ```
 
 ### 13. Fare_amount
+We know that the fare should be positive, as it is the price of the trip, so we'll treat as error those values. The next we'll do is decide the outliers.
 ```{r}
 summary(df$Fare_amount)
 df[which(df[,"Fare_amount"]<0),]
+
+sel<-which(df$Fare_amount <= 0)
+ierrs[sel]<-ierrs[sel]+1
+names(df)
+jerrs[12]<-length(sel)
+sel 
+
+df[sel,"Fare_amount"]<-NA    
+# non-possible values are replaced by NA, missing value symbol in R
 
 # Outlier detection
 Boxplot(df$Fare_amount)
 var_out<-calcQ(df$Fare_amount)
 abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
-abline(h=120,col="blue",lwd=2)
+abline(h=60,col="blue",lwd=2)
 
-llout<-which((df$Fare_amount<0)|(df$Fare_amount>120))
+# We decide to set outliers for fare amounts bigger than 60, because the majority of the values are concentrated between 0 and 60.
+
+llout<-which(df$Fare_amount>60)
 iouts[llout]<-iouts[llout]+1
 jouts[12]<-length(llout)
 df[llout,"Fare_amount"]<-NA 
-sel
+llout
 ```
 
 ### 14. Extra
+As this variable is price related, it cannot have negative values, so this individuals will be treated as errors.
 ```{r}
 summary(df$Extra)
+
+#We execute table in order to see every different value in the sample
+table(df$Extra)
+
+#As it is a price related variable, negative values should be treated as errors, and the other values are the ones defined for this variable, so there are not outliers.
+
 df[which(df[, "Extra"] < 0),]
 
 sel<-which(df$Extra < 0)
@@ -510,100 +538,134 @@ names(df)
 jerrs[13]<-length(sel)
 df[sel,"Extra"]<-NA 
 sel
+
 ```
 
 ### 15. MTA_tax
+This variable corresponds to a tax that must be charged in every trip and its cost is $0.50, so values different from this are errors, and we don't have to take into account outliers because after the errors detection all values should be the MTA_tax.
 ```{r}
 summary(df$MTA_tax)
-df[which(df[, "MTA_tax"] < 0),]
+df[which(df[, "MTA_tax"] != 0.50),]
 
-sel<-which(df$MTA_tax < 0)
+sel<-which(df$MTA_tax != 0.50)
 ierrs[sel]<-ierrs[sel]+1
 names(df)
 jerrs[14]<-length(sel)
 df[sel,"MTA_tax"]<-NA 
 sel
+
+#If we execute a summary, we'll see that every value should be 0.5
+summary(df$MTA_tax)
 ```
 
 ### 16. Improvement_surcharge
+This variable corresponds to a charge that must be charged in every trip and its cost is $0.30, so values different from this are errors, and we don't have to take into account outliers because after the errors detection all values should be the Improvement surcharge.
 ```{r}
 summary(df$improvement_surcharge)
-df[which(df[, "improvement_surcharge"] < 0),]
+table(df$improvement_surcharge)
 
-sel<-which(df$improvement_surcharge < 0)
+#We know that this surcharge was leived in 2015, so we need to check if the 0 values correspond to trips before this year. That is what we are going to do.
+df$yearGt2015[(df$lpep_pickup_datetime >= "2015-01-01 00:00:00") & (df$improvement_surcharge == 0.3)] = 1
+df$yearGt2015[(df$lpep_pickup_datetime < "2015-01-01 00:00:00") | (df$improvement_surcharge != 0.3)] = 0
+
+table(df$yearGt2015)
+
+#We see that the 0 individuals are errors, so we proceed to set them has NA.
+
+sel<-which(df$improvement_surcharge <= 0)
 ierrs[sel]<-ierrs[sel]+1
 names(df)
 jerrs[18]<-length(sel)
 df[sel,"improvement_surcharge"]<-NA 
 sel
+
 ```
 
 ### 17. Ehail_fee
 ```{r}
 summary(df$Ehail_fee)
-# WE DON’T TAKE IT INTO ACCOUNT BECAUSE IT’S NA
+# WE DON’T TAKE IT INTO ACCOUNT BECAUSE EVERY VALUE OF OUR SAMPLE IS NA.
 ```
 
 ### 18. Tip_amount
+As this is a price related variable, negative values should be considered as errors, and big tips should be considered as outliers. Also tip amounts bigger than 0 for individuals with payment_type = "Cash" should be considered as errors as well.
 ```{r}
 summary(df$Tip_amount)
 
+#We proceed to check if the 0 values are related with payment_type = "Credit card" and the passenger did not tip.
+df$CashTips[(df$Tip_amount > 0) & (df$Payment_type == "Cash")] = 1
+df$CashTips[(df$Payment_type == "Credit card")] = 0
+table(df$CashTips)
+
+#We see that we have correct data, so we proceed to the outlier detection.
 # Outlier detection
 Boxplot(df$Tip_amount)
 var_out<-calcQ(df$Tip_amount)
 abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
-abline(h=25,col="blue",lwd=2)
+abline(h=17,col="blue",lwd=2)
 
-llout<-which((df$Tip_amount<0)|(df$Tip_amount>25))
+llout<-which(df$Tip_amount>17)
 iouts[llout]<-iouts[llout]+1
 names(df)
-jouts[16]<-length(llout)
+jouts[15]<-length(llout)
 df[llout,"Tip_amount"]<-NA 
-sel
+llout
 ```
 
 ### 19. Tolls_amount
+As this is a price related variable, negative values should be considered as errors.
 ```{r}
-# TO DO BITCHES
+summary(df$Tolls_amount)
+
+#We see that there are not negative values, so we do not have errors. We proceed now to the outlier detection.
+Boxplot(df$Tolls_amount)
+var_out<-calcQ(df$Tolls_amount)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+
+table(df$Tolls_amount)
+#As we see in the boxplot and the table, the majority of the individuals are 0, so the values bigger than 0 will be outliers.
+
+llout<-which(df$Tolls_amount>0)
+iouts[llout]<-iouts[llout]+1
+names(df)
+jouts[16]<-length(llout)
+df[llout,"Tolls_amount"]<-NA 
+llout
+
 ```
 
 
 ### 20. Total_amount
+This is a price related variable, so negative values should be treated as errors. Also, we need to sum the "Fare_amount", "Extra","MTA_tax", "Improvement_surcharge", "Tip_amount" and the "Tolls_amount" in order to see if the Total_amount matches with this sum.
 ```{r}
 summary(df$Total_amount)
 # negative values seem to be errors - 0 Total_amount is possible when Payment_type =="No charge"
 
-llsel<-rownames(df[which(df[,"Total_amount"]<0),])
-# there are not "no charge", so they are also "errors"
-# It is a quantitive variable  Non-possible values will be recoded to NA
-sel<-which(df$Total_amount<0)
+#We proceed to check if total amount is correct summing the other variables and checking negatives values:
+df$Sum_total_amount = (df$Fare_amount + df$Extra + df$MTA_tax + df$improvement_surcharge + df$Tip_amount + df$Tolls_amount)
+
+sel<-which((df$Total_amount != df$Sum_total_amount) | (df$Total_amount<0))
+names(df)
 if (length(sel)>0) {
   ierrs[sel]<-ierrs[sel]+1
   jerrs[19]<-length(sel)
 }
-sel                 #### sel contains the rownames of the individuals with "0" 
-#                        as  value for longitude
-df[sel,"Total_amount"]<-NA    # non-possible values are replaced by NA, missing value symbol in R
+sel
+df[sel,"Total_amount"]<-NA
 
 # Outlier detection
 Boxplot(df$Total_amount)
 var_out<-calcQ(df$Total_amount)
 abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
-abline(h=120,col="blue",lwd=2)
+abline(h=90,col="blue",lwd=2)
 
-llout<-which((df$Total_amount<0)|(df$Total_amount>120))
+llout<-which(df$Total_amount>90)
 iouts[llout]<-iouts[llout]+1
 jouts[19]<-length(llout)
 df[llout,"Total_amount"]<-NA 
-```
-
-### 21. Trip_type
-```{r}
-df$Trip_type<-factor(df$Trip_type,labels=c("Street-Hail","Dispatch"))
-barplot(summary(df$Trip_type),main="Trip_type Barplot",col = "DarkOrchid")
-# With the "factor" command what we are doing is factorizing the variable we pass to it and the value that comes out with the "levels" is the total number of our 5000 observations that each type of Trip_type has and as we can see all the factors have value and we have no NA (data missing)
 ```
 
 
