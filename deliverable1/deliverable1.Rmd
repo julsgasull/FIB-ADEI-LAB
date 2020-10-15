@@ -898,11 +898,48 @@ Being categorical, there are no mistakes or outliers. Thus, the rank is equal to
 ## Per individual
 Per each individuals, we have to count the following:
 - number of missing values
-- number of errors,
+- number of errors
 - number of outliers
 - identify individuals considered as multivariant outliers.
 
+
+### Number of missing values
+```{r}
+table(imis)
+barplot(table(imis),main="Missings per individual Barplot",col = "DarkOrchid")
+```
+
+### Number of errors
+As we can see, most individuals have no mistakes. Those who do have errors, they tend to have more than one.
+```{r}
+# table(ierrs)
+barplot(table(ierrs),main="Errors per individual Barplot",col = "DarkOrchid")
+```
+
+### Number of outliers
+```{r}
+# table(iouts)
+barplot(table(iouts),main="Outliers per individual Barplot",col = "DarkOrchid")
+```
+
+### Identify individuals considered as multivariant outliers.
+// TO-DO
+
 ## Create variable adding the total number missing values, outliers and errors.
+```{r}
+# initialize
+total <- 0
+total$missings <- 0
+total$outliers <- 0
+total$errors <- 0
+
+# sum
+for (m in imis) {total$missings <- total$missings + m}; total$missings
+for (o in iouts) {total$outliers <- total$outliers + o}; total$outliers
+for (e in ierrs) {total$errors <- total$errors + e}; total$errors
+total
+```
+
 
 ## Describe these variables, to which other variables exist higher associations.
 - compute the correlation with all other variables. Rank these variables according the correlation
