@@ -37,11 +37,11 @@ Laboratori d'ADEI de la FIB
   * Compute the correlation with all other variables. Rank these variables according the correlation
   * Compute for every group of individuals (group of age, etc, …) the mean of missing/outliers/errors values. Rank the groups according the computed mean.
 
-* Imputation:
+#### Imputation:
   * Numeric Variables
   * Factors
 
-Profiling:
+#### Profiling:
   * Numeric Target (Total Amount)
   * Factor (Y.bin - Given Tip?)
 

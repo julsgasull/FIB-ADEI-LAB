@@ -3,13 +3,13 @@ title: "Deliverable 1"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
+  html_document:
+    toc: no
+    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
-    toc: no
-    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
@@ -154,7 +154,8 @@ calcQ <- function(x) {
   s.x <- summary(x)
   iqr<-s.x[5]-s.x[2]
   list(souti=s.x[2]-3*iqr, mouti=s.x[2]-1.5*iqr, min=s.x[1], q1=s.x[2], q2=s.x[3], 
-       q3=s.x[5], max=s.x[6], mouts=s.x[5]+1.5*iqr, souts=s.x[5]+3*iqr ) }
+       q3=s.x[5], max=s.x[6], mouts=s.x[5]+1.5*iqr, souts=s.x[5]+3*iqr ) 
+}
 
 # Function to count the NA values
 countNA <- function(x) {
@@ -164,7 +165,8 @@ countNA <- function(x) {
   rownames(mis_x) <- names(x)
   mis_i <- rep(0,nrow(x))
   for (j in 1:ncol(x)) {mis_i <- mis_i + as.numeric(is.na(x[,j])) }
-  list(mis_col=mis_x,mis_ind=mis_i) }
+  list(mis_col=mis_x,mis_ind=mis_i) 
+}
 
 #Function to count a specific number of appearences
 countX <- function(x,X) {
@@ -174,7 +176,8 @@ countX <- function(x,X) {
   rownames(n_x) <- names(x)
   nx_i <- rep(0,nrow(x))
   for (j in 1:ncol(x)) {nx_i <- nx_i + as.numeric(x[,j]==X) }
-  list(nx_col=n_x,nx_ind=nx_i) }
+  list(nx_col=n_x,nx_ind=nx_i) 
+}
 
 ```
 
@@ -283,12 +286,14 @@ names(df)
 ```{r}
 ## We just keep the hours
 df$pickup<-substr(strptime(df$lpep_pickup_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13)
+# table(df$pickup)
 ```
 
 ### 3. lpep_dropoff_datetime
 ```{r}
 ## We just keep the hours
 df$dropoff<-substr(strptime(df$Lpep_dropoff_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13)
+# table(df$pickup)
 ```
 
 ### 4. Passenger_count
@@ -299,9 +304,9 @@ summary(df$Passenger_count)
 # have a trip without passengers
 sel<-which(df$Passenger_count == 0)
 ierrs[sel]<-ierrs[sel]+1
-names(df)
+# names(df)
 jerrs[10]<-length(sel)
-sel
+# sel
 # sel contains the rownames of the individuals with "0" 
 # as value for passengers
 df[sel,"Passenger_count"]<-NA
@@ -311,7 +316,6 @@ df$Passenger_count<-factor(df$Passenger_count)
 
 # we see the barplot in order to see the distribution of passenger per trip
 barplot(table(df$Passenger_count),main="Passenger_count Barplot",col = "DarkOrchid")
-
 ```
 
 ### 5. Trip_distance
@@ -331,7 +335,7 @@ abline(h=30,col="blue",lwd=2)
 
 llout<-which(df$Trip_distance>30)
 iouts[llout]<-iouts[llout]+1
-names(df)
+# names(df)
 jouts[11]<-length(llout)
 
 # Error detection
@@ -341,9 +345,9 @@ jouts[11]<-length(llout)
 ## a row, and jerrs stores the total amount of errors in a variable.
 sel<-which(df$Trip_distance <= 0)
 ierrs[sel]<-ierrs[sel]+1
-names(df)
+# names(df)
 jerrs[11]<-length(sel)
-sel 
+# sel 
 
 # Errors and outliers
 ## now, we set NA values in order to remove errors and outliers 
@@ -381,16 +385,16 @@ summary(df$Pickup_longitude)
 # 0.00 looks to be an error
 
 # seeing the individuals with this "0" value:
-df[which(df[,"Pickup_longitude"]==0),]
+# df[which(df[,"Pickup_longitude"]==0),]
 
 # it is a quantitive variable.  
 # non-possible values will be recoded as errors, 
 # so will be transformed to NA.
 sel<-which(df$Pickup_longitude == 0)
 ierrs[sel]<-ierrs[sel]+1
-names(df)
+# names(df)
 jerrs[6]<-length(sel)
-sel                 
+# sel                 
 # sel contains the rownames of the individuals with "0" 
 # as value for longitude
 df[sel,"Pickup_longitude"]<-NA   
@@ -413,7 +417,7 @@ df[sel,"Pickup_longitude"]<-NA
 # than -74.02
 llout <-which((df$Pickup_longitude < -74.02) | (df$Pickup_longitude > -73.80))
 iouts[llout]<-iouts[llout]+1
-names(df)
+# names(df)
 jouts[6]<-length(llout)
 
 # now that we have the outliers, we are setting them as NA
@@ -428,16 +432,16 @@ summary(df$Pickup_latitude)
 # 0.00 looks to be an error
 
 # seeing the individuals with this "0" value:
-df[which(df[,"Pickup_latitude"]==0),]
+# df[which(df[,"Pickup_latitude"]==0),]
 
 # it is a quantitive variable.  
 # non-possible values will be recoded as errors, 
 # so will be transformed to NA.
 sel<-which(df$Pickup_latitude == 0)
 ierrs[sel]<-ierrs[sel]+1
-names(df)
+# names(df)
 jerrs[7]<-length(sel)
-sel                 
+# sel                 
 # sel contains the rownames of the individuals with "0" 
 # as value for longitude
 df[sel,"Pickup_longitude"]<-NA   
@@ -449,7 +453,7 @@ df[sel,"Pickup_longitude"]<-NA
 # than 40.86
 llout <-which((df$Pickup_latitude < 40.54) | (df$Pickup_latitude > 40.86))
 iouts[llout]<-iouts[llout]+1
-names(df)
+# names(df)
 jouts[7]<-length(llout)
 
 # now that we have the outliers, we are setting them as NA
@@ -463,16 +467,16 @@ summary(df$Dropoff_longitude)
 # 0.00 looks to be an error
 
 # seeing the individuals with this "0" value:
-df[which(df[,"Dropoff_longitude"]==0),]
+# df[which(df[,"Dropoff_longitude"]==0),]
 
 # it is a quantitive variable.  
 # non-possible values will be recoded as errors, 
 # so will be transformed to NA.
 sel<-which(df$Dropoff_longitude == 0)
 ierrs[sel]<-ierrs[sel]+1
-names(df)
+# names(df)
 jerrs[8]<-length(sel)
-sel                 
+# sel                 
 # sel contains the rownames of the individuals with "0" 
 # as value for longitude
 df[sel,"Dropoff_longitude"]<-NA   
@@ -484,9 +488,9 @@ df[sel,"Dropoff_longitude"]<-NA
 # smaller than -74.02
 llout <-which((df$Dropoff_longitude < -74.02) | (df$Dropoff_longitude > -73.80))
 iouts[llout]<-iouts[llout]+1
-names(df)
+# names(df)
 jouts[8]<-length(llout)
-llout
+# llout
 
 # now that we have the outliers, we are setting them as NA
 df[llout,"Dropoff_longitude"]<-NA
@@ -500,16 +504,16 @@ summary(df$Dropoff_latitude)
 # 0.00 looks to be an error
 
 # seeing the individuals with this "0" value:
-df[which(df[,"Dropoff_latitude"]==0),]
+# df[which(df[,"Dropoff_latitude"]==0),]
 
 # it is a quantitive variable.  
 # non-possible values will be recoded as errors, 
 # so will be transformed to NA.
 sel<-which(df$Dropoff_latitude == 0)
 ierrs[sel]<-ierrs[sel]+1
-names(df)
+# names(df)
 jerrs[8]<-length(sel)
-sel                 
+# sel                 
 # sel contains the rownames of the individuals with "0" 
 # as value for longitude
 df[sel,"Dropoff_latitude"]<-NA   
@@ -521,10 +525,9 @@ df[sel,"Dropoff_latitude"]<-NA
 # than 40.86
 llout <-which((df$Dropoff_latitude < 40.54) | (df$Dropoff_latitude > 40.86))
 iouts[llout]<-iouts[llout]+1
-names(df)
+# names(df)
 jouts[9]<-length(llout)
-
-llout
+# llout
 
 # now that we have the outliers, we are setting them as NA
 df[llout,"Dropoff_latitude"]<-NA
@@ -535,13 +538,13 @@ df[llout,"Dropoff_latitude"]<-NA
 We know that the fare should be positive, as it is the price of the trip, so we'll treat as error those values. The next we'll do is decide the outliers.
 ```{r}
 summary(df$Fare_amount)
-df[which(df[,"Fare_amount"]<0),]
+# df[which(df[,"Fare_amount"]<0),]
 
 sel<-which(df$Fare_amount <= 0)
 ierrs[sel]<-ierrs[sel]+1
-names(df)
+# names(df)
 jerrs[12]<-length(sel)
-sel 
+# sel 
 
 df[sel,"Fare_amount"]<-NA    
 # non-possible values are replaced by NA, 
@@ -561,7 +564,7 @@ llout<-which(df$Fare_amount>60)
 iouts[llout]<-iouts[llout]+1
 jouts[12]<-length(llout)
 df[llout,"Fare_amount"]<-NA 
-llout
+# llout
 ```
 
 ### 14. Extra
@@ -577,14 +580,14 @@ table(df$Extra)
 # should be treated as errors, and the other values 
 # are the ones defined for this variable, so there 
 # are not outliers.
-df[which(df[, "Extra"] < 0),]
+# df[which(df[, "Extra"] < 0),]
 
 sel<-which(df$Extra < 0)
 ierrs[sel]<-ierrs[sel]+1
-names(df)
+# names(df)
 jerrs[13]<-length(sel)
 df[sel,"Extra"]<-NA 
-sel
+# sel
 
 ```
 
@@ -592,14 +595,14 @@ sel
 This variable corresponds to a tax that must be charged in every trip and its cost is $0.50, so values different from this are errors, and we don't have to take into account outliers because after the errors detection all values should be the MTA_tax.
 ```{r}
 summary(df$MTA_tax)
-df[which(df[, "MTA_tax"] != 0.50),]
+# df[which(df[, "MTA_tax"] != 0.50),]
 
 sel<-which(df$MTA_tax != 0.50)
 ierrs[sel]<-ierrs[sel]+1
-names(df)
+# names(df)
 jerrs[14]<-length(sel)
 df[sel,"MTA_tax"]<-NA 
-sel
+# sel
 
 # if we execute a summary, we'll see that every value should be 0.5
 summary(df$MTA_tax)
@@ -623,10 +626,10 @@ table(df$yearGt2015)
 # proceed to set them has NA.
 sel<-which(df$improvement_surcharge <= 0)
 ierrs[sel]<-ierrs[sel]+1
-names(df)
+# names(df)
 jerrs[18]<-length(sel)
 df[sel,"improvement_surcharge"]<-NA 
-sel
+# sel
 
 ```
 
@@ -660,10 +663,10 @@ abline(h=17,col="blue",lwd=2)
 
 llout<-which(df$Tip_amount>17)
 iouts[llout]<-iouts[llout]+1
-names(df)
+# names(df)
 jouts[15]<-length(llout)
 df[llout,"Tip_amount"]<-NA 
-llout
+# llout
 ```
 
 ### 19. Tolls_amount
@@ -686,10 +689,10 @@ table(df$Tolls_amount)
 
 llout<-which(df$Tolls_amount>0)
 iouts[llout]<-iouts[llout]+1
-names(df)
+# names(df)
 jouts[16]<-length(llout)
 df[llout,"Tolls_amount"]<-NA 
-llout
+# llout
 
 ```
 
@@ -707,12 +710,12 @@ summary(df$Total_amount)
 df$Sum_total_amount = (df$Fare_amount + df$Extra + df$MTA_tax + df$improvement_surcharge + df$Tip_amount + df$Tolls_amount)
 
 sel<-which((df$Total_amount != df$Sum_total_amount) | (df$Total_amount<0))
-names(df)
+# names(df)
 if (length(sel)>0) {
   ierrs[sel]<-ierrs[sel]+1
   jerrs[19]<-length(sel)
 }
-sel
+# sel
 df[sel,"Total_amount"]<-NA
 
 # Outlier detection
@@ -728,3 +731,190 @@ jouts[19]<-length(llout)
 df[llout,"Total_amount"]<-NA 
 ```
 
+
+--------------------------------------------------------------------------------
+
+# Data Quality Report
+
+## Per variable
+Per each variable, we have to count the following:
+- number of missing values
+- number of errors (including inconsistencies)
+- number of outliers
+- rank variables according the sum of missing values (and errors).
+
+### Number of missing values of each variable
+```{r}
+mis1<-countNA(df)
+imis<-mis1$mis_ind
+mis1$mis_col # Number of missings for the current set of variables
+```
+
+### Number of errors, outliers and rank of each variable
+
+### 1. VendorID
+Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
+
+### 2. lpep_pickup_datetime / pickup
+Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
+
+### 3. lpep_dropoff_datetime / dropoff
+Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
+
+### 4. Passenger_count
+```{r}
+jerrs[10] # number of errors (including inconsistencies)
+jouts[10] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[10] + jouts[10]) / 5000; rank
+```
+
+### 5. Trip_distance
+```{r}
+jerrs[11] # number of errors (including inconsistencies)
+jouts[11] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[11] + jouts[11]) / 5000; rank
+```
+
+### 6. Pickup_longitude
+```{r}
+jerrs[6] # number of errors (including inconsistencies)
+jouts[6] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[6] + jouts[6]) / 5000; rank
+```
+
+### 7. Pickup_latitude
+```{r}
+jerrs[7] # number of errors (including inconsistencies)
+jouts[7] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[7] + jouts[7]) / 5000; rank
+```
+
+### 8. RateCodeID
+Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
+
+### 9. Store_and_fwd_flag
+Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
+
+### 10. Dropoff_longitude
+```{r}
+jerrs[8] # number of errors (including inconsistencies)
+jouts[8] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[8] + jouts[8]) / 5000; rank
+```
+
+### 11. Dropoff_latitude
+```{r}
+jerrs[9] # number of errors (including inconsistencies)
+jouts[9] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[9] + jouts[9]) / 5000; rank
+```
+
+### 12. Payment_type
+Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
+
+### 13. Fare_amount
+```{r}
+jerrs[12] # number of errors (including inconsistencies)
+jouts[12] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[12] + jouts[12]) / 5000; rank
+```
+
+### 14. Extra
+```{r}
+jerrs[13] # number of errors (including inconsistencies)
+jouts[13] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[13] + jouts[13]) / 5000; rank
+```
+
+### 15. MTA_tax
+CATEGORICAAAL????
+```{r}
+jerrs[14] # number of errors (including inconsistencies)
+jouts[14] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[14] + jouts[14]) / 5000; rank
+```
+
+### 16. Improvement_surcharge
+```{r}
+jerrs[18] # number of errors (including inconsistencies)
+jouts[18] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[18] + jouts[18]) / 5000; rank
+```
+
+### 17. Ehail_fee
+All values of this variable are NA's, so we do not take it into account.
+
+### 18. Tip_amount
+```{r}
+jerrs[15] # number of errors (including inconsistencies)
+jouts[15] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[15] + jouts[15]) / 5000; rank
+```
+
+### 19. Tolls_amount
+```{r}
+jerrs[16] # number of errors (including inconsistencies)
+jouts[16] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[16] + jouts[16]) / 5000; rank
+```
+
+### 20. Total_amount
+```{r}
+jerrs[19] # number of errors (including inconsistencies)
+jouts[19] # number of outliers
+
+# rank variables according the sum of missing values (and errors).
+rank <- (jerrs[19] + jouts[19]) / 5000; rank
+```
+
+### 21. Trip_type
+Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
+
+## Per individual
+Per each individuals, we have to count the following:
+- number of missing values
+- number of errors,
+- number of outliers
+- identify individuals considered as multivariant outliers.
+
+## Create variable adding the total number missing values, outliers and errors.
+
+## Describe these variables, to which other variables exist higher associations.
+- compute the correlation with all other variables. Rank these variables according the correlation
+- compute for every group of individuals (group of age, etc, …) the mean of missing/outliers/errors values. Rank the groups according the computed mean.
+
+--------------------------------------------------------------------------------
+
+# Imputation
+- numeric Variables
+- factors
+
+--------------------------------------------------------------------------------
+
+# Profiling
+- numeric Target (Total Amount)
+- factor (Y.bin - Given Tip?)
