@@ -748,6 +748,7 @@ Per each variable, we have to count the following:
 mis1<-countNA(df)
 imis<-mis1$mis_ind
 mis1$mis_col # Number of missings for the current set of variables
+
 ```
 
 ### Number of errors, outliers and rank of each variable
@@ -767,7 +768,7 @@ jerrs[10] # number of errors (including inconsistencies)
 jouts[10] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[10] + jouts[10]) / 5000; rank
+rank <- (jerrs[10] + mis1$mis_col$mis_x[10]) / 5000; rank
 ```
 
 ### 5. Trip_distance
@@ -776,7 +777,7 @@ jerrs[11] # number of errors (including inconsistencies)
 jouts[11] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[11] + jouts[11]) / 5000; rank
+rank <- (jerrs[11] + mis1$mis_col$mis_x[11]) / 5000; rank
 ```
 
 ### 6. Pickup_longitude
@@ -785,7 +786,7 @@ jerrs[6] # number of errors (including inconsistencies)
 jouts[6] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[6] + jouts[6]) / 5000; rank
+rank <- (jerrs[6] + mis1$mis_col$mis_x[6]) / 5000; rank
 ```
 
 ### 7. Pickup_latitude
@@ -794,7 +795,7 @@ jerrs[7] # number of errors (including inconsistencies)
 jouts[7] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[7] + jouts[7]) / 5000; rank
+rank <- (jerrs[7] + mis1$mis_col$mis_x[7]) / 5000; rank
 ```
 
 ### 8. RateCodeID
@@ -809,7 +810,7 @@ jerrs[8] # number of errors (including inconsistencies)
 jouts[8] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[8] + jouts[8]) / 5000; rank
+rank <- (jerrs[8] + mis1$mis_col$mis_x[8]) / 5000; rank
 ```
 
 ### 11. Dropoff_latitude
@@ -818,7 +819,7 @@ jerrs[9] # number of errors (including inconsistencies)
 jouts[9] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[9] + jouts[9]) / 5000; rank
+rank <- (jerrs[9] + mis1$mis_col$mis_x[9]) / 5000; rank
 ```
 
 ### 12. Payment_type
@@ -830,7 +831,7 @@ jerrs[12] # number of errors (including inconsistencies)
 jouts[12] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[12] + jouts[12]) / 5000; rank
+rank <- (jerrs[12] + mis1$mis_col$mis_x[12]) / 5000; rank
 ```
 
 ### 14. Extra
@@ -839,7 +840,7 @@ jerrs[13] # number of errors (including inconsistencies)
 jouts[13] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[13] + jouts[13]) / 5000; rank
+rank <- (jerrs[13] + mis1$mis_col$mis_x[13]) / 5000; rank
 ```
 
 ### 15. MTA_tax
@@ -849,7 +850,7 @@ jerrs[14] # number of errors (including inconsistencies)
 jouts[14] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[14] + jouts[14]) / 5000; rank
+rank <- (jerrs[14] + mis1$mis_col$mis_x[14]) / 5000; rank
 ```
 
 ### 16. Improvement_surcharge
@@ -858,7 +859,7 @@ jerrs[18] # number of errors (including inconsistencies)
 jouts[18] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[18] + jouts[18]) / 5000; rank
+rank <- (jerrs[18] + mis1$mis_col$mis_x[18]) / 5000; rank
 ```
 
 ### 17. Ehail_fee
@@ -870,7 +871,7 @@ jerrs[15] # number of errors (including inconsistencies)
 jouts[15] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[15] + jouts[15]) / 5000; rank
+rank <- (jerrs[15] + mis1$mis_col$mis_x[15]) / 5000; rank
 ```
 
 ### 19. Tolls_amount
@@ -879,7 +880,7 @@ jerrs[16] # number of errors (including inconsistencies)
 jouts[16] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[16] + jouts[16]) / 5000; rank
+rank <- (jerrs[16] + mis1$mis_col$mis_x[16]) / 5000; rank
 ```
 
 ### 20. Total_amount
@@ -888,7 +889,7 @@ jerrs[19] # number of errors (including inconsistencies)
 jouts[19] # number of outliers
 
 # rank variables according the sum of missing values (and errors).
-rank <- (jerrs[19] + jouts[19]) / 5000; rank
+rank <- (jerrs[19] + mis1$mis_col$mis_x[19]) / 5000; rank
 ```
 
 ### 21. Trip_type
