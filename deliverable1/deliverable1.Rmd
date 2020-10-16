@@ -190,9 +190,9 @@ Initialization of counts for missings, outliers and errors. All numerical variab
 imis<-rep(0,nrow(df))  # rows - trips
 jmis<-rep(0,2*ncol(df))  # columns - variables
 
-mis1<-countNA(df)
-imis<-mis1$mis_ind
-mis1$mis_col # Number of missings for the current set of variables
+# mis1<-countNA(df)
+# imis<-mis1$mis_ind
+# mis1$mis_col # Number of missings for the current set of variables
 
 iouts<-rep(0,nrow(df))  # rows - trips
 jouts<-rep(0,2*ncol(df))  # columns - variables
@@ -202,16 +202,15 @@ jerrs<-rep(0,2*ncol(df))  # columns - variables
 ```
 
 # Univariate Descriptive Analysis
+```{r}
+summary(df)
+names(df)
+```
 
 ## Qualitative Variables (Factors) / Categorical
 **Description**: Original numeric variables corresponding to qualitative concepts have to be converted to factors. New factors grouping original levels will be considered very positively.
 
 We need to do an analysis of all the variables to be able to identify missings, errors and outliers. We will also try to factorize each variable to make it easier to understand the sample.
-
-```{r}
-summary(df)
-names(df)
-```
 
 ### 1. VendorID
 This variable expresses the Creative Mobile Technologies, LLC as 1 and Verifone Inc as 2, so we create a factor to make it more readable. With the initial summary we see that this variable does not have any missing value, so we proceed to factor it.
@@ -220,7 +219,7 @@ df$VendorID<-factor(df$VendorID,labels=c("Mobile","VeriFone"))
 nlevels(df$VendorID)
 levels(df$VendorID)<-paste0("f.Vendor-",levels(df$VendorID))
 summary(df$VendorID)
-barplot(summary(df$VendorID),main="VendorID Barplot",col = "DarkOrchid")
+barplot(summary(df$VendorID),main="VendorID Barplot",col = "DarkSlateBlue")
 ```
 
 ### 8. RateCodeID
@@ -228,7 +227,7 @@ This variable expresses the different RateCodeIDs that we can have as numerical 
 ```{r}
 summary(df$RateCodeID)
 df$RateCodeID<-factor(df$RateCodeID)
-barplot(summary(df$RateCodeID),main="RateCodeID Barplot",col = "DarkOrchid")
+barplot(summary(df$RateCodeID),main="RateCodeID Barplot",col = "DarkSlateBlue")
 
 # We see that most samples are in RateCodeID = 1, which is what we are 
 # interested in. Therefore, we factorize and create only two groups, the 
@@ -238,7 +237,7 @@ df$f.Rate<-1  # rep(1,nrow(df))
 ll<-which(df$RateCodeID != "1");length(ll)
 df$f.Rate[ll]<-2
 df$f.Rate<-factor(df$f.Rate,levels=1:2,labels=c("f.Rate-1","f.Rate-Other"))
-barplot(summary(df$f.Rate),main="RateCodeID Barplot",col = "DarkOrchid")
+barplot(summary(df$f.Rate),main="RateCodeID Barplot",col = "DarkSlateBlue")
 # Now is more balanced.
 ```
 
@@ -247,7 +246,7 @@ This is a categorical variable with the values Y and N, so we need to factor it.
 ```{r}
 summary(df$Store_and_fwd_flag)
 df$Store_and_fwd_flag<-factor(df$Store_and_fwd_flag)
-barplot(summary(df$Store_and_fwd_flag),main="Store_and_fwd_flag Barplot",col = "DarkOrchid")
+barplot(summary(df$Store_and_fwd_flag),main="Store_and_fwd_flag Barplot",col = "DarkSlateBlue")
 ```
 
 ### 12. Payment_type
@@ -255,20 +254,20 @@ This variable is categorical but it is expressed as numerical, so we need to fac
 ```{r}
 df$Payment_type<-factor(df$Payment_type,labels=c("Credit card","Cash","No charge","Dispute"))
 summary(df$Payment_type)
-barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkOrchid")
+barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkSlateBlue")
 
 # As we can see, there are few values with "No charge" or "Dispute" category, so we decided to categorize it into a new category ("No paid").
 
 levels(df$Payment_type) <- c("Credit card","Cash","No paid","No paid")
 summary(df$Payment_type)
-barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkOrchid")
+barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkSlateBlue")
 ```
 
 ### 21. Trip_type
 This variable is categorical but it is expressed as numerical, so we need to factor it in order to be able to work with it.
 ```{r}
 df$Trip_type<-factor(df$Trip_type,labels=c("Street-Hail","Dispatch"))
-barplot(summary(df$Trip_type),main="Trip_type Barplot",col = "DarkOrchid")
+barplot(summary(df$Trip_type),main="Trip_type Barplot",col = "DarkSlateBlue")
 summary(df$Trip_type)
 ```
 
@@ -276,11 +275,6 @@ summary(df$Trip_type)
 **Description**: Original numeric variables corresponding to real quantitative concepts are kept as numeric but additional factors should also be created as a discretization of each numeric variable.
 
 We only keep the hours (variables 2 and 3) to be able to work with time slots in the future.
-
-```{r}
-summary(df)
-names(df)
-```
 
 ### 2. lpep_pickup_datetime
 ```{r}
@@ -315,7 +309,7 @@ df[sel,"Passenger_count"]<-NA
 df$Passenger_count<-factor(df$Passenger_count)
 
 # we see the barplot in order to see the distribution of passenger per trip
-barplot(table(df$Passenger_count),main="Passenger_count Barplot",col = "DarkOrchid")
+barplot(table(df$Passenger_count),main="Passenger_count Barplot",col = "DarkSlateBlue")
 ```
 
 ### 5. Trip_distance
@@ -373,7 +367,7 @@ summary(df$Trip_distance_range)
 df$Trip_distance_range <- factor(df$Trip_distance_range)
 
 # we see a barplot for the factor we created.
-barplot(table(df$Trip_distance_range),main="Trip_distance_range Barplot",col = "DarkOrchid")
+barplot(table(df$Trip_distance_range),main="Trip_distance_range Barplot",col = "DarkSlateBlue")
 ```
 
 ### 6. Pickup_longitude
@@ -747,153 +741,32 @@ Per each variable, we have to count the following:
 ```{r}
 mis1<-countNA(df)
 imis<-mis1$mis_ind
-mis1$mis_col # Number of missings for the current set of variables
+# mis1$mis_col # Number of missings for the current set of variables
 
+# Sort by mis1$mis_col 
+missings_ranking_sortlist <- sort.list(mis1$mis_col, decreasing = TRUE)
+for (j in missings_ranking_sortlist) {
+  print(paste(names(df)[j], " : ", mis1$mis_col$mis_x[j]))
+}
 ```
 
-### Number of errors, outliers and rank of each variable
-
-### 1. VendorID
-Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
-
-### 2. lpep_pickup_datetime / pickup
-Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
-
-### 3. lpep_dropoff_datetime / dropoff
-Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
-
-### 4. Passenger_count
+### Number of errors per each variable
 ```{r}
-jerrs[10] # number of errors (including inconsistencies)
-jouts[10] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[10] + mis1$mis_col$mis_x[10]) / 5000; rank
+# jerrs
+errors_ranking_sortlist <- sort.list(jerrs, decreasing = TRUE)
+for (j in errors_ranking_sortlist) {
+  if(!is.na(names(df)[j])) { print(paste(names(df)[j], " : ", jerrs[j])) }
+}
 ```
 
-### 5. Trip_distance
+### Number of outliers per each variable
 ```{r}
-jerrs[11] # number of errors (including inconsistencies)
-jouts[11] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[11] + mis1$mis_col$mis_x[11]) / 5000; rank
+# jouts
+errors_ranking_sortlist <- sort.list(jouts, decreasing = TRUE)
+for (j in errors_ranking_sortlist) {
+  if(!is.na(names(df)[j])) print(paste(names(df)[j], " : ", jouts[j]))
+}
 ```
-
-### 6. Pickup_longitude
-```{r}
-jerrs[6] # number of errors (including inconsistencies)
-jouts[6] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[6] + mis1$mis_col$mis_x[6]) / 5000; rank
-```
-
-### 7. Pickup_latitude
-```{r}
-jerrs[7] # number of errors (including inconsistencies)
-jouts[7] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[7] + mis1$mis_col$mis_x[7]) / 5000; rank
-```
-
-### 8. RateCodeID
-Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
-
-### 9. Store_and_fwd_flag
-Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
-
-### 10. Dropoff_longitude
-```{r}
-jerrs[8] # number of errors (including inconsistencies)
-jouts[8] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[8] + mis1$mis_col$mis_x[8]) / 5000; rank
-```
-
-### 11. Dropoff_latitude
-```{r}
-jerrs[9] # number of errors (including inconsistencies)
-jouts[9] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[9] + mis1$mis_col$mis_x[9]) / 5000; rank
-```
-
-### 12. Payment_type
-Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
-
-### 13. Fare_amount
-```{r}
-jerrs[12] # number of errors (including inconsistencies)
-jouts[12] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[12] + mis1$mis_col$mis_x[12]) / 5000; rank
-```
-
-### 14. Extra
-```{r}
-jerrs[13] # number of errors (including inconsistencies)
-jouts[13] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[13] + mis1$mis_col$mis_x[13]) / 5000; rank
-```
-
-### 15. MTA_tax
-CATEGORICAAAL????
-```{r}
-jerrs[14] # number of errors (including inconsistencies)
-jouts[14] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[14] + mis1$mis_col$mis_x[14]) / 5000; rank
-```
-
-### 16. Improvement_surcharge
-```{r}
-jerrs[18] # number of errors (including inconsistencies)
-jouts[18] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[18] + mis1$mis_col$mis_x[18]) / 5000; rank
-```
-
-### 17. Ehail_fee
-All values of this variable are NA's, so we do not take it into account.
-
-### 18. Tip_amount
-```{r}
-jerrs[15] # number of errors (including inconsistencies)
-jouts[15] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[15] + mis1$mis_col$mis_x[15]) / 5000; rank
-```
-
-### 19. Tolls_amount
-```{r}
-jerrs[16] # number of errors (including inconsistencies)
-jouts[16] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[16] + mis1$mis_col$mis_x[16]) / 5000; rank
-```
-
-### 20. Total_amount
-```{r}
-jerrs[19] # number of errors (including inconsistencies)
-jouts[19] # number of outliers
-
-# rank variables according the sum of missing values (and errors).
-rank <- (jerrs[19] + mis1$mis_col$mis_x[19]) / 5000; rank
-```
-
-### 21. Trip_type
-Being categorical, there are no mistakes or outliers. Thus, the rank is equal to 0.
 
 ## Per individual
 Per each individuals, we have to count the following:
@@ -902,24 +775,23 @@ Per each individuals, we have to count the following:
 - number of outliers
 - identify individuals considered as multivariant outliers.
 
-
 ### Number of missing values
 ```{r}
-table(imis)
-barplot(table(imis),main="Missings per individual Barplot",col = "DarkOrchid")
+# table(imis)
+barplot(table(imis),main="Missings per individual Barplot",col = "DarkSlateBlue")
 ```
 
 ### Number of errors
 As we can see, most individuals have no mistakes. Those who do have errors, they tend to have more than one.
 ```{r}
 # table(ierrs)
-barplot(table(ierrs),main="Errors per individual Barplot",col = "DarkOrchid")
+barplot(table(ierrs),main="Errors per individual Barplot",col = "DarkSlateBlue")
 ```
 
 ### Number of outliers
 ```{r}
 # table(iouts)
-barplot(table(iouts),main="Outliers per individual Barplot",col = "DarkOrchid")
+barplot(table(iouts),main="Outliers per individual Barplot",col = "DarkSlateBlue")
 ```
 
 ### Identify individuals considered as multivariant outliers.
@@ -927,17 +799,10 @@ barplot(table(iouts),main="Outliers per individual Barplot",col = "DarkOrchid")
 
 ## Create variable adding the total number missing values, outliers and errors.
 ```{r}
-# initialize
-total <- 0
-total$missings <- 0
-total$outliers <- 0
-total$errors <- 0
-
-# sum
-for (m in imis) {total$missings <- total$missings + m}; total$missings
-for (o in iouts) {total$outliers <- total$outliers + o}; total$outliers
-for (e in ierrs) {total$errors <- total$errors + e}; total$errors
-total
+total_missings <- 0; total_outliers <- 0; total_errors <- 0;
+for (m in imis) {total_missings <- total_missings + m}; total_missings
+for (o in iouts) {total_outliers <- total_outliers + o}; total_outliers
+for (e in ierrs) {total_errors <- total_errors + e}; total_errors
 ```
 
 
