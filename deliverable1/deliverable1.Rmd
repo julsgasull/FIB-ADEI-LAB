@@ -797,24 +797,84 @@ for (e in ierrs) {total_errors <- total_errors + e}; total_errors
 We will now do the study by variables and try to impute the necessary observations.
 # !!!!!!! falta espeed
 # falta posar passanger count numèric (10) !!!
+EL QUE TENIM NOSALTRES (PER ARA)
 ```{r}
-# vars_quantitatives<-names(df)[c(6:9, 11:16, 18:19)]
+# # vars_quantitatives<-names(df)[c(6:9, 11:16, 18:19)]
+# vars_quantitatives<-names(df)[c(6:9, 11:13, 15, 19)]
+# # no li mola MTA_tax (14), ni Tolls_amount(16), ni improvement_surcharge(18)
 # summary(df[,vars_quantitatives])
-# res.imputation<-imputePCA(df[,vars_quantitatives],ncp=4)
+# res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
+# summary(res.imputation$completeObs)
+# par(mfrow=c(1,3))
+# hist(df$Pickup_longitude,col="red") 
+# hist(df$Dropoff_longitude,col="green") 
+
 ```
+
+EL QUE TÉ L'ALEIX:
+Data frame with all NA imputed: `res.impn$completeObs`
+```{r}
+# # summary(res.imputation$completeObs)
+# df[,"Pickup_longitude"] <- res.imputation$completeObs[,"Pickup_longitude"]
+# df[,"Pickup_latitude"] <- res.imputation$completeObs[,"Pickup_latitude"]
+# df[,"Dropoff_longitude"] <- res.imputation$completeObs[,"Dropoff_longitude"]
+# df[,"Dropoff_latitude"] <- res.imputation$completeObs[,"Dropoff_latitude"]
+# df[,"Trip_distance"] <- res.imputation$completeObs[,"Trip_distance"]
+# df[,"Fare_amount"] <- res.imputation$completeObs[,"Fare_amount"]
+# df[,"Extra"] <- res.imputation$completeObs[,"Extra"]
+# df[,"Tip_amount"] <- res.imputation$completeObs[,"Tip_amount"]
+# df[,"Total_amount"] <- res.imputation$completeObs[,"Total_amount"]
+```
+
+EL QUE TE LA PROFE:
+```{r}
+# 
+# library(missMDA)
+# # Numeric imputation 
+# vars_con<-names(df)[2:6] 
+# summary(df[,vars_con]) 
+# res.input<-imputePCA(df[,vars_con],ncp=4) 
+# summary(res.input$completeObs)
+# par(mfrow=c(1,3))
+# hist(df$age,col="red") 
+# hist(SwissLabor$age,col="green") 
+# hist(res.input$completeObs[,2],col="blue")
+# quantile(df$age,seq(0,1,0.1),na.rm=T) 
+# quantile(SwissLabor$age,seq(0,1,0.1),na.rm=T) round(quantile(res.input$completeObs[,2],seq(0,1,0.1),na.rm=T),dig=1)
+```
+
 
 ## Categorical variables / Factors
 # !!!!!!! Passenger_count ha de ser categorica!!
 ```{r}
 # vars_categorical<-names(df)[c(1,4, 20:25)] # Passenger_count_categorical!!!
-# res.impn<-imputePCA(df[,vars_categorical],ncp=5)
-# attributes(res.impn)
+# summary(df[,vars_categorical])
+# 
+# vars_categorical<-names(df)[c(20:25)]
+# nb <- estim_ncpMCA(df[, vars_categorical],ncp.max=25)
+# # HOLA QUIERO MORIR NO FUNCIONA NADA
 ```
 
 
 --------------------------------------------------------------------------------
 
 # Profiling
+Profiling is used to finish profiling our sample.
+We will now proceed to the profiling that asks us for our numeric target (INSERT CARD) and then we have to use the original variables and factors.
+In order to observe the relationship of our numerical target with the other variables we use the condes tool that provides us with information about the relationships between the indicated variables and the target.
+```{r}
+# library(FactoMineR)
+# summary(df[,vars_quantitatives])
+```
+
+```{r}
+# library(mvoutlier)
+# no puc seguir sense lo de dalt
+# FUCK MY LIFE 
+```
+
+
+
 - numeric Target (Total Amount)
 - factor (Y.bin - Given Tip?)
 
