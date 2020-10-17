@@ -306,8 +306,8 @@ df$espeed<-(df$tlenkm/(df$traveltime))*60
 #### Missing data
 ```{r}
 sel<-which(is.na(df$espeed<=0)) #;length(sel)
-imis[sel]<-imis[sel]+1
-jmis[26]<-length(sel)
+#imis[sel]<-imis[sel]+1
+#jmis[26]<-length(sel)
 ```
 #### Error detection
 ```{r}
@@ -857,13 +857,25 @@ total_errors
 
 ```{r}
 library(mvoutlier)
+library(FactoMineR)
 ```
 
 ### Correlation with all other variables 
+First of all, let's make a variable for missing, errors and outliers in each individual:
 ```{r}
-condes(df, total_missings) 
-condes(df, total_outliers)
-condes(df, total_errors)
+df$number_missings <- 0; df$number_errors <- 0; df$number_outliers <- 0;
+# 
+# imis[1]
+# 
+# for (i in 1:imis) {df$number_missings[i] <- imis[i]}
+# for (i in 1:iouts) {df$number_errors[i] <- iouts[i]}
+# for (i in 1:ierrs) {df$number_outliers[i] <- ierrs[i]}
+```
+
+```{r}
+# condes(df, ) 
+# condes(df, total_outliers)
+# condes(df, total_errors)
 ```
 ### Rank this variables by correlation
 ```{r}
@@ -895,9 +907,9 @@ We will now do the study by variables and try to impute the necessary observatio
 
 ```{r}
 # #vars_quantitatives<-names(df)[c(6:16, 18:19,27)]
-# vars_quantitatives<-names(df)[c(6:9, 11:13, 15, 19,26)]
-# # we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18)
-# summary(df[,vars_quantitatives])
+vars_quantitatives<-names(df)[c(6:9, 11:13, 15, 19,26)]
+# we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18)
+summary(df[,vars_quantitatives])
 # res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
 # summary(res.imputation$completeObs)
 ```
@@ -942,26 +954,46 @@ We proceed to impute all NAs in our numerical variables that are stored in: `res
 --------------------------------------------------------------------------------
 
 # Profiling
+## Numeric target: Total_amount
 Profiling is used to finish profiling our sample.
-We will now proceed to the profiling that asks us for our numeric target (INSERT CARD) and then we have to use the original variables and factors.
+We will now proceed to the profiling that asks us for our numeric target (Total_amount) and then we have to use the original variables and factors.
 In order to observe the relationship of our numerical target with the other variables we use the condes tool that provides us with information about the relationships between the indicated variables and the target.
-```{r}
-# library(FactoMineR)
-# summary(df[,vars_quantitatives])
-```
 
 ```{r}
-# library(mvoutlier)
-# no puc seguir sense lo de dalt
-# FUCK MY LIFE 
+library(FactoMineR)
+library(mvoutlier)
+# condes(df, which(names(df) == "Total_amount"))
 ```
 
+Falta explicació de la correlació!!!
++ potser algun plot? (vars_resu <-names(df)[c(1,11)], aq.plot(df[,vars_resu]))
+Error:
+  Error in `contrasts<-`(`*tmp*`, value = contr.funs[1 + isOF[nn]]) : 
+  contrasts can be applied only to factors with 2 or more levels
 
+## Factor (Y.bin - Given Tip?)
+New variable: Given_tip
+```{r}
+df$Given_tip <- rep(0,nrow(df)) 
+for(i in 1:nrow(df)) {
+  if (!is.na(df$Tip_amount[i]) && df$Tip_amount[i]>0) {df$Given_tip[i] <- TRUE}
+  else { df$Given_tip[i] <- FALSE }
+}
+```
+Let's factor it!
+```{r}
+df$Given_tip<-factor(df$Given_tip,labels=c("Yes","No"))
+summary(df$Given_tip)
+barplot(summary(df$Given_tip),main="Y Barplot",col = "turquoise")
+```
+And now, we are profiling it with all other variables:
+```{r}
+df_catdes<-df[c(1:37)]
+catdes(df_catdes,37)
+```
 
-- numeric Target (Total Amount)
-- factor (Y.bin - Given Tip?)
-
-
+Falta explicació de la correlació!!!
++ potser algun plot? (vars_resu <-names(df)[c(1,11)], aq.plot(df[,vars_resu]))
 
 --------------------------------------------------------------------------------
 ### Identify individuals considered as multivariant outliers
