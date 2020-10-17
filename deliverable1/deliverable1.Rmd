@@ -101,8 +101,8 @@ knitr::opts_chunk$set(echo = TRUE)
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -124,14 +124,14 @@ rm(list=ls())                       # Clean workspace
 
 Data: green_tripdata_2016-01
 ```{r}
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
-#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable1"
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
-filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1"
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable1"
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
+#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1"
 df<-read.table(paste0(filepath,"/green_tripdata_2016-01.csv"),header=T, sep=",")
-dim(df)       # Displays the sample size
-names(df)     # Displays the names of the sample variables
-summary(df)   
+# dim(df)       # Displays the sample size
+# names(df)     # Displays the names of the sample variables
+# summary(df)   
 ```
 
 Select your 5000 register sample (random sample). Use birthday of 1 member of the group --> Júlia's one
@@ -230,16 +230,16 @@ barplot(summary(df$period),main="period Barplot",col = "DarkSlateBlue")
 This variable expresses the Creative Mobile Technologies, LLC as 1 and Verifone Inc as 2, so we create a factor to make it more readable. With the initial summary we see that this variable does not have any missing value, so we proceed to factor it.
 ```{r}
 df$VendorID<-factor(df$VendorID,labels=c("Mobile","VeriFone"))
-nlevels(df$VendorID)
+# nlevels(df$VendorID)
 levels(df$VendorID)<-paste0("f.Vendor-",levels(df$VendorID))
-summary(df$VendorID)
+# summary(df$VendorID)
 barplot(summary(df$VendorID),main="VendorID Barplot",col = "DarkSlateBlue")
 ```
 
 ### 8. RateCodeID
 This variable expresses the different RateCodeIDs that we can have as numerical values, so we need to categorize them in order to be able to work with them.
 ```{r}
-summary(df$RateCodeID)
+# summary(df$RateCodeID)
 df$RateCodeID<-factor(df$RateCodeID)
 barplot(summary(df$RateCodeID),main="RateCodeID Barplot",col = "DarkSlateBlue")
 ```
@@ -249,14 +249,13 @@ We see that most samples are in RateCodeID = 1, which is what we are interested 
 df$RateCodeID[df$RateCodeID != 1] = 2
 df$RateCodeID <- factor(df$RateCodeID, labels =c("Rate-1","Rate-Other"))
 barplot(summary(df$RateCodeID),main="RateCodeID Barplot",col = "DarkSlateBlue")
-
-# Now is more balanced.
 ```
+Now is more balanced.
 
 ### 9. Store_and_fwd_flag
 This is a categorical variable with the values Y and N, so we need to factor it.
 ```{r}
-summary(df$Store_and_fwd_flag)
+# summary(df$Store_and_fwd_flag)
 df$Store_and_fwd_flag<-factor(df$Store_and_fwd_flag)
 barplot(summary(df$Store_and_fwd_flag),main="Store_and_fwd_flag Barplot",col = "DarkSlateBlue")
 ```
@@ -265,14 +264,14 @@ barplot(summary(df$Store_and_fwd_flag),main="Store_and_fwd_flag Barplot",col = "
 This variable is categorical but it is expressed as numerical, so we need to factor it in order to be able to work with it.
 ```{r}
 df$Payment_type<-factor(df$Payment_type,labels=c("Credit card","Cash","No charge","Dispute"))
-summary(df$Payment_type)
+# summary(df$Payment_type)
 barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkSlateBlue")
 ```
 
 As we can see, there are few values with "No charge" or "Dispute" category, so we decided to categorize it into a new category ("No paid").
 ```{r}
 levels(df$Payment_type) <- c("Credit card","Cash","No paid","No paid")
-summary(df$Payment_type)
+# summary(df$Payment_type)
 barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkSlateBlue")
 ```
 
@@ -281,7 +280,7 @@ This variable is categorical but it is expressed as numerical, so we need to fac
 ```{r}
 df$Trip_type<-factor(df$Trip_type,labels=c("Street-Hail","Dispatch"))
 barplot(summary(df$Trip_type),main="Trip_type Barplot",col = "DarkSlateBlue")
-summary(df$Trip_type)
+# summary(df$Trip_type)
 ```
 
 ## Quantitative Variables
@@ -292,35 +291,43 @@ We only keep the hours (variables 2 and 3) to be able to work with time slots in
 Create new variables derived from the original ones, as effective speed, travel time, hour of request, period of request, effective trip distance (in km) 
 
 ### New variables: Trip Length in km, Travel time un min and Effective speed
+#### Trip length in km
 ```{r}
-# New variables
-
-# Trip length in km
 df$tlenkm<-df$Trip_distance*1.609344 # Miles to km
-# Travel time in min
+```
+#### Travel time in min
+```{r}
 df$traveltime<-(as.numeric(as.POSIXct(df$Lpep_dropoff_datetime)) - as.numeric(as.POSIXct(df$lpep_pickup_datetime)))/60
-
-# Effective speed (km/h)
+```
+#### Effective speed in km/h
+```{r}
 df$espeed<-(df$tlenkm/(df$traveltime))*60
-
-# Missing data
-sel<-which(is.na(df$espeed<=0));length(sel)
+```
+#### Missing data
+```{r}
+sel<-which(is.na(df$espeed<=0)) #;length(sel)
 imis[sel]<-imis[sel]+1
 jmis[26]<-length(sel)
-
-# Error detection
+```
+#### Error detection
+```{r}
 summary(df$espeed)
 sel<-which((df$espeed<=0)|(df$espeed=="Inf"))
 ierrs[sel]<-ierrs[sel]+1
 jerrs[26]<-length(sel)
-sel                 #### sel contains the rownames of the individuals with "0" 
-#                        as  value for longitude
+# sel
+```
+Sel contains the rownames of the individuals with "0" as  value for longitude
+```{r}
 df[sel,"espeed"]<-NA 
-
-# Check outliers
-summary(df$espeed)
+```
+#### Check outliers
+```{r}
+# summary(df$espeed)
 calcQ(df$espeed)
-# Outlier detection
+```
+#### Outlier detection
+```{r}
 Boxplot(df$espeed)
 var_out<-calcQ(df$espeed)
 abline(h=var_out$souts,col="red")
@@ -330,26 +337,18 @@ llout<-which((df$espeed<=3)|(df$espeed>80))
 iouts[llout]<-iouts[llout]+1
 jouts[26]<-length(llout)
 df[llout,"espeed"]<-NA 
-
-
-
-
-#.....
-
 ```
 
 ### 2. lpep_pickup_datetime
 We just keep the hours
 ```{r}
-df$pickup<-substr(strptime(df$lpep_pickup_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13)
-# table(df$pickup)
+df$pickup<-substr(strptime(df$lpep_pickup_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13) # table(df$pickup)
 ```
 
 ### 3. lpep_dropoff_datetime
 We just keep the hours
 ```{r}
-df$dropoff<-substr(strptime(df$Lpep_dropoff_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13)
-# table(df$pickup)
+df$dropoff<-substr(strptime(df$Lpep_dropoff_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13) # table(df$pickup)
 ```
 
 ### 4. Passenger_count
@@ -430,7 +429,7 @@ We decided to create 3 levels: "Short_dist", "Medium_dist" and"Long_dist".
 df$Trip_distance_range[df$Trip_distance <= 2.5] = "Short_dist"
 df$Trip_distance_range[(df$Trip_distance > 2.5) & (df$Trip_distance <= 5)] = "Medium_dist"
 df$Trip_distance_range[df$Trip_distance > 5] = "Long_dist"
-summary(df$Trip_distance_range)
+# summary(df$Trip_distance_range)
 ```
 
 We see, though, that it is not a factor yet, so we factor it.
@@ -477,7 +476,6 @@ jouts[6]<-length(llout)
 ```
 Now that we have the outliers, we are setting them as NA
 ```{r}
-# 
 df[llout,"Pickup_longitude"]<-NA
 ```
 
@@ -584,7 +582,6 @@ We know that the fare should be positive, as it is the price of the trip, so we'
 
 ```{r}
 summary(df$Fare_amount)
-# df[which(df[,"Fare_amount"]<0),]
 ```
 ```{r}
 sel<-which(df$Fare_amount <= 0)
@@ -606,6 +603,7 @@ abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
 abline(h=60,col="blue",lwd=2)
 ```
+
 We decide to set outliers for fare amounts bigger than 60, because the majority of the values are concentrated between 0 and 60.
 ```{r}
 llout<-which(df$Fare_amount>60)
@@ -627,7 +625,6 @@ table(df$Extra)
 As it is a price related variable, negative values should be treated as errors, and the other values are the ones defined for this variable, so there are not outliers.
 ```{r}
 # df[which(df[, "Extra"] < 0),]
-
 sel<-which(df$Extra < 0)
 ierrs[sel]<-ierrs[sel]+1
 # names(df)
@@ -682,7 +679,7 @@ df[sel,"improvement_surcharge"]<-NA
 ```
 
 ### 17. Ehail_fee
-WE DON’T TAKE THIS INTO ACCOUNT BECAUSE EVERY VALUE OF OUR SAMPLE IS NA.
+We don’t take this into account because every value of our sample is NA.
 ```{r}
 summary(df$Ehail_fee)
 ```
@@ -782,10 +779,11 @@ df[llout,"Total_amount"]<-NA
 
 ## Per variable
 Per each variable, we have to count the following:
-- number of missing values
-- number of errors (including inconsistencies)
-- number of outliers
-- rank variables according the sum of missing values (and errors).
+
+* number of missing values
+* number of errors (including inconsistencies)
+* number of outliers
+* rank variables according the sum of missing values (and errors).
 
 ### Number of missing values of each variable
 ```{r}
@@ -813,10 +811,11 @@ for (j in errors_ranking_sortlist) {
 
 ## Per individual
 Per each individuals, we have to count the following:
-- number of missing values
-- number of errors
-- number of outliers
-- identify individuals considered as multivariant outliers.
+
+* number of missing values
+* number of errors
+* number of outliers
+* identify individuals considered as multivariant outliers (we are leaving this step for the end of the document)
 
 ### Number of missing values
 ```{r}
@@ -841,15 +840,48 @@ barplot(table(iouts),main="Outliers per individual Barplot",col = "DarkSlateBlue
 ## Create variable adding the total number missing values, outliers and errors
 ```{r}
 total_missings <- 0; total_outliers <- 0; total_errors <- 0;
-for (m in imis) {total_missings <- total_missings + m}; total_missings
-for (o in iouts) {total_outliers <- total_outliers + o}; total_outliers
-for (e in ierrs) {total_errors <- total_errors + e}; total_errors
+for (m in imis) {total_missings <- total_missings + m} 
+for (o in iouts) {total_outliers <- total_outliers + o}
+for (e in ierrs) {total_errors <- total_errors + e}
+```
+Now, let's print this variables:
+```{r}
+total_missings
+total_outliers
+total_errors
 ```
 
-
 ## Describe these variables, to which other variables exist higher associations
-- compute the correlation with all other variables. Rank these variables according the correlation
-- compute for every group of individuals (group of age, etc, …) the mean of missing/outliers/errors values. Rank the groups according the computed mean.
+* compute the correlation with all other variables. Rank these variables according the correlation
+* compute for every group of individuals (group of age, etc, …) the mean of missing/outliers/errors values. Rank the groups according the computed mean.
+
+```{r}
+library(mvoutlier)
+```
+
+### Correlation with all other variables 
+```{r}
+condes(df, total_missings) 
+condes(df, total_outliers)
+condes(df, total_errors)
+```
+### Rank this variables by correlation
+```{r}
+# TO-DO!!
+```
+
+### For each group of individuals, mean of missings
+```{r}
+# TO-DO!!
+```
+### For each group of individuals, mean of outliers
+```{r}
+# TO-DO!!
+```
+### Ranking of these groups according the computed mean
+```{r}
+# TO-DO!!
+```
 
 --------------------------------------------------------------------------------
 
@@ -862,49 +894,49 @@ library(missMDA)
 We will now do the study by variables and try to impute the necessary observations.
 
 ```{r}
-#vars_quantitatives<-names(df)[c(6:16, 18:19,27)]
-vars_quantitatives<-names(df)[c(6:9, 11:13, 15, 19,26)]
-# we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18)
-summary(df[,vars_quantitatives])
-res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
-summary(res.imputation$completeObs)
+# #vars_quantitatives<-names(df)[c(6:16, 18:19,27)]
+# vars_quantitatives<-names(df)[c(6:9, 11:13, 15, 19,26)]
+# # we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18)
+# summary(df[,vars_quantitatives])
+# res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
+# summary(res.imputation$completeObs)
 ```
 
 We proceed to impute all NAs in our numerical variables that are stored in: `res.imputation$completeObs`
 ```{r}
 # summary(res.imputation$completeObs)
-df[,"Pickup_longitude"] <- res.imputation$completeObs[,"Pickup_longitude"]
-df[,"Pickup_latitude"] <- res.imputation$completeObs[,"Pickup_latitude"]
-df[,"Dropoff_longitude"] <- res.imputation$completeObs[,"Dropoff_longitude"]
-df[,"Dropoff_latitude"] <- res.imputation$completeObs[,"Dropoff_latitude"]
-df[,"Trip_distance"] <- res.imputation$completeObs[,"Trip_distance"]
-df[,"Fare_amount"] <- res.imputation$completeObs[,"Fare_amount"]
-df[,"Extra"] <- res.imputation$completeObs[,"Extra"]
-df[,"Tip_amount"] <- res.imputation$completeObs[,"Tip_amount"]
-df[,"Total_amount"] <- res.imputation$completeObs[,"Total_amount"]
-df[,"espeed"] <- res.imputation$completeObs[,"espeed"]
+# df[,"Pickup_longitude"] <- res.imputation$completeObs[,"Pickup_longitude"]
+# df[,"Pickup_latitude"] <- res.imputation$completeObs[,"Pickup_latitude"]
+# df[,"Dropoff_longitude"] <- res.imputation$completeObs[,"Dropoff_longitude"]
+# df[,"Dropoff_latitude"] <- res.imputation$completeObs[,"Dropoff_latitude"]
+# df[,"Trip_distance"] <- res.imputation$completeObs[,"Trip_distance"]
+# df[,"Fare_amount"] <- res.imputation$completeObs[,"Fare_amount"]
+# df[,"Extra"] <- res.imputation$completeObs[,"Extra"]
+# df[,"Tip_amount"] <- res.imputation$completeObs[,"Tip_amount"]
+# df[,"Total_amount"] <- res.imputation$completeObs[,"Total_amount"]
+# df[,"espeed"] <- res.imputation$completeObs[,"espeed"]
 ```
 
 ## Categorical variables / Factors
 
 ```{r}
-vars_categorical<-names(df)[c(1,4,5,20,21,23,29,30)]
-summary(df[,vars_categorical])
-nb <- estim_ncpMCA(df[, vars_categorical],ncp.max=25)
-res.input<-imputeMCA(df[,vars_categorical],ncp=10)
-summary(res.input$completeObs)
+# vars_categorical<-names(df)[c(1,4,5,20,21,23,29,30)]
+# summary(df[,vars_categorical])
+# nb <- estim_ncpMCA(df[, vars_categorical],ncp.max=25)
+# res.input<-imputeMCA(df[,vars_categorical],ncp=10)
+# summary(res.input$completeObs)
 ```
 We proceed to impute all NAs in our numerical variables that are stored in: `res.input$completeObs`
 ```{r}
 # summary(res.input$completeObs)
-df[,"VendorID"] <- res.input$completeObs[,"VendorID"]
-df[,"Store_and_fwd_flag"] <- res.input$completeObs[,"Store_and_fwd_flag"]
-df[,"RateCodeID"] <- res.input$completeObs[,"RateCodeID"]
-df[,"Payment_type"] <- res.input$completeObs[,"Payment_type"]
-df[,"Trip_type"] <- res.input$completeObs[,"Trip_type"]
-df[,"period"] <- res.input$completeObs[,"period"]
-df[,"passenger_groups"] <- res.input$completeObs[,"passenger_groups"]
-df[,"Trip_distance_range"] <- res.input$completeObs[,"Trip_distance_range"]
+# df[,"VendorID"] <- res.input$completeObs[,"VendorID"]
+# df[,"Store_and_fwd_flag"] <- res.input$completeObs[,"Store_and_fwd_flag"]
+# df[,"RateCodeID"] <- res.input$completeObs[,"RateCodeID"]
+# df[,"Payment_type"] <- res.input$completeObs[,"Payment_type"]
+# df[,"Trip_type"] <- res.input$completeObs[,"Trip_type"]
+# df[,"period"] <- res.input$completeObs[,"period"]
+# df[,"passenger_groups"] <- res.input$completeObs[,"passenger_groups"]
+# df[,"Trip_distance_range"] <- res.input$completeObs[,"Trip_distance_range"]
 ```
 
 --------------------------------------------------------------------------------
