@@ -101,8 +101,8 @@ knitr::opts_chunk$set(echo = TRUE)
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
+#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -124,10 +124,10 @@ rm(list=ls())                       # Clean workspace
 
 Data: green_tripdata_2016-01
 ```{r}
-setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
-filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable1"
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
-#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1"
+#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
+#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable1"
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
+filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1"
 df<-read.table(paste0(filepath,"/green_tripdata_2016-01.csv"),header=T, sep=",")
 dim(df)       # Displays the sample size
 names(df)     # Displays the names of the sample variables
@@ -213,6 +213,19 @@ names(df)
 
 We need to do an analysis of all the variables to be able to identify missings, errors and outliers. We will also try to factorize each variable to make it easier to understand the sample.
 
+### New variable: Period
+```{r}
+df$hour<-as.numeric(substr(strptime(df$lpep_pickup_datetime, "%Y-%m-%d %H:%M:%S"),12,13))
+df$period<-1
+df$period[df$hour>7]<-2
+df$period[df$hour>10]<-3
+df$period[df$hour>16]<-4
+df$period[df$hour>19]<-1
+df$period<-factor(df$period,labels=paste("Period",c("night","morning","valley","afternoon")))
+barplot(summary(df$period),main="period Barplot",col = "DarkSlateBlue")
+```
+
+
 ### 1. VendorID
 This variable expresses the Creative Mobile Technologies, LLC as 1 and Verifone Inc as 2, so we create a factor to make it more readable. With the initial summary we see that this variable does not have any missing value, so we proceed to factor it.
 ```{r}
@@ -233,11 +246,10 @@ barplot(summary(df$RateCodeID),main="RateCodeID Barplot",col = "DarkSlateBlue")
 
 We see that most samples are in RateCodeID = 1, which is what we are interested in. Therefore, we factorize and create only two groups, the one with RateCodeID = 1 and the rest.
 ```{r}
-df$f.Rate<-1  # rep(1,nrow(df))
-ll<-which(df$RateCodeID != "1");length(ll)
-df$f.Rate[ll]<-2
-df$f.Rate<-factor(df$f.Rate,levels=1:2,labels=c("f.Rate-1","f.Rate-Other"))
-barplot(summary(df$f.Rate),main="RateCodeID Barplot",col = "DarkSlateBlue")
+df$RateCodeID[df$RateCodeID != 1] = 2
+df$RateCodeID <- factor(df$RateCodeID, labels =c("Rate-1","Rate-Other"))
+barplot(summary(df$RateCodeID),main="RateCodeID Barplot",col = "DarkSlateBlue")
+
 # Now is more balanced.
 ```
 
@@ -277,6 +289,55 @@ summary(df$Trip_type)
 
 We only keep the hours (variables 2 and 3) to be able to work with time slots in the future.
 
+Create new variables derived from the original ones, as effective speed, travel time, hour of request, period of request, effective trip distance (in km) 
+
+### New variables: Trip Length in km, Travel time un min and Effective speed
+```{r}
+# New variables
+
+# Trip length in km
+df$tlenkm<-df$Trip_distance*1.609344 # Miles to km
+# Travel time in min
+df$traveltime<-(as.numeric(as.POSIXct(df$Lpep_dropoff_datetime)) - as.numeric(as.POSIXct(df$lpep_pickup_datetime)))/60
+
+# Effective speed (km/h)
+df$espeed<-(df$tlenkm/(df$traveltime))*60
+
+# Missing data
+sel<-which(is.na(df$espeed<=0));length(sel)
+imis[sel]<-imis[sel]+1
+jmis[26]<-length(sel)
+
+# Error detection
+summary(df$espeed)
+sel<-which((df$espeed<=0)|(df$espeed=="Inf"))
+ierrs[sel]<-ierrs[sel]+1
+jerrs[26]<-length(sel)
+sel                 #### sel contains the rownames of the individuals with "0" 
+#                        as  value for longitude
+df[sel,"espeed"]<-NA 
+
+# Check outliers
+summary(df$espeed)
+calcQ(df$espeed)
+# Outlier detection
+Boxplot(df$espeed)
+var_out<-calcQ(df$espeed)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+
+llout<-which((df$espeed<=3)|(df$espeed>80))
+iouts[llout]<-iouts[llout]+1
+jouts[26]<-length(llout)
+df[llout,"espeed"]<-NA 
+
+
+
+
+#.....
+
+```
+
 ### 2. lpep_pickup_datetime
 We just keep the hours
 ```{r}
@@ -307,13 +368,17 @@ Sel contains the rownames of the individuals with "0" as value for passengers
 ```{r}
 df[sel,"Passenger_count"]<-NA
 ```
-We decided to create categorical for this variable so we categorize it 
+We decided to create categorical for this variable so we categorize it for single passengers, couple and groups (3 or more)
 ```{r}
-df$Passenger_count<-factor(df$Passenger_count)
+df$passenger_groups[df$Passenger_count == 1] = "Single"
+df$passenger_groups[df$Passenger_count == 2] = "Couple"
+df$passenger_groups[df$Passenger_count >= 3] = "Group"
+df$passenger_groups <- factor(df$passenger_groups)
+
 ```
 We see the barplot in order to see the distribution of passenger per trip
 ```{r}
-barplot(table(df$Passenger_count),main="Passenger_count Barplot",col = "DarkSlateBlue")
+barplot(table(df$passenger_groups),main="passenger_groups Barplot",col = "DarkSlateBlue")
 ```
 
 ### 5. Trip_distance
@@ -505,7 +570,7 @@ Non-possible values are replaced by NA, missing value symbol in R. We are deleti
 ```{r}
 llout <-which((df$Dropoff_latitude < 40.54) | (df$Dropoff_latitude > 40.86))
 iouts[llout]<-iouts[llout]+1
-# names(df)
+#names(df)
 jouts[9]<-length(llout)
 # llout
 ```
@@ -790,71 +855,57 @@ for (e in ierrs) {total_errors <- total_errors + e}; total_errors
 
 # Imputation
 ```{r}
-# library(missMDA)
+library(missMDA)
 ```
 
 ## Numeric variables
 We will now do the study by variables and try to impute the necessary observations.
-# !!!!!!! falta espeed
-# falta posar passanger count numèric (10) !!!
-EL QUE TENIM NOSALTRES (PER ARA)
+
 ```{r}
-# # vars_quantitatives<-names(df)[c(6:9, 11:16, 18:19)]
-# vars_quantitatives<-names(df)[c(6:9, 11:13, 15, 19)]
-# # no li mola MTA_tax (14), ni Tolls_amount(16), ni improvement_surcharge(18)
-# summary(df[,vars_quantitatives])
-# res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
+#vars_quantitatives<-names(df)[c(6:16, 18:19,27)]
+vars_quantitatives<-names(df)[c(6:9, 11:13, 15, 19,26)]
+# we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18)
+summary(df[,vars_quantitatives])
+res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
+summary(res.imputation$completeObs)
+```
+
+We proceed to impute all NAs in our numerical variables that are stored in: `res.imputation$completeObs`
+```{r}
 # summary(res.imputation$completeObs)
-# par(mfrow=c(1,3))
-# hist(df$Pickup_longitude,col="red") 
-# hist(df$Dropoff_longitude,col="green") 
-
+df[,"Pickup_longitude"] <- res.imputation$completeObs[,"Pickup_longitude"]
+df[,"Pickup_latitude"] <- res.imputation$completeObs[,"Pickup_latitude"]
+df[,"Dropoff_longitude"] <- res.imputation$completeObs[,"Dropoff_longitude"]
+df[,"Dropoff_latitude"] <- res.imputation$completeObs[,"Dropoff_latitude"]
+df[,"Trip_distance"] <- res.imputation$completeObs[,"Trip_distance"]
+df[,"Fare_amount"] <- res.imputation$completeObs[,"Fare_amount"]
+df[,"Extra"] <- res.imputation$completeObs[,"Extra"]
+df[,"Tip_amount"] <- res.imputation$completeObs[,"Tip_amount"]
+df[,"Total_amount"] <- res.imputation$completeObs[,"Total_amount"]
+df[,"espeed"] <- res.imputation$completeObs[,"espeed"]
 ```
-
-EL QUE TÉ L'ALEIX:
-Data frame with all NA imputed: `res.impn$completeObs`
-```{r}
-# # summary(res.imputation$completeObs)
-# df[,"Pickup_longitude"] <- res.imputation$completeObs[,"Pickup_longitude"]
-# df[,"Pickup_latitude"] <- res.imputation$completeObs[,"Pickup_latitude"]
-# df[,"Dropoff_longitude"] <- res.imputation$completeObs[,"Dropoff_longitude"]
-# df[,"Dropoff_latitude"] <- res.imputation$completeObs[,"Dropoff_latitude"]
-# df[,"Trip_distance"] <- res.imputation$completeObs[,"Trip_distance"]
-# df[,"Fare_amount"] <- res.imputation$completeObs[,"Fare_amount"]
-# df[,"Extra"] <- res.imputation$completeObs[,"Extra"]
-# df[,"Tip_amount"] <- res.imputation$completeObs[,"Tip_amount"]
-# df[,"Total_amount"] <- res.imputation$completeObs[,"Total_amount"]
-```
-
-EL QUE TE LA PROFE:
-```{r}
-# 
-# library(missMDA)
-# # Numeric imputation 
-# vars_con<-names(df)[2:6] 
-# summary(df[,vars_con]) 
-# res.input<-imputePCA(df[,vars_con],ncp=4) 
-# summary(res.input$completeObs)
-# par(mfrow=c(1,3))
-# hist(df$age,col="red") 
-# hist(SwissLabor$age,col="green") 
-# hist(res.input$completeObs[,2],col="blue")
-# quantile(df$age,seq(0,1,0.1),na.rm=T) 
-# quantile(SwissLabor$age,seq(0,1,0.1),na.rm=T) round(quantile(res.input$completeObs[,2],seq(0,1,0.1),na.rm=T),dig=1)
-```
-
 
 ## Categorical variables / Factors
-# !!!!!!! Passenger_count ha de ser categorica!!
-```{r}
-# vars_categorical<-names(df)[c(1,4, 20:25)] # Passenger_count_categorical!!!
-# summary(df[,vars_categorical])
-# 
-# vars_categorical<-names(df)[c(20:25)]
-# nb <- estim_ncpMCA(df[, vars_categorical],ncp.max=25)
-# # HOLA QUIERO MORIR NO FUNCIONA NADA
-```
 
+```{r}
+vars_categorical<-names(df)[c(1,4,5,20,21,23,29,30)]
+summary(df[,vars_categorical])
+nb <- estim_ncpMCA(df[, vars_categorical],ncp.max=25)
+res.input<-imputeMCA(df[,vars_categorical],ncp=10)
+summary(res.input$completeObs)
+```
+We proceed to impute all NAs in our numerical variables that are stored in: `res.input$completeObs`
+```{r}
+# summary(res.input$completeObs)
+df[,"VendorID"] <- res.input$completeObs[,"VendorID"]
+df[,"Store_and_fwd_flag"] <- res.input$completeObs[,"Store_and_fwd_flag"]
+df[,"RateCodeID"] <- res.input$completeObs[,"RateCodeID"]
+df[,"Payment_type"] <- res.input$completeObs[,"Payment_type"]
+df[,"Trip_type"] <- res.input$completeObs[,"Trip_type"]
+df[,"period"] <- res.input$completeObs[,"period"]
+df[,"passenger_groups"] <- res.input$completeObs[,"passenger_groups"]
+df[,"Trip_distance_range"] <- res.input$completeObs[,"Trip_distance_range"]
+```
 
 --------------------------------------------------------------------------------
 
