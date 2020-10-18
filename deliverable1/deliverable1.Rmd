@@ -1067,7 +1067,8 @@ In order to observe the relationship of our numerical target with the other vari
 library(FactoMineR)
 summary(df$Total_amount)
 vars_res<-names(df)[c(19,33)]
-# aq.plot(df[,vars_res])
+vars_plot<-names(df)[c(11,19)]
+aq.plot(df[,vars_plot])
 res.condes <- condes(df[, c(vars_res,vars_quantitatives, vars_categorical)],1)
 ```
 
