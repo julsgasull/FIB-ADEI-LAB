@@ -876,14 +876,16 @@ We will now do the study by variables and try to impute the necessary observatio
 
 ```{r}
 # #vars_quantitatives<-names(df)[c(6:16, 18:19,2)]
-vars_quantitatives<-names(df)[c(10:13,15,19,24:26)]
+vars_quantitatives<-names(df)[c(10:13,15,24:26)]
 # we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18)
 summary(df[,vars_quantitatives])
 res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
 summary(res.imputation$completeObs)
 ```
 
+
 We proceed now to fix all the numeric variables that have errors or outliers:
+
 
 ### Trip_distance
 ```{r}
@@ -905,30 +907,10 @@ ll<-which(res.imputation$completeObs[,"Tip_amount"] > 17)
 res.imputation$completeObs[ll,"Tip_amount"] <- 17
 ```
 
-### Total_amount
-```{r}
-ll<-which(res.imputation$completeObs[,"Total_amount"] > 90)
-res.imputation$completeObs[ll,"Total_amount"] <- 90
-```
-
 ### tlenkm
 ```{r}
 ll<-which(res.imputation$completeObs[,"tlenkm"] > 48.28)
 res.imputation$completeObs[ll,"tlenkm"] <- 48.28
-```
-
-### traveltime
-```{r}
-ll<-which(res.imputation$completeObs[,"traveltime"] > 60)
-res.imputation$completeObs[ll,"traveltime"] <- 60
-```
-
-### espeed
-```{r}
-ll<-which(res.imputation$completeObs[,"espeed"] < 3)
-res.imputation$completeObs[ll,"espeed"] <- 3
-ll<-which(res.imputation$completeObs[,"espeed"] > 55)
-res.imputation$completeObs[ll,"espeed"] <- 55
 ```
 
 We proceed to impute all NAs in our numerical variables that are stored in: `res.imputation$completeObs`
@@ -936,6 +918,7 @@ We proceed to impute all NAs in our numerical variables that are stored in: `res
 #summary(res.imputation$completeObs)
 df[,vars_quantitatives] <- res.imputation$completeObs
 ```
+
 
 ## Categorical variables / Factors
 
