@@ -3,14 +3,14 @@ title: "Deliverable 1"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
-  html_document:
+  word_document:
     toc: no
     toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  word_document:
+  html_document:
     toc: no
     toc_depth: '4'
 geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
@@ -1028,31 +1028,6 @@ Now, let's describe each correlation we obtained in the first graph:
 * speed + tlenkm:
   + Same as for espeed + Trip_distance correlation.
 
-
-### Compute for every group of individuals (group of age, etc, …) the mean of missing/outliers/errors values. 
-sols, en parella o en grup
-```{r}
-# single <- which(df$Passenger_count == 1)
-# couple <- which(df$Passenger_count == 2)
-# group <- which(df$Passenger_count >= 3)
-# 
-# df$passenger_groups[]
-# 
-# for(i in 1:5000) {
-#   if(df$passenger_groups[i] == "Single") {
-#     
-#   }
-# }
-# ierrs
-# iouts
-
-
-# to - do
-```
-### Rank the groups according the computed mean.
-```{r}
-# to - do
-```
 --------------------------------------------------------------------------------
 
 # Profiling
@@ -1066,9 +1041,15 @@ In order to observe the relationship of our numerical target with the other vari
 ```{r}
 library(FactoMineR)
 summary(df$Total_amount)
-vars_res<-names(df)[c(19,33)]
+```
+
+```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 vars_plot<-names(df)[c(11,19)]
 aq.plot(df[,vars_plot])
+```
+
+```{r}
+vars_res<-names(df)[c(19,33)]
 res.condes <- condes(df[, c(vars_res,vars_quantitatives, vars_categorical)],1)
 ```
 
