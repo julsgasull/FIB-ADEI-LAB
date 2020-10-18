@@ -306,8 +306,8 @@ df$espeed<-(df$tlenkm/(df$traveltime))*60
 #### Missing data
 ```{r}
 sel<-which(is.na(df$espeed<=0)) #;length(sel)
-#imis[sel]<-imis[sel]+1
-#jmis[26]<-length(sel)
+imis[sel]<-imis[sel]+1
+jmis[26]<-length(sel)
 ```
 #### Error detection
 ```{r}
@@ -834,7 +834,9 @@ Per each individuals, we have to count the following:
 # table(imis)
 barplot(table(imis),main="Missings per individual Barplot",col = "DarkSlateBlue")
 ```
-Only from the variable "Ehail_fee".
+
+
+The one is from from the variable "Ehail_fee" and the observations that have two missing values are because of the "espeed" variable (maybe because the traveltime was 0 and nothing can be divided by 0).
 
 
 ### Number of errors
@@ -871,27 +873,23 @@ total_errors
 library(missMDA)
 ```
 
+What we do with imputation is be able to eliminate all those values that may be missings, outliers or errors to turn them into values that can be realistic within our sample.
+
 ## Numeric variables
 We will now do the study by variables and try to impute the necessary observations.
 ```{r}
 vars_quantitatives<-names(df)[c(10:13,15,19,24:26)]
 ```
-**Note**: we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18)
-
+**Note**: we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18).
 ```{r}
-# #vars_quantitatives<-names(df)[c(6:16, 18:19,2)]
-vars_quantitatives<-names(df)[c(10:13,15,24:26)]
-# we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18)
 summary(df[,vars_quantitatives])
 res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
 summary(res.imputation$completeObs)
 ```
 
-
 We proceed now to fix all the numeric variables that have errors or outliers:
 
-
-### Trip_distance
+#### > Trip_distance
 ```{r}
 ll<-which(res.imputation$completeObs[,"Trip_distance"] < 0)
 res.imputation$completeObs[ll,"Trip_distance"] <- 1
@@ -899,22 +897,36 @@ ll<-which(res.imputation$completeObs[,"Trip_distance"] > 30)
 res.imputation$completeObs[ll,"Trip_distance"] <- 30
 ```
 
-### Fare_amount
+#### > Fare_amount
 ```{r}
 ll<-which(res.imputation$completeObs[,"Fare_amount"] > 60)
 res.imputation$completeObs[ll,"Fare_amount"] <- 60
 ```
 
-### Tip_amount
+#### > Tip_amount
 ```{r}
 ll<-which(res.imputation$completeObs[,"Tip_amount"] > 17)
 res.imputation$completeObs[ll,"Tip_amount"] <- 17
 ```
 
-### tlenkm
+#### > tlenkm
 ```{r}
 ll<-which(res.imputation$completeObs[,"tlenkm"] > 48.28)
 res.imputation$completeObs[ll,"tlenkm"] <- 48.28
+```
+
+#### > traveltime
+```{r}
+ll<-which(res.imputation$completeObs[,"traveltime"] > 60)
+res.imputation$completeObs[ll,"traveltime"] <- 60
+```
+
+#### > espeed
+```{r}
+ll<-which(res.imputation$completeObs[,"espeed"] < 3)
+res.imputation$completeObs[ll,"espeed"] <- 3
+ll<-which(res.imputation$completeObs[,"espeed"] > 55)
+res.imputation$completeObs[ll,"espeed"] <- 55
 ```
 
 We proceed to impute all NAs in our numerical variables that are stored in: `res.imputation$completeObs`
@@ -963,8 +975,78 @@ library(corrplot)
 corrplot(res)
 ```
 
+As we can see in this graph, we have the correlation between all quantitative variables. We must say, however, that there are two variables (espeed and traveltime) which we had to modify when making the imputation.
+
+In case of not having made the imputation of espeed and traveltime, we would have the following plot:
+
+[insert image], 
+
+which means that there is a negative correlation between these two variables, since the longer the time, the slower the trip. However, we think it is necessary to remove the outliers we have had from these variables because they are unrealistic.
+
+Now, let's describe each correlation we obtained in the first graph:
+
+* Diagonals:
+  + Being exactly the same variable, it is directly related to itself.
+* Fare_amount + Trip_distance:
+  + More distance, more time, therefore more price.
+* Tip_amount + Trip_distance:
+  + If the trip has been longer, there may be more reason to tip.
+* Total_amount + Trip_distance:
+  + As before, more distance, more time, therefore more price.
+* tlenkm + Trip_distance:
+  + They are exactly the same, only with a metric change.
+* traveltime + Trip_distance:
+  + The further away, the longer.
+* espeed + Trip_distance:
+  + The reason we think these variables are related to a direct and positive proportion is that since short trips have to be, logically cheaper, what taxi drivers do is slow down so that the trip take longer and thus charge more. Therefore, by increasing the distance of the journey, taxi drivers do not need to go so slow and therefore the speed increases.
+* Amount_type + Amount_mount:
+  + In the USA it is normal to give a tip proportional to the price of the service that has been offered.
+* Total_amount + Fare_amount:
+  + The variable Total_amount is equivalent to Fare_amount plus the fees, tips, among others, that have been applied to the trip.
+* tlenkm + Fare_amount:
+  + As before, more distance, more time, therefore more price.
+* traveltime + Fare_amount:
+  + More time, more price.
+* espeed + Fare_amount:
+  + As we said before, more speed means more distance, therefore more travel time, causing more price.
+* Total_amount + Type_amount:
+  + As before, in the USA it is normal to give a tip proportional to the price of the service that has been offered.
+* tlenkm + Mount_type:
+  + If the trip has been longer, there may be more reason to tip.
+* traveltime + Tip_amount:
+  + The longer it takes, the more price, and therefore the more tip given the proportionality.
+* espeed + Tip_amount:
+  + The more speed, as we said before, the more distance, and therefore the longer it takes. This causes more price and therefore more tip.
+* tlenkm + Total_amount:
+  + More distance, more time, therefore more price.
+* traveltime + Total_amount:
+  + More time, more price.
+* espeed + Total_amount:
+  + As we said before, more speed means more distance, therefore more travel time, causing more price.
+* traveltime + tlenkm:
+  + The more km to travel, the longer it takes.
+* speed + tlenkm:
+  + Same as for espeed + Trip_distance correlation.
+
+
 ### Compute for every group of individuals (group of age, etc, …) the mean of missing/outliers/errors values. 
+sols, en parella o en grup
 ```{r}
+# single <- which(df$Passenger_count == 1)
+# couple <- which(df$Passenger_count == 2)
+# group <- which(df$Passenger_count >= 3)
+# 
+# df$passenger_groups[]
+# 
+# for(i in 1:5000) {
+#   if(df$passenger_groups[i] == "Single") {
+#     
+#   }
+# }
+# ierrs
+# iouts
+
+
 # to - do
 ```
 ### Rank the groups according the computed mean.
@@ -985,31 +1067,124 @@ In order to observe the relationship of our numerical target with the other vari
 library(FactoMineR)
 summary(df$Total_amount)
 vars_res<-names(df)[c(19,33)]
+# aq.plot(df[,vars_res])
 res.condes <- condes(df[, c(vars_res,vars_quantitatives, vars_categorical)],1)
+```
 
+Let's now look at the correlations between our Total_amount target and the variables in the following groups. We will basically look at p.value, which we know that the smaller the correlation between the variables.
+
+#### > Numerical variables
+```{r}
 res.condes$quanti # Global association to numeric variables
+```
+
+* Fare_amount: 
+  + The variable Total_amount is equivalent to Fare_amount plus the fees, tips, among others, that have been applied to the trip.
+* Trip_distance:
+  + As before, more distance, more time, therefore more price.
+* tlenkm
+  + More distance, more time, therefore more price.
+* traveltime
+  + More time, more price.
+* Tip_amount
+  + The more you pay, since the tip is a proportion of the final price, the more it will increase.
+* espeed
+  + As we said before, more speed means more distance, therefore more travel time, causing more price.
+
+#### > Qualitative variables
+```{r}
 res.condes$quali # Global association to factors
+```
+
+* Trip_distance_range
+  + Obviously, the longer the journey, the longer it will take and the more price it will have.
+* TipIsGiven
+  + Like before, the more you pay, since the tip is a proportion of the final price, the more it will increase.
+* Payment_type
+  + This is the least related variable. However, we can predict that the more the trip is worth, the more likely it is to be paid by credit card.
+* RateCodeID
+  + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+
+#### > Categorical variables
+```{r}
 res.condes$category # Partial association to significative levels in factors
 ```
 
-Falta explicació de la correlació!!!
-+ potser algun plot? (vars_resu <-names(df)[c(1,11)], aq.plot(df[,vars_resu]))
-Error:
-  Error in `contrasts<-`(`*tmp*`, value = contr.funs[1 + isOF[nn]]) : 
-  contrasts can be applied only to factors with 2 or more levels
+* Trip_distance_range
+   + We can see that, the further away, the more correlation, as it takes longer to travel.
+* TipIsGiven
+   + We see that it is more likely to tip if the price is high.
+* Payment_type
+   + We see that it is easier for the guy to be with CreditCard if the trip costs more.
+* RateCodeID
+   + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+* period
+   + We see that in the morning travel costs less.
+
 
 ## Factor (Y.bin - TipIsGiven)
 
 And now, we are profiling the qualitative target:
 ```{r}
 res.catdes <- catdes(df[, c(vars_res,vars_quantitatives, vars_categorical)],2)
+```
+
+Let's now look at the correlations between our TipIsGiven target and the variables in the following groups. We will basically look at p.value, which we know that the smaller the correlation between the variables.
+
+#### > Test.Chi2
+```{r}
 res.catdes$test.chi2
+```
+* Payment_type
+   + We see that it is very likely that there will be a tip if it is paid in a concise manner.
+* Trip_distance_range
+   + As we can see, there is tip as long as the trip is, or very short, or very long.
+* Trip_type
+   + We don't think the type of trip is important.
+* RateCodeID
+   + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+* period
+   + We see that in the morning people are not in a very good mood and are more inclined to tip the "valley".
+
+
+
+
+#### > Quantitative variables
+```{r}
 res.catdes$quanti.var
+```
+* Tip_amount
+   + If there is a tip, it must have value.
+* Total_amount
+   + We see that it is more likely to tip if the price is high.
+* Fare_amount
+   + We see that it is more likely to tip if the price is high.
+* tlenkm
+   + The more distance, the more time, therefore the more price. So, more chances of there being a tip.
+* Trip_distance
+   + Exactly the same as above.
+* traveltime
+   + The longer, therefore the more price. So, more chances of there being a tip.
+* espeed
+   + The faster you get to the site, the more satisfaction and therefore the likelihood of tipping.
+
+#### > Categorical variables
+```{r}
 res.catdes$category
 ```
 
-Falta explicació de la correlació!!!
-+ potser algun plot? (vars_resu <-names(df)[c(1,11)], aq.plot(df[,vars_resu]))
+* TipIsGiven
+  + Same variable.
+* Payment_type
+   + We see that it is very likely that there will be a tip if it is paid in a concise manner.
+* Trip_distance_range
+   + As we can see, there is tip as long as the trip is, or very short, or very long.
+* Trip_type
+   + We don't think the type of trip is important.
+* RateCodeID
+   + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+* period
+   + We see that in the morning people are not in a very good mood and are more inclined to tip the "valley".
 
 --------------------------------------------------------------------------------
 
@@ -1022,14 +1197,13 @@ par(mfrow=c(1,1))
 plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
 text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(11:12, 19, 26)])) 
 abline(col="red",lwd=2, h=qchisq(0.995, ncol(df[, c(11:12, 19, 26)])))
-
-# library(chemometrics)
-# dis <- Moutlier(SwissLabor[,2:4], quantile = 0.995)
-# dis$cutoff
-# par(mfrow=c(1,1))
-# plot(dis$md,dis$rd, type="n") text(dis$md,dis$rd,labels=rownames(SwissLabor[,2:4])) abline(h=qchisq(0.995, ncol(SwissLabor[,2:4])),col="red",lwd=2)
-# SwissLabor$mout<-0
-# sel<-which(dis$rd>12)
-# SwissLabor[sel,"mout"]<-1
 ```
-Falta explicació 
+
+
+As we can see, above the defined line we have all the possible observations that we call multivariate outliers. These mean that, viewed only from the point of view of a variable, it does not have to be an outlier, but that viewed with various dimensions (variables), it may be so.
+
+We want to look at two observations that have caught our attention. The first is 77021 and the second is 1419545. 
+
+As we can see, observation 77021 is the one at the boundary of the two axes. So that means it’s most likely a multivariate outlier. On the other hand, the 1419545 is not exactly very central on both axes. This may lead us to think that he is not as likely as the other observation to be a multivariate outlier.
+
+**Note**: We tried to select the rows with these "rownames" but there was no way to find how. Otherwise, we would have commented on them much more thoroughly.
