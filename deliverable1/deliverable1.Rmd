@@ -3,13 +3,13 @@ title: "Deliverable 1"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
+  html_document:
+    toc: no
+    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
-    toc: no
-    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
@@ -101,8 +101,8 @@ knitr::opts_chunk$set(echo = TRUE)
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -124,10 +124,10 @@ rm(list=ls())                       # Clean workspace
 
 Data: green_tripdata_2016-01
 ```{r}
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
-#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable1"
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
-filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1"
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable1")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable1"
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1")
+#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable1"
 df<-read.table(paste0(filepath,"/green_tripdata_2016-01.csv"),header=T, sep=",")
 # dim(df)       # Displays the sample size
 # names(df)     # Displays the names of the sample variables
@@ -798,7 +798,7 @@ Per each variable, we have to count the following:
 * number of outliers
 * rank variables according the sum of missing values (and errors).
 
-### Number of missing values of each variable
+### Number of missing values of each variable (with ranking)
 ```{r}
 missings_ranking_sortlist <- sort.list(mis1$mis_col, decreasing = TRUE)
 for (j in missings_ranking_sortlist) {
@@ -806,7 +806,7 @@ for (j in missings_ranking_sortlist) {
 }
 ```
 
-### Number of errors per each variable
+### Number of errors per each variable (with ranking)
 ```{r}
 errors_ranking_sortlist <- sort.list(jerrs, decreasing = TRUE)
 for (j in errors_ranking_sortlist) {
@@ -814,7 +814,7 @@ for (j in errors_ranking_sortlist) {
 }
 ```
 
-### Number of outliers per each variable
+### Number of outliers per each variable (with ranking)
 ```{r}
 errors_ranking_sortlist <- sort.list(jouts, decreasing = TRUE)
 for (j in errors_ranking_sortlist) {
@@ -828,13 +828,14 @@ Per each individuals, we have to count the following:
 * number of missing values
 * number of errors
 * number of outliers
-* identify individuals considered as multivariant outliers (we are leaving this step for the end of the document)
 
 ### Number of missing values
 ```{r}
 # table(imis)
 barplot(table(imis),main="Missings per individual Barplot",col = "DarkSlateBlue")
 ```
+Only from the variable "Ehail_fee".
+
 
 ### Number of errors
 As we can see, most individuals have no mistakes. Those who do have errors, they tend to have more than one.
@@ -848,7 +849,6 @@ barplot(table(ierrs),main="Errors per individual Barplot",col = "DarkSlateBlue")
 # table(iouts)
 barplot(table(iouts),main="Outliers per individual Barplot",col = "DarkSlateBlue")
 ```
-
 
 ## Create variable adding the total number missing values, outliers and errors
 ```{r}
@@ -873,11 +873,12 @@ library(missMDA)
 
 ## Numeric variables
 We will now do the study by variables and try to impute the necessary observations.
+```{r}
+vars_quantitatives<-names(df)[c(10:13,15,19,24:26)]
+```
+**Note**: we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18)
 
 ```{r}
-# #vars_quantitatives<-names(df)[c(6:16, 18:19,2)]
-vars_quantitatives<-names(df)[c(10:13,15,19,24:26)]
-# we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18)
 summary(df[,vars_quantitatives])
 res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
 summary(res.imputation$completeObs)
@@ -938,7 +939,6 @@ df[,vars_quantitatives] <- res.imputation$completeObs
 ```
 
 ## Categorical variables / Factors
-
 ```{r}
  vars_categorical<-names(df)[c(1,4,5,20:21,23,29,30,33)]
  summary(df[,vars_categorical])
@@ -963,33 +963,42 @@ df[,"TipIsGiven"] <- res.input$completeObs[,"TipIsGiven"]
 --------------------------------------------------------------------------------
 
 ## Describe these variables, to which other variables exist higher associations
-* compute the correlation with all other variables. Rank these variables according the correlation
-
+### Compute the correlation with all other variables. 
 ```{r}
 library(mvoutlier)
 library(FactoMineR)
 res <- cor(df[,vars_quantitatives])
 round(res, 2)
+```
 
-### Rank these variables by correlation
+### Rank these variables according the correlation:
+```{r}
 library(corrplot)
 corrplot(res)
 ```
 
+### Compute for every group of individuals (group of age, etc, …) the mean of missing/outliers/errors values. 
+```{r}
+# to - do
+```
+### Rank the groups according the computed mean.
+```{r}
+# to - do
+```
 --------------------------------------------------------------------------------
 
 # Profiling
 ## Numeric target: Total_amount
 Profiling is used to finish profiling our sample.
+
 We will now proceed to the profiling that asks us for our numeric target (Total_amount) and then we have to use the original variables and factors.
+
 In order to observe the relationship of our numerical target with the other variables we use the condes tool that provides us with information about the relationships between the indicated variables and the target.
 
 ```{r}
 library(FactoMineR)
 summary(df$Total_amount)
 vars_res<-names(df)[c(19,33)]
-#library(mvoutlier)
-#res.condes <- condes(df, which(names(df) == "Total_amount"))
 res.condes <- condes(df[, c(vars_res,vars_quantitatives, vars_categorical)],1)
 
 res.condes$quanti # Global association to numeric variables
@@ -1017,20 +1026,16 @@ Falta explicació de la correlació!!!
 + potser algun plot? (vars_resu <-names(df)[c(1,11)], aq.plot(df[,vars_resu]))
 
 --------------------------------------------------------------------------------
+
 ### Identify individuals considered as multivariant outliers
 ```{r}
-#library(chemometrics)
-#multivariant_outliers <- Moutlier(df[, c(11:12, 19)], quantile = 0.995)
-
-#!!!!! effective speed
-#[1] ""              ""  "" ""   
-#[5] ""            ""      ""       ""    
-#[9] ""      ""       "Trip_distance"         "Fare_amount"          
-#[13] ""                 ""               "Tip_amount"            ""         
-#[17] ""             "" "Total_amount"          ""         
-#[21] ""             ""                ""                ""              
-#[25] ""   ""            ""              ""
-
+library(chemometrics)
+multivariant_outliers <- Moutlier(df[, c(11:12, 19, 26)], quantile = 0.995)
+multivariant_outliers$cutoff
+par(mfrow=c(1,1))
+plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
+text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(11:12, 19, 26)])) 
+abline(col="red",lwd=2, h=qchisq(0.995, ncol(df[, c(11:12, 19, 26)])))
 
 # library(chemometrics)
 # dis <- Moutlier(SwissLabor[,2:4], quantile = 0.995)
@@ -1040,5 +1045,5 @@ Falta explicació de la correlació!!!
 # SwissLabor$mout<-0
 # sel<-which(dis$rd>12)
 # SwissLabor[sel,"mout"]<-1
-
 ```
+Falta explicació 
