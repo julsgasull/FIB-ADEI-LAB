@@ -29,8 +29,7 @@ Laboratori d'ADEI de la FIB
   * number of missing values
   * number of errors,
   * number of outliers
-  * Identify individuals considered as multivariant outliers.
-
+  
 * Create variable adding the total number missing values, outliers and errors.
 
 * Describe these variables, to which other variables exist higher associations.  
@@ -44,5 +43,7 @@ Laboratori d'ADEI de la FIB
 #### Profiling:
   * Numeric Target (Total Amount)
   * Factor (Y.bin - Given Tip?)
+
+#### Identify individuals considered as multivariant outliers
 
 *R Markdown script should be included in the .zip file to be posted. A report (pdf file) has to describe decisions, procedures, criteria, etc.*
