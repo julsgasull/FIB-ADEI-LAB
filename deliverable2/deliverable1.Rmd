@@ -220,7 +220,7 @@ df$period<-1
 df$period[df$hour>7]<-2
 df$period[df$hour>10]<-3
 df$period[df$hour>16]<-4
-df$period[df$hour>19]<-1
+df$period[df$hour>20]<-1
 df$period<-factor(df$period,labels=paste("Period",c("night","morning","valley","afternoon")))
 barplot(summary(df$period),main="period Barplot",col = "DarkSlateBlue")
 ```
@@ -310,9 +310,10 @@ imis[sel]<-imis[sel]+1
 jmis[26]<-length(sel)
 ```
 #### Error detection
+We detect as error those speeds smaller than 0 and bigger than 200
 ```{r}
 summary(df$espeed)
-sel<-which((df$espeed<=0)|(df$espeed=="Inf"))
+sel<-which((df$espeed<=0)|(df$espeed > 200))
 ierrs[sel]<-ierrs[sel]+1
 jerrs[26]<-length(sel)
 # sel
@@ -779,7 +780,7 @@ abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
 abline(h=90,col="blue",lwd=2)
 
-llout<-which(df$Total_amount>90)
+llout<-which(df$Total_amount>150)
 iouts[llout]<-iouts[llout]+1
 jouts[19]<-length(llout)
 df[llout,"Total_amount"]<-NA 
