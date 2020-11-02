@@ -3,14 +3,14 @@ title: "Deliverable 1"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
-  word_document:
+  html_document:
     toc: no
     toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
+  word_document:
     toc: no
     toc_depth: '4'
 geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
@@ -715,9 +715,9 @@ Boxplot(df$Tip_amount)
 var_out<-calcQ(df$Tip_amount)
 abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
-abline(h=17,col="blue",lwd=2)
+abline(h=40,col="blue",lwd=2)
 
-llout<-which(df$Tip_amount>17)
+llout<-which(df$Tip_amount>40)
 iouts[llout]<-iouts[llout]+1
 # names(df)
 jouts[15]<-length(llout)
@@ -739,16 +739,18 @@ abline(h=var_out$souti,col="red")
 
 table(df$Tolls_amount)
 ```
-As we see in the boxplot and the table, the majority of the individuals are 0, so the values bigger than 0 will be outliers. After having the outliers, we proceed to categorize this variable.
+As we see in the boxplot and the table, the majority of the individuals are 0, so the values bigger than 5.54 will be outliers. After having the outliers, we proceed to categorize this variable to see if an individual has paid or not  for a toll.
 ```{r}
-llout<-which(df$Tolls_amount>0)
+llout<-which(df$Tolls_amount>5.54)
 iouts[llout]<-iouts[llout]+1
 # names(df)
 jouts[16]<-length(llout)
 df[llout,"Tolls_amount"]<-NA 
 # llout
 
-df$Tolls_amount <- factor(df$Tolls_amount)
+df$paidTolls[df$Tolls_amount == 0] = "No"
+df$paidTolls[df$Tolls_amount > 0] = "Yes"
+df$paidTolls <- factor(df$paidTolls)
 ```
 
 ### 20. Total_amount
@@ -778,7 +780,7 @@ Boxplot(df$Total_amount)
 var_out<-calcQ(df$Total_amount)
 abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
-abline(h=90,col="blue",lwd=2)
+abline(h=150,col="blue",lwd=2)
 
 llout<-which(df$Total_amount>150)
 iouts[llout]<-iouts[llout]+1
@@ -878,10 +880,14 @@ What we do with imputation is be able to eliminate all those values that may be 
 
 ## Numeric variables
 We will now do the study by variables and try to impute the necessary observations.
+
+**Note**: we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18). We proceed to delete NA values from Total_amount because it is our target variable, so we do not impute it, but we need to have this variable without NAs.
 ```{r}
-vars_quantitatives<-names(df)[c(10:13,15,19,24:26)]
+df <- df[!is.na(df$Total_amount),]
+
+vars_quantitatives<-names(df)[c(10:13,15,24:26)]
 ```
-**Note**: we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18).
+
 ```{r}
 summary(df[,vars_quantitatives])
 res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
