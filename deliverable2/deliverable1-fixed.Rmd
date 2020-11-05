@@ -1165,7 +1165,6 @@ res.condes$category # Partial association to significative levels in factors
 
 
 ## Factor (Y.bin - TipIsGiven)
-
 And now, we are profiling the qualitative target:
 ```{r}
 res.catdes <- catdes(df[, c(vars_res,vars_quantitatives, vars_categorical)],2)
@@ -1187,9 +1186,6 @@ res.catdes$test.chi2
    + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
 * period
    + We see that in the morning people are not in a very good mood and are more inclined to tip the "valley".
-
-
-
 
 #### > Quantitative variables
 ```{r}
@@ -1227,4 +1223,12 @@ res.catdes$category
    + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
 * period
    + We see that in the morning people are not in a very good mood and are more inclined to tip the "valley".
+
+
+--------------------------------------------------------------------------------
+
+# Finally, save the data
+```{r}
+save(df, file = "Taxi5000_del1.RData")
+```
 

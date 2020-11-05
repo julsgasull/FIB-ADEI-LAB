@@ -1,0 +1,89 @@
+---
+title: "Deliverable 2"
+author: "Júlia Gasull i Claudia Sánchez"
+date: \today
+output:
+  html_document:
+    toc: no
+    toc_depth: '4'
+  pdf_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+  word_document:
+    toc: no
+    toc_depth: '4'
+geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
+fontsize: 18pt
+subtitle: PCA, CA and Clustering
+classoption: a4paper
+editor_options: 
+  chunk_output_type: console
+---
+
+# First setups
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = T, results = 'hide'}
+if(!is.null(dev.list())) dev.off()  # Clear plots
+rm(list=ls())                       # Clean workspace
+```
+
+## Load Required Packages for this deliverable
+We load the necessary packages and set working directory
+```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
+
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+
+# Load Required Packages
+options(contrasts=c("contr.treatment","contr.treatment"))
+requiredPackages <- c("missMDA","chemometrics","mvoutlier","effects","FactoMineR","car", "factoextra","RColorBrewer","dplyr","ggmap","ggthemes","knitr")
+missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
+if(length(missingPackages)) install.packages(missingPackages)
+lapply(requiredPackages, require, character.only = TRUE)
+```
+
+## Load processed data from first deliverable
+```{r}
+load(paste0(filepath,"/Taxi5000_del1.RData"))
+summary(df)
+```
+
+--------------------------------------------------------------------------------
+
+# PCA analysis for your data should contain:
+
+## Eigenvalues and dominant axes analysis. How many axes we have to interpret according to Kaiser and Elbow's rule?
+## Individuals point of view: Are they any individuals "too contributive"? To better understand the axes meaning use the extreme individuals. Detection of multivariant outliers and influent data.
+## Interpreting the axes: Variables point of view coordinates, quality of representation, contribution of the variables  
+## Perform a PCA taking into account also supplementary variables the supplementary variables can be quantitative and/or categorical 
+
+# K-Means Classification
+## Description of clusters
+# Hierarchical Clustering
+## Description of clusters
+
+# CA analysis for your data should contain your factor version of the numeric target (previous) in K= 7 (maximum 10) levels and 2 factors:
+
+## Eigenvalues and dominant axes analysis. How many axes we have to consider
+## Are there any row categories that can be combined/avoided to explain the discretization of the numeric target.
+
+# MCA analysis for your data should contain:
+
+## Eigenvalues and dominant axes analysis. How many axes we have to consider for next Hierarchical Classification stage?
+## Individuals point of view: Are they any individuals "too contributive"? Are there any groups?
+## Interpreting map of categories: average profile versus extreme profiles (rare categories)
+## Interpreting the axes association to factor map.
+## Perform a MCA taking into account also supplementary variables (use all numeric variables) quantitative and/or categorical. How supplementary variables enhance the axis interpretation?
+
+# Hierarchical Clustering (from MCA)
+
+## Description of clusters
+## Parangons and class-specific individuals.
+## Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on Duration target.
+## Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on the binary target.
