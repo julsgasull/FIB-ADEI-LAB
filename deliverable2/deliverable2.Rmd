@@ -77,16 +77,48 @@ summary(df)
 --------------------------------------------------------------------------------
 
 # PCA analysis
-Ja hem vist el profiling a l'entrega anterior. Per tant, ara, procedim a veure les components principals.
-Recordem, el nostre target quantitatiu és Total_amount.
+We have already seen profiling in the previous installment. So now, let’s proceed to look at the main components.
 ```{r}
-library(FactoMineR)
-names(df)
+library(FactoMineR); names(df)
 pca_vars<-names(df)[c(3:6,7:10,12,15,18,20:22,1:2,16,19,30)]; pca_vars
 res.pca<-PCA(df[,pca_vars],quanti.sup=c(1:4,10),quali.sup=c(15:19))
 ```
+Multivariant outliers should be included as supplementary observations:
+```{r}
+#to-do
+```
 
-## Eigenvalues and dominant axes analysis. How many axes we have to interpret according to Kaiser and Elbow's rule?
+Now, let's see the plots one by one: (maybe later is better) !!
+```{r}
+plot.PCA(res.pca,choix=c("var"),invisible=c("var"),cex=0.8)
+plot.PCA(res.pca,choix=c("var"),invisible=c("quanti.sup"),cex=0.8)
+plot.PCA(res.pca,choix=c("ind"),invisible=c("ind"),cex=0.5)
+```
+FALTEN COMENTARIS!
+
+## Eigenvalues and dominant axes analysis
+### How many axes we have to interpret according to Kaiser?
+```{r}
+summary(res.pca,nb.dec=2,nbind=1,nbelements=1000,ncp=2)
+
+# Eigenvalues
+#                       Dim.1  Dim.2  Dim.3  Dim.4  Dim.5  Dim.6  Dim.7  Dim.8  Dim.9
+# Variance               4.04   1.26   1.02   0.95   0.77   0.75   0.12   0.08   0.00
+# % of var.             44.88  13.99  11.36  10.58   8.58   8.33   1.30   0.94   0.04
+# Cumulative % of var.  44.88  58.87  70.23  80.81  89.39  97.72  99.01  99.96 100.00
+```
+According to Kasier, we must use all those dimensions that have a value greater than 1. Therefore, in this case, we will use up to dimension 3, with 70.23% of the accumulated variables.
+
+
+### How many axes we have to interpret according to Elbow's rule?
+As a brief definition, we would say that the elbow rule is based on selecting dimensions until the difference in variance of that of the next factorial plane is almost the same as that of the current plane.
+
+So let's look at exactly where we have this minimal difference:
+```{r}
+round(res.pca$eig,3)
+barplot(res.pca$eig[,1],main="own values",names.arg=paste("dim",1:nrow(res.pca$eig)), border="DarkSlateBlue", col="white")
+```
+We could say, then, that there is little difference between dimension 3 and 4, or between 5 and 6. Therefore, we could be left with 3 dimensions (as with Kasier) or 5.
 
 ## Individuals point of view: Are they any individuals "too contributive"? To better understand the axes meaning use the extreme individuals. Detection of multivariant outliers and influent data.
 ## Interpreting the axes: Variables point of view coordinates, quality of representation, contribution of the variables  
