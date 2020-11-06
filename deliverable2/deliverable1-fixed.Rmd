@@ -858,7 +858,6 @@ We will now do the study by variables and try to impute the necessary observatio
 **Note**: we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18). We proceed to delete NA values from Total_amount because it is our target variable, so we do not impute it, but we need to have this variable without NAs.
 ```{r}
 df <- df[!is.na(df$Total_amount),]
-
 vars_quantitatives<-names(df)[c(10:13,15,24:26)]
 ```
 
