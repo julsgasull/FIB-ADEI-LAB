@@ -54,11 +54,40 @@ load(paste0(filepath,"/Taxi5000_del1.RData"))
 summary(df)
 ```
 
+
+## Clean data
+```{r}
+# remove some columns
+df$lpep_pickup_datetime <- NULL
+df$Lpep_dropoff_datetime <- NULL
+df$Store_and_fwd_flag <- NULL
+df$Ehail_fee <- NULL
+df$CashTips <- NULL
+
+# imputation
+library(missMDA)
+long_lat<-names(df)[c(3:6)]
+imp_long_lat<-imputePCA(df[,long_lat])
+df[,long_lat]<-imp_long_lat$completeObs
+
+summary(df)
+```
+
+
 --------------------------------------------------------------------------------
 
-# PCA analysis for your data should contain:
+# PCA analysis
+Ja hem vist el profiling a l'entrega anterior. Per tant, ara, procedim a veure les components principals.
+Recordem, el nostre target quantitatiu és Total_amount.
+```{r}
+library(FactoMineR)
+names(df)
+pca_vars<-names(df)[c(3:6,7:10,12,15,18,20:22,1:2,16,19,30)]; pca_vars
+res.pca<-PCA(df[,pca_vars],quanti.sup=c(1:4,10),quali.sup=c(15:19))
+```
 
 ## Eigenvalues and dominant axes analysis. How many axes we have to interpret according to Kaiser and Elbow's rule?
+
 ## Individuals point of view: Are they any individuals "too contributive"? To better understand the axes meaning use the extreme individuals. Detection of multivariant outliers and influent data.
 ## Interpreting the axes: Variables point of view coordinates, quality of representation, contribution of the variables  
 ## Perform a PCA taking into account also supplementary variables the supplementary variables can be quantitative and/or categorical 

@@ -1229,6 +1229,6 @@ res.catdes$category
 
 # Finally, save the data
 ```{r}
-save(df, file = "Taxi5000_del1.RData")
+save.image("Taxi5000_del1.RData")
 ```
 
