@@ -101,8 +101,8 @@ knitr::opts_chunk$set(echo = TRUE)
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -124,10 +124,10 @@ rm(list=ls())                       # Clean workspace
 
 Data: green_tripdata_2016-01
 ```{r}
-setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
-filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 df<-read.table(paste0(filepath,"/green_tripdata_2016-01.csv"),header=T, sep=",")
 # dim(df)       # Displays the sample size
 # names(df)     # Displays the names of the sample variables
@@ -855,10 +855,10 @@ What we do with imputation is be able to eliminate all those values that may be 
 ## Numeric variables
 We will now do the study by variables and try to impute the necessary observations.
 
-**Note**: we do not include MTA_tax (14), Tolls_amount(16) nor improvement_surcharge(18). We proceed to delete NA values from Total_amount because it is our target variable, so we do not impute it, but we need to have this variable without NAs.
+**Note**: we do not include MTA_tax (14) nor improvement_surcharge(18). We proceed to delete NA values from Total_amount because it is our target variable, so we do not impute it, but we need to have this variable without NAs.
 ```{r}
 df <- df[!is.na(df$Total_amount),]
-vars_quantitatives<-names(df)[c(10:13,15,24:26)]
+vars_quantitatives<-names(df)[c(10:13,15,16,24:26)]
 ```
 
 ```{r}
@@ -967,6 +967,14 @@ We see the barplot in order to see the distribution.
 ```{r}
 barplot(table(df$improvement_surcharge),main="improvement_surcharge Barplot",col = "DarkSlateBlue")
 ```
+
+### > Tolls_amount
+As we checked before the imputation and detected as errors those individuals with negative amount, the negative values found now are going to be set as 0 because they result negative during the imputation.
+```{r}
+ll<-which(res.imputation$completeObs[,"Tolls_amount"] < 0)
+res.imputation$completeObs[ll,"Tolls_amount"] <- 0
+```
+
 
 
 We proceed to impute all NAs in our numerical variables that are stored in: `res.imputation$completeObs`

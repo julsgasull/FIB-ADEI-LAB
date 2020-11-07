@@ -35,10 +35,10 @@ rm(list=ls())                       # Clean workspace
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
-filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -54,15 +54,17 @@ load(paste0(filepath,"/Taxi5000_del1.RData"))
 # summary(df)
 ```
 
-
 ## Clean data
 ```{r}
 # remove some columns
+names(df)
 df$lpep_pickup_datetime <- NULL
 df$Lpep_dropoff_datetime <- NULL
 df$Store_and_fwd_flag <- NULL
 df$Ehail_fee <- NULL
 df$CashTips <- NULL
+df$Sum_total_amount <- NULL
+df$yearGt2015 <- NULL
 
 # imputation
 library(missMDA)
@@ -75,6 +77,20 @@ df[,long_lat]<-imp_long_lat$completeObs
 
 
 --------------------------------------------------------------------------------
+
+## Principal Component Analysis (PCA)
+```{r}
+
+# com he fet el pca al final, la unica diferencia es el tema del graph, que pot ser si seria necessari treure'l per poder detectar outliers i correlacions
+library(FactoMineR)
+names(df)
+vars_res<-names(df)[c(15,27)]
+vars_quantitatives<-names(df)[c(3:10,12,20:22)]
+vars_categorical<-names(df)[c(1,2,16:17,19,25,28)]
+
+res.pca <- PCA(df[,c(1:10,12,13,15:17,19,21,22,25,27)], quanti.sup=c(3:6, 13), quali.sup = c(1,2,14:16,19:20))
+```
+
 
 # PCA analysis
 MIRAR!!! http://www.sthda.com/english/wiki/wiki.php?id_contents=7851&fbclid=IwAR01E5XVvCrSKnpkCdAppbpvv7YMGvxSWaSSwb4SIgrXjrxoIpMIlNblYFY
