@@ -97,35 +97,39 @@ MIRAR!!! http://www.sthda.com/english/wiki/wiki.php?id_contents=7851&fbclid=IwAR
 
 We have already seen profiling in the previous installment. So now, let’s proceed to look at the main components.
 ```{r}
-library(FactoMineR)#; names(df)
-pca_vars<-names(df)[c(3:6,7:10,12,15,18,20:22,1:2,16,19,30)]#; pca_vars
+#library(FactoMineR)#; names(df)
+#pca_vars<-names(df)[c(3:6,7:10,12,15,18,20:22,1:2,16,19,30)]#; pca_vars
 
-res.pca<-PCA(
-    df[,pca_vars],
-    quanti.sup = c(1:4,10),
-    quali.sup = c(15:19), 
-    graph = FALSE)
+#res.pca<-PCA(
+ #   df[,pca_vars],
+  #  quanti.sup = c(1:4,10),
+   # quali.sup = c(15:19), 
+    #graph = FALSE)
 ```
 
 Multivariant outliers should be included as supplementary observations:
 ```{r}
-#to-do
+plot.PCA(res.pca,choix=c("var"), invisible=c("quanti.sup"))
+plot.PCA(res.pca,choix=c("var"), invisible=c("var"))
+plot.PCA(res.pca,choix=c("ind"), invisible=c("ind"))
+#TO DO: explicar quisn son multivariant outliers
 ```
 
 ## Eigenvalues and dominant axes analysis
 ```{r}
-eigenvalues <- res.pca$eig
+#eigenvalues <- res.pca$eig
+summary(res.pca, nb.dec=2,nbind=1, nbelements = 1000, ncp=2)
 ```
 
 Eigenvalues correspond to the amount of the variation explained by each principal component (PC). Eigenvalues are large for the first PC and small for the subsequent PCs.
 
 ### How many axes we have to interpret according to Kaiser?
-A PC with an eigenvalue > 1 indicates that the PC accounts for more variance than accounted by one of the original variables in standardized data. This is commonly used as a cutoff point to determine the number of PCs to retain.
+A PC with an eigenvalue > 1 indicates that the PC accounts for more variance than accounted by one of the original variables in standardized data. This is commonly used as a cutoff point to determine the number of PCs to retain, using the Kaiser criteria.
 ```{r}
-head(eigenvalues[, 1:2])
+#head(eigenvalues[, 1:2])
 ```
 
-In this case, then, we will use up to dimension 3.
+In this case, then, we will use up to dimension 3, and they will explain 65.73% of the total inertia.
 
 ### How many axes we have to interpret according to Elbow's rule?
 As a brief definition, we would say that the elbow rule is based on selecting dimensions until the difference in variance of that of the next factorial plane is almost the same as that of the current plane.
@@ -182,7 +186,38 @@ df[which(row.names(df) %in% row.names(df)[rang[1:10]]),1:30]
 
 
 ## Interpreting the axes: Variables point of view coordinates, quality of representation, contribution of the variables  
+```{r}
+res.des <- dimdesc(res.pca)
+res.des$Dim.1
+```
+In the first dimension we see that for the quantitative variables the most positively related, from more to less, are Trip_distance (0.95), Fare_amount (0.94), Total_amount (0.93) and traveltime (0.80). If we take look at the quantitatives ones, we that the most related is Trip_distance_range (0.69) and if we take a look at the categories we see that for the Trip_distance_range category long distance trips show a mean 2.23 units over the global mean and short distance ones show a mean -1.94 units under the global mean, so we can reject the H0 done in the t.Student test.
+
+```{r}
+res.des$Dim.2
+```
+
+For the second dimension we see that Extra and Passenger_count are the most positively related variables with 0.74 and 0.53 respectively. If we see the qualitative variables we notce that period is the most related with 0.18 even though it is not a very remarkable data. And we see that for this category, period afternoon mean is 0.69 units over the global mean and period morning mean, on the contrary, is -0.61 units under the global mean, so we can reject the H0 done in the t.Student test.
+
+```{r}
+res.des$Dim.3
+```
+
+For the last dimension we took into account, the third one, we see that the most related variables are Passenger_count (0.53), Tolls_amount (0.53) and espeed (0.51), we also see that traveltime time (-0.40) is inversely related. For the categorical we see that period is the category that is more related with 0.36 even though it is not a big relation.
+Finally, we see that the first dimension is the one with the biggest correlations.
+
 ## Perform a PCA taking into account also supplementary variables the supplementary variables can be quantitative and/or categorical 
+
+```{r}
+
+plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],pch=19,col="grey30")
+points(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],pch=15,col="magenta")
+lines(res.pca$quali.sup$coord[3:4,1],res.pca$quali.sup$coord[3:4,2],lwd=2,lty=2,col="black")
+text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="magenta",cex=0.8)
+
+res.pca$quali.sup$coord
+```
+
+
 
 # K-Means Classification
 ## Description of clusters
