@@ -112,13 +112,13 @@ Multivariant outliers should be included as supplementary observations:
 plot.PCA(res.pca,choix=c("var"), invisible=c("quanti.sup"))
 plot.PCA(res.pca,choix=c("var"), invisible=c("var"))
 plot.PCA(res.pca,choix=c("ind"), invisible=c("ind"))
-#TO DO: explicar quisn son multivariant outliers
+#TO DO: explicar quisn son multivariant outliers, la profe diu al video del 23/10 que aquests son uns plots i no tenen mes importancia.
 ```
 
 ## Eigenvalues and dominant axes analysis
 ```{r}
 #eigenvalues <- res.pca$eig
-summary(res.pca, nb.dec=2,nbind=1, nbelements = 1000, ncp=2)
+summary(res.pca, nb.dec=2,nbind=1, nbelements = 1000, ncp=5)
 ```
 
 Eigenvalues correspond to the amount of the variation explained by each principal component (PC). Eigenvalues are large for the first PC and small for the subsequent PCs.
