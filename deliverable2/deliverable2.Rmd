@@ -215,13 +215,85 @@ lines(res.pca$quali.sup$coord[3:4,1],res.pca$quali.sup$coord[3:4,2],lwd=2,lty=2,
 text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="magenta",cex=0.8)
 
 res.pca$quali.sup$coord
+
+# no sé si hem de fer alguna cosa més aquí al video del 16/10 no explica gaire cosa (sobre el min 50 llarg).
 ```
 
+# Hierarchical Clustering
+
+```{r}
+res.hcpc <- HCPC(res.pca,nb.clust = 5, order = TRUE)
+
+#interpretar els resultats de la classificacio
+#table(res.hcpc$data.clust$clust)
+
+summary(res.hcpc$data.clust$clust)
+
+### desc.var ###
+### A. The description of the clusters by the variables ###
+names(res.hcpc$desc.var)
+
+### desc.var$test.chi2 ###
+### A.1. The categorical variables which characterizes the clusters ###
+res.hcpc$desc.var$test.chi2
+
+### desc.var$category ###
+### A.2. The description of each cluster by the categories ##
+res.hcpc$desc.var$category
+
+### desc.var$quanti.var ###
+### A.3. The quantitative variables which characterizes the clusters ###
+res.hcpc$desc.var$quanti.var
+
+### desc.var$quanti ###
+### A.4. The description of each cluster by the quantitative variables ###
+res.hcpc$desc.var$quanti
+
+### desc.axes ###
+### B. The description of the clusters by the axes ###
+names(res.hcpc$desc.axes)
+res.hcpc$desc.axes$quanti.var
+res.hcpc$desc.axes$quanti
+
+### desc.ind ###
+### C. The description of the clusters by the individuals ###
+names(res.hcpc$desc.ind)
+res.hcpc$desc.ind$para
+res.hcpc$desc.ind$dist
+
+# Examinar los valores de los individuos que caracterizan a las clases
+#### Characteristic individuals
+para1<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[1]]))
+para2<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[2]]))
+para3<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[3]]))
+para4<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[4]]))
+para5<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[5]]))
+
+dist1<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[1]]))
+dist2<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[2]]))
+dist3<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[3]]))
+dist4<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[4]]))
+dist5<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[5]]))
+
+plot(res.pca,label="none",invisible=c("quali","ind.sup"))  # Potser no us va
+plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],col="grey80",cex=0.5,pch=16)
+points(res.pca$ind$coord[para1,1],res.pca$ind$coord[para1,2],col="blue",cex=2,pch=16)
+points(res.pca$ind$coord[dist1,1],res.pca$ind$coord[dist1,2],col="orange",cex=2,pch=16)
+points(res.pca$ind$coord[para2,1],res.pca$ind$coord[para2,2],col="blue",cex=2,pch=16)
+points(res.pca$ind$coord[dist2,1],res.pca$ind$coord[dist2,2],col="red",cex=2,pch=16)
+points(res.pca$ind$coord[para3,1],res.pca$ind$coord[para3,2],col="blue",cex=2,pch=16)
+points(res.pca$ind$coord[dist3,1],res.pca$ind$coord[dist3,2],col="green",cex=2,pch=16)
+points(res.pca$ind$coord[para4,1],res.pca$ind$coord[para4,2],col="blue",cex=2,pch=16)
+points(res.pca$ind$coord[dist4,1],res.pca$ind$coord[dist4,2],col="magenta",cex=2,pch=16)
+points(res.pca$ind$coord[para5,1],res.pca$ind$coord[para5,2],col="blue",cex=2,pch=16)
+points(res.pca$ind$coord[dist5,1],res.pca$ind$coord[dist5,2],col="purple",cex=2,pch=16)
+
+```
+
+## Description of clusters
 
 
 # K-Means Classification
-## Description of clusters
-# Hierarchical Clustering
 ## Description of clusters
 
 # CA analysis for your data should contain your factor version of the numeric target (previous) in K= 7 (maximum 10) levels and 2 factors:
