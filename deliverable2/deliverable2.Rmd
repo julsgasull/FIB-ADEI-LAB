@@ -223,7 +223,9 @@ res.pca$quali.sup$coord
 
 ```{r}
 res.hcpc <- HCPC(res.pca,nb.clust = 5, order = TRUE)
-
+```
+## Description of clusters
+```{r}
 #interpretar els resultats de la classificacio
 #table(res.hcpc$data.clust$clust)
 
@@ -288,13 +290,80 @@ points(res.pca$ind$coord[dist4,1],res.pca$ind$coord[dist4,2],col="magenta",cex=2
 points(res.pca$ind$coord[para5,1],res.pca$ind$coord[para5,2],col="blue",cex=2,pch=16)
 points(res.pca$ind$coord[dist5,1],res.pca$ind$coord[dist5,2],col="purple",cex=2,pch=16)
 
-```
 
-## Description of clusters
+# Partition quality
+#(res.hcpc$call$t$within[1]-res.hcpc$call$t$within['nb.clusters'])/res.hcpc$call$t$within[1]
+
+res.hcpc$call$t$within[1:20]  #res.hcpc$call$t$within[1] = TTS = WITHIN 1 CLUSTER
+#(res.hcpc$call$t$within[1]-res.hcpc$call$t$within[6]) = BETSS
+(res.hcpc$call$t$within[1]-res.hcpc$call$t$within[6])/res.hcpc$call$t$within[1]
+
+# Quantes classes per assolir una representativitat Clustering 80%  - Mireu 
+(res.hcpc$call$t$within[1]-res.hcpc$call$t$within[1:50])/res.hcpc$call$t$within[1]
+### Results for the hierarchical tree ###
+names(res.hcpc$call$t)
+
+### The suggested level to cut the tree  ###
+res.hcpc$call$t$nb.clust
+### Within inertias ###
+res.hcpc$call$t$within[1:6]
+
+### Ratio between within inertias ###
+res.hcpc$call$t$quot[1:6]
+
+### Inertia gain ###
+res.hcpc$call$t$inert.gain[1:6]
+df$hcpck<-res.hcpc$data.clust$clust
+
+####
+#### THE END
+####
+
+```
 
 
 # K-Means Classification
 ## Description of clusters
+
+## Classification
+
+```{r}
+
+# Kmeans: Partitioning in k=7 groups
+
+res.pca<-PCA(df[,1:23],quali.sup=c(1,2,16,22:23),quanti.sup= c(3:6,15),ncp=5,graph=FALSE) 
+ppcc<-res.pca$ind$coord[,1:5]
+dim(ppcc)
+
+library("factoextra")
+fviz_nbclust(ppcc, kmeans, method = "gap_stat")
+library("NbClust") # It takes a lot ....
+set.seed(123)
+res.nbclust <- NbClust(ppcc, distance = "euclidean",
+                  min.nc = 2, max.nc = 10, 
+                  method = "complete", index ="all") # Time consuming
+
+dist<-dist(ppcc)  # Coordenades són reals - Euclidea
+kc<-kmeans(dist,6, iter.max = 30, trace=T)
+
+df$claKM<-0
+df$claKM<-kc$cluster
+df$claKM<-factor(df$claKM)
+kc$betweenss/kc$totss
+
+names(df)
+res.cat<-catdes(df,38)
+
+# Confusion table
+
+table(df$hcpck,df$claKM)
+
+df$hcpck<-factor(df$hcpck,labels=paste("kHP-",1:6))
+df$claKM<-factor(df$claKM,levels=c(3,6,2,1,5,4),labels=c("kKM-3","kKM-6","kKM-2","kKM-1","kKM-5","kKM-4"))
+tt<-table(df$hcpck,df$claKM)
+tt
+sum(diag(tt)/sum(tt))
+```
 
 # CA analysis for your data should contain your factor version of the numeric target (previous) in K= 7 (maximum 10) levels and 2 factors:
 
