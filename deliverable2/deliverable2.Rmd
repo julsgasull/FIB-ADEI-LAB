@@ -51,7 +51,6 @@ lapply(requiredPackages, require, character.only = TRUE)
 ## Load processed data from first deliverable
 ```{r}
 load(paste0(filepath,"/Taxi5000_del1.RData"))
-# summary(df)
 ```
 
 ## Clean data
@@ -71,20 +70,16 @@ library(missMDA)
 long_lat<-names(df)[c(3:6)]
 imp_long_lat<-imputePCA(df[,long_lat])
 df[,long_lat]<-imp_long_lat$completeObs
-
-#summary(df); names(df)
 ```
-
 
 --------------------------------------------------------------------------------
 
 # Principal Component Analysis (PCA)
 ```{r}
 names(df)
-vars_res<-names(df)[c(15,27)] # Total_amount, TipIsGiven
-vars_quantitatives<-names(df)[c(3:10,12,20:22)] # Pickup_longitude, Pickup_latitude, Dropoff_longitude, Dropoff_latitude, Passenger_count, Trip_distance, Fare_amount, Extra, Tip_amount, tlenkm, traveltime, espeed
-vars_categorical<-names(df)[c(1,2,16:17,19,25,28)] # VendorID, RateCodeID, Payment_type, Trip_type, period, Trip_distance_range, passenger_groups
-
+vars_res<-names(df)[c(15,27)] 
+vars_quantitatives<-names(df)[c(3:10,12,20:22)] 
+vars_categorical<-names(df)[c(1,2,16:17,19,25,28)]
 ```
 
 Note - web that we used in order to use factoextra     
@@ -93,30 +88,33 @@ Note - web that we used in order to use factoextra
 We have already seen profiling in the previous installment. So now, let’s proceed to look at the main components.
 ```{r}
 library(FactoMineR)
-res.pca <- PCA(df[,c(1:10,12,13,15:17,19,21,22,25,27)], quanti.sup=c(3:6,13), quali.sup = c(1,2,14:16,19:20))
-```
+res.pca <- PCA(
+  df[,c(1:10,12,13,15:17,19,21,22,25,27)], 
+  quanti.sup=c(3:6,13), 
+  quali.sup = c(1,2,14:16,19:20)
+)
 
-Multivariant outliers should be included as supplementary observations:
-```{r} 
-
-## ho hem de parlar, jo no ho posaria.
 plot.PCA(res.pca,choix=c("var"), invisible=c("quanti.sup"))
 plot.PCA(res.pca,choix=c("var"), invisible=c("var"))
 plot.PCA(res.pca,choix=c("ind"), invisible=c("ind"))
-#TO DO: explicar quins son multivariant outliers, la profe diu al video del 23/10 que aquests son uns plots i no tenen mes importancia.
+```
+
+Multivariant outliers should be included as supplementary observations:
+```{r}
+# TO DO: explicar quins son multivariant outliers, la profe diu al video del 23/10 que aquests son uns plots i no tenen mes importancia.
 ```
 
 ## Eigenvalues and dominant axes analysis
 Eigenvalues correspond to the amount of the variation explained by each principal component (PC). Eigenvalues are large for the first PC and small for the subsequent PCs.
 ```{r}
 summary(res.pca, nb.dec=2,nbind=1, nbelements = 1000, ncp=5)
-eigenvalues <- res.pca$eig
 ```
 
 ### How many axes we have to interpret according to Kaiser?
 A PC with an eigenvalue > 1 indicates that the PC accounts for more variance than accounted by one of the original variables in standardized data. This is commonly used as a cutoff point to determine the number of PCs to retain, using the Kaiser criteria.
 ```{r}
-head(eigenvalues[, 1:2])
+eigenvalues <- res.pca$eig
+head(eigenvalues[, 1:3])
 ```
 
 In this case, then, we will use up to dimension 3, and they will explain 65.73% of the total inertia.
@@ -130,8 +128,8 @@ fviz_screeplot(
   res.pca, 
   barfill = "darkslateblue",
   barcolor = "darkslateblue",
-  linecolor = "red",
-  ggtheme = theme_gray())
+  linecolor = "skyblue1"
+)
 ```
 
 We could say, then, that there is little difference between dimension 3 and 4, or between 5 and 6. Therefore, we could be left with 3 dimensions (as with Kasier) or 5.
@@ -142,7 +140,7 @@ We could say, then, that there is little difference between dimension 3 and 4, o
 head(res.pca$ind$contrib) # contribition of individuals to the princial components
 fviz_pca_ind(res.pca, col.ind="contrib", geom = "point") +
 scale_color_gradient2(low="darkslateblue", mid="white",
-                      high="red", midpoint=0.40)
+                      high="violetred1", midpoint=0.40)
 ```
 
 We can see that there are some individuals that are too contributive. So now, let's try to understand them better with extreme individuals.
@@ -153,27 +151,31 @@ We can see that there are some individuals that are too contributive. So now, le
 ```{r}
 rang<-order(res.pca$ind$coord[,1])
 contrib.extremes<-c(row.names(df)[rang[1]], row.names(df)[rang[length(rang)]])
-fviz_pca_ind(res.pca, select.ind = list(names=contrib.extremes))
 
+contrib.extremes<-c(row.names(df)[rang[1:10]], row.names(df)[rang[(length(rang)-10):length(rang)]])
+fviz_pca_ind(res.pca, select.ind = list(names=contrib.extremes))
+```
+
+We can now have a look at them:
+```{r}
 df[which(row.names(df) %in% row.names(df)[rang[(length(rang)-10):length(rang)]]), 1:28]
 df[which(row.names(df) %in% row.names(df)[rang[1:10]]),1:28]
 ```
-
-// TO DO: COMENTAR ELS EXTREMS
-
 
 #### In dimension 2:
 ```{r}
 rang<-order(res.pca$ind$coord[,2])
 contrib.extremes<-c(row.names(df)[rang[1]], row.names(df)[rang[length(rang)]])
-fviz_pca_ind(res.pca, select.ind = list(names=contrib.extremes))
 
-df[which(row.names(df) %in% row.names(df)[rang[(length(rang)-10):length(rang)]]),1:28]
-df[which(row.names(df) %in% row.names(df)[rang[1:10]]),1:28]
+contrib.extremes<-c(row.names(df)[rang[1:10]], row.names(df)[rang[(length(rang)-10):length(rang)]])
+fviz_pca_ind(res.pca, select.ind = list(names=contrib.extremes))
 ```
 
-// TO DO: COMENTAR ELS EXTREMS
-
+We can now have a look at them:
+```{r}
+df[which(row.names(df) %in% row.names(df)[rang[(length(rang)-10):length(rang)]]), 1:28]
+df[which(row.names(df) %in% row.names(df)[rang[1:10]]),1:28]
+```
 
 ### Detection of multivariant outliers and influent data.
 ```{r}
@@ -258,7 +260,7 @@ And we see that for this **category**, period afternoon mean is 0.28 units over 
 plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],pch=19,col="grey30")
 points(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],pch=15,col="cadetblue1")
 lines(res.pca$quali.sup$coord[3:4,1],res.pca$quali.sup$coord[3:4,2],lwd=2,lty=2,col="coral")
-text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="cadetblue1",cex=0.8)
+text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="cadetblue1",cex=0.5)
 
 res.pca$quali.sup$coord
 
@@ -271,7 +273,7 @@ res.pca$quali.sup$coord
 res.hcpc <- HCPC(res.pca,nb.clust = 5, order = TRUE)
 ```
 
-Note: the reason we chose this number of clusters is because, after trying different numbers, we thought it was the best way to distribute the data.
+*Note*: the reason we chose this number of clusters is because, after trying different numbers, we thought it was the best way to distribute the data.
 
 ## Description of clusters
 Number of observations in each cluster:
@@ -350,11 +352,11 @@ points(res.pca$ind$coord[dist5,1],res.pca$ind$coord[dist5,2],col="royalblue3",ce
 
 #### Hierarchical tree
 ```{r}
-names(res.hcpc$call$t) # results for the hierarchical tree
-res.hcpc$call$t$nb.clust # the suggested level to cut the tree
-res.hcpc$call$t$within[1:5] # within inertias
-res.hcpc$call$t$quot[1:5] # ratio between within inertias
-res.hcpc$call$t$inert.gain[1:5] # inertia gain
+names(res.hcpc$call$t)            # results for the hierarchical tree
+res.hcpc$call$t$nb.clust          # the suggested level to cut the tree
+res.hcpc$call$t$within[1:5]       # within inertias
+res.hcpc$call$t$quot[1:5]         # ratio between within inertias
+res.hcpc$call$t$inert.gain[1:5]   # inertia gain
 ```
 
 ### Save the results into dataframe
@@ -446,7 +448,7 @@ tt
 
 # CA analysis
 ```{r}
-
+res.ca <- CA(tt)
 ```
 
 
