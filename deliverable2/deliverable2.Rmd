@@ -78,38 +78,28 @@ df[,long_lat]<-imp_long_lat$completeObs
 
 --------------------------------------------------------------------------------
 
-## Principal Component Analysis (PCA)
+# Principal Component Analysis (PCA)
 ```{r}
-
-# com he fet el pca al final, la unica diferencia es el tema del graph, que pot 
-# ser si seria necessari treure'l per poder detectar outliers i correlacions
-library(FactoMineR)
 names(df)
-vars_res<-names(df)[c(15,27)]
-vars_quantitatives<-names(df)[c(3:10,12,20:22)]
-vars_categorical<-names(df)[c(1,2,16:17,19,25,28)]
+vars_res<-names(df)[c(15,27)] # Total_amount, TipIsGiven
+vars_quantitatives<-names(df)[c(3:10,12,20:22)] # Pickup_longitude, Pickup_latitude, Dropoff_longitude, Dropoff_latitude, Passenger_count, Trip_distance, Fare_amount, Extra, Tip_amount, tlenkm, traveltime, espeed
+vars_categorical<-names(df)[c(1,2,16:17,19,25,28)] # VendorID, RateCodeID, Payment_type, Trip_type, period, Trip_distance_range, passenger_groups
 
-res.pca <- PCA(df[,c(1:10,12,13,15:17,19,21,22,25,27)], quanti.sup=c(3:6, 13), quali.sup = c(1,2,14:16,19:20))
 ```
 
-
-# PCA analysis
-MIRAR!!! http://www.sthda.com/english/wiki/wiki.php?id_contents=7851&fbclid=IwAR01E5XVvCrSKnpkCdAppbpvv7YMGvxSWaSSwb4SIgrXjrxoIpMIlNblYFY
+Note - web that we used in order to use factoextra     
+* http://www.sthda.com/english/wiki/wiki.php?id_contents=7851&fbclid=IwAR01E5XVvCrSKnpkCdAppbpvv7YMGvxSWaSSwb4SIgrXjrxoIpMIlNblYFY
 
 We have already seen profiling in the previous installment. So now, let’s proceed to look at the main components.
 ```{r}
-#library(FactoMineR)#; names(df)
-#pca_vars<-names(df)[c(3:6,7:10,12,15,18,20:22,1:2,16,19,30)]#; pca_vars
-
-#res.pca<-PCA(
- #   df[,pca_vars],
-  #  quanti.sup = c(1:4,10),
-   # quali.sup = c(15:19), 
-    #graph = FALSE)
+library(FactoMineR)
+res.pca <- PCA(df[,c(1:10,12,13,15:17,19,21,22,25,27)], quanti.sup=c(3:6,13), quali.sup = c(1,2,14:16,19:20))
 ```
 
 Multivariant outliers should be included as supplementary observations:
-```{r}
+```{r} 
+
+## ho hem de parlar, jo no ho posaria.
 plot.PCA(res.pca,choix=c("var"), invisible=c("quanti.sup"))
 plot.PCA(res.pca,choix=c("var"), invisible=c("var"))
 plot.PCA(res.pca,choix=c("ind"), invisible=c("ind"))
@@ -117,17 +107,16 @@ plot.PCA(res.pca,choix=c("ind"), invisible=c("ind"))
 ```
 
 ## Eigenvalues and dominant axes analysis
-```{r}
-#eigenvalues <- res.pca$eig
-summary(res.pca, nb.dec=2,nbind=1, nbelements = 1000, ncp=5)
-```
-
 Eigenvalues correspond to the amount of the variation explained by each principal component (PC). Eigenvalues are large for the first PC and small for the subsequent PCs.
+```{r}
+summary(res.pca, nb.dec=2,nbind=1, nbelements = 1000, ncp=5)
+eigenvalues <- res.pca$eig
+```
 
 ### How many axes we have to interpret according to Kaiser?
 A PC with an eigenvalue > 1 indicates that the PC accounts for more variance than accounted by one of the original variables in standardized data. This is commonly used as a cutoff point to determine the number of PCs to retain, using the Kaiser criteria.
 ```{r}
-#head(eigenvalues[, 1:2])
+head(eigenvalues[, 1:2])
 ```
 
 In this case, then, we will use up to dimension 3, and they will explain 65.73% of the total inertia.
@@ -170,6 +159,9 @@ df[which(row.names(df) %in% row.names(df)[rang[(length(rang)-10):length(rang)]])
 df[which(row.names(df) %in% row.names(df)[rang[1:10]]),1:28]
 ```
 
+// TO DO: COMENTAR ELS EXTREMS
+
+
 #### In dimension 2:
 ```{r}
 rang<-order(res.pca$ind$coord[,2])
@@ -180,190 +172,267 @@ df[which(row.names(df) %in% row.names(df)[rang[(length(rang)-10):length(rang)]])
 df[which(row.names(df) %in% row.names(df)[rang[1:10]]),1:28]
 ```
 
+// TO DO: COMENTAR ELS EXTREMS
+
+
 ### Detection of multivariant outliers and influent data.
 ```{r}
 # no sé què posar aquí
 ```
 
 
-## Interpreting the axes: Variables point of view coordinates, quality of representation, contribution of the variables  
+## Interpreting the axes: Variables point of view coordinates, quality of representation, contribution of the variables
 ```{r}
 res.des <- dimdesc(res.pca)
+```
+
+### First dimension
+```{r}
+fviz_contrib(  # contributions of variables to PC1
+  res.pca, 
+  fill = "darkslateblue",
+  color = "darkslateblue",
+  choice = "var", 
+  axes = 1, 
+  top = 5)
 res.des$Dim.1
 ```
-In the first dimension we see that for the quantitative variables the most positively related, from more to less, are Trip_distance (0.95), Fare_amount (0.94), Total_amount (0.93) and traveltime (0.80). If we take look at the quantitatives ones, we that the most related is Trip_distance_range (0.69) and if we take a look at the categories we see that for the Trip_distance_range category long distance trips show a mean 2.23 units over the global mean and short distance ones show a mean -1.94 units under the global mean, so we can reject the H0 done in the t.Student test.
 
+In the first dimension we see that for the **quantitative** variables the most positively related, from more to less, are:
+* Trip_distance (0.95)
+* Fare_amount (0.94)
+* Total_amount (0.93) 
+* traveltime (0.80)
+
+If we take look at the  **qualitatives** ones, we that the most related is 
+* Trip_distance_range (0.69)
+
+Finally, if we take a look at the **categories** we see that for the Trip_distance_range category long distance trips show a mean 2.23 units over the global mean and short distance ones show a mean -1.94 units under the global mean, so we can reject the H0 done in the t.Student test.
+
+### Second dimension
 ```{r}
+fviz_contrib(  # contributions of variables to PC1
+  res.pca, 
+  fill = "darkslateblue",
+  color = "darkslateblue",
+  choice = "var", 
+  axes = 2, 
+  top = 5)
 res.des$Dim.2
 ```
 
-For the second dimension we see that Extra and Passenger_count are the most positively related variables with 0.74 and 0.53 respectively. If we see the qualitative variables we notce that period is the most related with 0.18 even though it is not a very remarkable data. And we see that for this category, period afternoon mean is 0.69 units over the global mean and period morning mean, on the contrary, is -0.61 units under the global mean, so we can reject the H0 done in the t.Student test.
+For the second dimension we see that or the **quantitative** variables Extra and Passenger_count are the most positively related ones with 0.74 and 0.53 respectively.
 
+If we see the **qualitative** variables we notice that period is the most related with 0.18 even though it is not a very remarkable data. 
+
+And we see that for this **category**, period afternoon mean is 0.69 units over the global mean and period morning mean, on the contrary, is -0.61 units under the global mean, so we can reject the H0 done in the t.Student test.
+
+### Third dimension
 ```{r}
+fviz_contrib(  # contributions of variables to PC1
+  res.pca, 
+  fill = "darkslateblue",
+  color = "darkslateblue",
+  choice = "var", 
+  axes = 3, 
+  top = 5)
 res.des$Dim.3
 ```
 
-For the last dimension we took into account, the third one, we see that the most related variables are Passenger_count (0.53), Tolls_amount (0.53) and espeed (0.51), we also see that traveltime time (-0.40) is inversely related. For the categorical we see that period is the category that is more related with 0.36 even though it is not a big relation.
-Finally, we see that the first dimension is the one with the biggest correlations.
+For the last dimension we took into account, the third one, we see that the most related **quantitative** variables are:
+* Passenger_count (0.53)
+* Tolls_amount (0.53)
+* espeed (0.51), 
+
+For the inversely related one, we also see that traveltime time (-0.40). 
+
+For the **quanlitatives**, we see that period is the category that is more related with 0.36, even though it is not a big relation.
+
+And we see that for this **category**, period afternoon mean is 0.28 units over the global mean and period valley mean, on the contrary, is -0.14 units under the global mean, hough it is not either a big relation.
+
+**We can conclude, then, that the first dimension is the one with the biggest correlations.**
 
 ## Perform a PCA taking into account also supplementary variables the supplementary variables can be quantitative and/or categorical 
 
 ```{r}
-
 plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],pch=19,col="grey30")
-points(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],pch=15,col="magenta")
-lines(res.pca$quali.sup$coord[3:4,1],res.pca$quali.sup$coord[3:4,2],lwd=2,lty=2,col="black")
-text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="magenta",cex=0.8)
+points(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],pch=15,col="cadetblue1")
+lines(res.pca$quali.sup$coord[3:4,1],res.pca$quali.sup$coord[3:4,2],lwd=2,lty=2,col="coral")
+text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="cadetblue1",cex=0.8)
 
 res.pca$quali.sup$coord
 
 # no sé si hem de fer alguna cosa més aquí al video del 16/10 no explica gaire cosa (sobre el min 50 llarg).
 ```
+--------------------------------------------------------------------------------
 
 # Hierarchical Clustering
-
 ```{r}
 res.hcpc <- HCPC(res.pca,nb.clust = 5, order = TRUE)
 ```
+
+Note: the reason we chose this number of clusters is because, after trying different numbers, we thought it was the best way to distribute the data.
+
 ## Description of clusters
+Number of observations in each cluster:
 ```{r}
-#interpretar els resultats de la classificacio
-#table(res.hcpc$data.clust$clust)
-
-summary(res.hcpc$data.clust$clust)
-
-### desc.var ###
-### A. The description of the clusters by the variables ###
-names(res.hcpc$desc.var)
-
-### desc.var$test.chi2 ###
-### A.1. The categorical variables which characterizes the clusters ###
-res.hcpc$desc.var$test.chi2
-
-### desc.var$category ###
-### A.2. The description of each cluster by the categories ##
-res.hcpc$desc.var$category
-
-### desc.var$quanti.var ###
-### A.3. The quantitative variables which characterizes the clusters ###
-res.hcpc$desc.var$quanti.var
-
-### desc.var$quanti ###
-### A.4. The description of each cluster by the quantitative variables ###
-res.hcpc$desc.var$quanti
-
-### desc.axes ###
-### B. The description of the clusters by the axes ###
-names(res.hcpc$desc.axes)
-res.hcpc$desc.axes$quanti.var
-res.hcpc$desc.axes$quanti
-
-### desc.ind ###
-### C. The description of the clusters by the individuals ###
-names(res.hcpc$desc.ind)
-res.hcpc$desc.ind$para
-res.hcpc$desc.ind$dist
-
-# Examinar los valores de los individuos que caracterizan a las clases
-#### Characteristic individuals
-para1<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[1]]))
-para2<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[2]]))
-para3<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[3]]))
-para4<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[4]]))
-para5<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[5]]))
-
-dist1<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[1]]))
-dist2<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[2]]))
-dist3<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[3]]))
-dist4<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[4]]))
-dist5<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[5]]))
-
-plot(res.pca,label="none",invisible=c("quali","ind.sup"))  # Potser no us va
-plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],col="grey80",cex=0.5,pch=16)
-points(res.pca$ind$coord[para1,1],res.pca$ind$coord[para1,2],col="blue",cex=2,pch=16)
-points(res.pca$ind$coord[dist1,1],res.pca$ind$coord[dist1,2],col="orange",cex=2,pch=16)
-points(res.pca$ind$coord[para2,1],res.pca$ind$coord[para2,2],col="blue",cex=2,pch=16)
-points(res.pca$ind$coord[dist2,1],res.pca$ind$coord[dist2,2],col="red",cex=2,pch=16)
-points(res.pca$ind$coord[para3,1],res.pca$ind$coord[para3,2],col="blue",cex=2,pch=16)
-points(res.pca$ind$coord[dist3,1],res.pca$ind$coord[dist3,2],col="green",cex=2,pch=16)
-points(res.pca$ind$coord[para4,1],res.pca$ind$coord[para4,2],col="blue",cex=2,pch=16)
-points(res.pca$ind$coord[dist4,1],res.pca$ind$coord[dist4,2],col="magenta",cex=2,pch=16)
-points(res.pca$ind$coord[para5,1],res.pca$ind$coord[para5,2],col="blue",cex=2,pch=16)
-points(res.pca$ind$coord[dist5,1],res.pca$ind$coord[dist5,2],col="purple",cex=2,pch=16)
-
-
-# Partition quality
-#(res.hcpc$call$t$within[1]-res.hcpc$call$t$within['nb.clusters'])/res.hcpc$call$t$within[1]
-
-res.hcpc$call$t$within[1:20]  #res.hcpc$call$t$within[1] = TTS = WITHIN 1 CLUSTER
-#(res.hcpc$call$t$within[1]-res.hcpc$call$t$within[6]) = BETSS
-(res.hcpc$call$t$within[1]-res.hcpc$call$t$within[6])/res.hcpc$call$t$within[1]
-
-# Quantes classes per assolir una representativitat Clustering 80%  - Mireu 
-(res.hcpc$call$t$within[1]-res.hcpc$call$t$within[1:50])/res.hcpc$call$t$within[1]
-### Results for the hierarchical tree ###
-names(res.hcpc$call$t)
-
-### The suggested level to cut the tree  ###
-res.hcpc$call$t$nb.clust
-### Within inertias ###
-res.hcpc$call$t$within[1:6]
-
-### Ratio between within inertias ###
-res.hcpc$call$t$quot[1:6]
-
-### Inertia gain ###
-res.hcpc$call$t$inert.gain[1:6]
-df$hcpck<-res.hcpc$data.clust$clust
-
-####
-#### THE END
-####
-
+table(res.hcpc$data.clust$clust)
+barplot(table(res.hcpc$data.clust$clust), col="darkslateblue", border="darkslateblue", main="[hierarchical] #observations/cluster")
 ```
 
+### The description of the clusters by the variables 
+```{r}
+names(res.hcpc$desc.var)
+
+res.hcpc$desc.var$test.chi2   # categorical variables which characterizes the clusters
+res.hcpc$desc.var$category    # description of each cluster by the categories
+res.hcpc$desc.var$quanti.var  # quantitative variables which characterizes the clusters
+res.hcpc$desc.var$quanti      # description of each cluster by the quantitative variables
+```
+
+### The description of the clusters by the axes
+!!! Segons ella, diu que no és important, que no creu que aporti res.
+```{r}
+names(res.hcpc$desc.axes)
+
+res.hcpc$desc.axes$quanti.var # ?
+res.hcpc$desc.axes$quanti     # principal dimensions that are the most associated with clusters
+```
+
+### The description of the clusters by the individuals
+```{r}
+names(res.hcpc$desc.ind)
+
+res.hcpc$desc.ind$para  # representative individuals of each cluster
+res.hcpc$desc.ind$dist  # ?
+```
+
+#### Examine the values of individuals that characterize classes
+```{r}
+# characteristic individuals
+para1<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[1]]))
+dist1<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[1]]))
+para2<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[2]]))
+dist2<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[2]]))
+para3<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[3]]))
+dist3<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[3]]))
+para4<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[4]]))
+dist4<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[4]]))
+para5<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[5]]))
+dist5<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[5]]))
+
+plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],col="grey50",cex=0.5,pch=16)
+points(res.pca$ind$coord[para1,1],res.pca$ind$coord[para1,2],col="chartreuse",cex=1,pch=16)
+points(res.pca$ind$coord[dist1,1],res.pca$ind$coord[dist1,2],col="chartreuse3",cex=1,pch=16)
+points(res.pca$ind$coord[para2,1],res.pca$ind$coord[para2,2],col="darkorchid1",cex=1,pch=16)
+points(res.pca$ind$coord[dist2,1],res.pca$ind$coord[dist2,2],col="darkorchid3",cex=1,pch=16)
+points(res.pca$ind$coord[para3,1],res.pca$ind$coord[para3,2],col="firebrick1",cex=1,pch=16)
+points(res.pca$ind$coord[dist3,1],res.pca$ind$coord[dist3,2],col="firebrick3",cex=1,pch=16)
+points(res.pca$ind$coord[para4,1],res.pca$ind$coord[para4,2],col="palevioletred1",cex=1,pch=16)
+points(res.pca$ind$coord[dist4,1],res.pca$ind$coord[dist4,2],col="palevioletred3",cex=1,pch=16)
+points(res.pca$ind$coord[para5,1],res.pca$ind$coord[para5,2],col="royalblue1",cex=1,pch=16)
+points(res.pca$ind$coord[dist5,1],res.pca$ind$coord[dist5,2],col="royalblue3",cex=1,pch=16)
+```
+
+### Partition quality
+
+#### Gain in inertia (in %)
+```{r}
+((res.hcpc$call$t$within[1]-res.hcpc$call$t$within[5])/res.hcpc$call$t$within[1])*100
+```
+
+#### Per assolir una representetivitat de clustering del 80% necessitem...
+```{r}
+((res.hcpc$call$t$within[1]-res.hcpc$call$t$within[1:50])/res.hcpc$call$t$within[1])*100
+```
+
+...18 clusters.
+
+#### Hierarchical tree
+```{r}
+names(res.hcpc$call$t) # results for the hierarchical tree
+res.hcpc$call$t$nb.clust # the suggested level to cut the tree
+res.hcpc$call$t$within[1:5] # within inertias
+res.hcpc$call$t$quot[1:5] # ratio between within inertias
+res.hcpc$call$t$inert.gain[1:5] # inertia gain
+```
+
+### Save the results into dataframe
+```{r}
+df$hcpck<-res.hcpc$data.clust$clust
+```
+
+--------------------------------------------------------------------------------
 
 # K-Means Classification
+
 ## Description of clusters
+```{r}
+res.pca <- PCA(
+  df[,c(1:10,12,13,15:17,19,21,22,25,27)], 
+  quanti.sup=c(3:6,13),
+  quali.sup = c(1,2,14:16,19:20),
+  ncp=5,
+  graph=FALSE
+)
+ppcc<-res.pca$ind$coord[,1:3] # 3 components principals
+```
+
+### Optimal number of clusters
+```{r}
+# library("factoextra")
+# fviz_nbclust(ppcc, kmeans, method = "gap_stat")
+# no funciona bé --> s'ha de repassar
+```
+
+According to the previous plot, the optimal number of clusters per k-means is ???.
+
+### Whatever
+```{r}
+# library("NbClust") # It takes a lot ....
+# set.seed(123)
+# res.nbclust <- NbClust(ppcc, distance = "euclidean",
+#                   min.nc = 2, max.nc = 10, 
+#                   method = "complete", index ="all") # Time consuming
+# # time consuming su madre, porto literal 10 min executant-lo i segueix igual
+```
 
 ## Classification
-
 ```{r}
-
-# Kmeans: Partitioning in k=7 groups
-res.pca<-PCA(df[,1:23],quali.sup=c(1,2,16,22:23),quanti.sup= c(3:6,15),ncp=5,graph=FALSE) # ja està fet no?
-ppcc<-res.pca$ind$coord[,1:5]
-dim(ppcc)
-
-library("factoextra")
-fviz_nbclust(ppcc, kmeans, method = "gap_stat")
-library("NbClust") # It takes a lot ....
-set.seed(123)
-res.nbclust <- NbClust(ppcc, distance = "euclidean",
-                  min.nc = 2, max.nc = 10, 
-                  method = "complete", index ="all") # Time consuming
-
-dist<-dist(ppcc)  # Coordenades són reals - Euclidea
-kc<-kmeans(dist,6, iter.max = 30, trace=T)
+dist<-dist(ppcc)  # coordenades són reals - Euclidea
+kc<-kmeans(dist, centers=5, iter.max=30, trace=TRUE) 
 
 df$claKM<-0
 df$claKM<-kc$cluster
 df$claKM<-factor(df$claKM)
-kc$betweenss/kc$totss
+barplot(
+  table(df$claKM),
+  col="darkslateblue", 
+  border="darkslateblue", 
+  main="[k-means] #observations/cluster"
+)
+```
 
-names(df)
-res.cat<-catdes(df,38)
+### Gain in inertia (in %)
+```{r}
+100*(kc$betweenss/kc$totss)
+```
 
-# Confusion table
-
+### Comparison of clusters
+```{r}
 table(df$hcpck,df$claKM)
 
-df$hcpck<-factor(df$hcpck,labels=paste("kHP-",1:6))
-df$claKM<-factor(df$claKM,levels=c(3,6,2,1,5,4),labels=c("kKM-3","kKM-6","kKM-2","kKM-1","kKM-5","kKM-4"))
+# we must do a relabel
+df$hcpck<-factor(df$hcpck,labels=paste("kHP-",1:5))
+df$claKM<-factor(df$claKM,levels=c(1,5,3,2,4),labels=c("kKM-1","kKM-5","kKM-3","kKM-2","kKM-4"))
+
 tt<-table(df$hcpck,df$claKM)
 tt
-sum(diag(tt)/sum(tt))
+100*sum(diag(tt)/sum(tt))
 ```
+
+
+--------------------------------------------------------------------------------
 
 # CA analysis for your data should contain your factor version of the numeric target (previous) in K= 7 (maximum 10) levels and 2 factors:
 
