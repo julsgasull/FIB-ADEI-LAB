@@ -400,7 +400,7 @@ According to the previous plot, the optimal number of clusters per k-means is ??
 ## Classification
 ```{r}
 dist<-dist(ppcc)  # coordenades són reals - Euclidea
-kc<-kmeans(dist, centers=5, iter.max=30, trace=TRUE) 
+kc<-kmeans(dist, centers=7, iter.max=30, trace=TRUE) 
 
 df$claKM<-0
 df$claKM<-kc$cluster
@@ -424,7 +424,17 @@ table(df$hcpck,df$claKM)
 
 # we must do a relabel
 df$hcpck<-factor(df$hcpck,labels=paste("kHP-",1:5))
-df$claKM<-factor(df$claKM,levels=c(1,5,3,2,4),labels=c("kKM-1","kKM-5","kKM-3","kKM-2","kKM-4"))
+df$claKM<-factor(
+  df$claKM,levels=c(1,4,2,4,2,4,1),
+  labels=c(
+    "kKM-1",
+    "kKM-4",
+    "kKM-2",
+    "kKM-4",
+    "kKM-2",
+    "kKM-4",
+    "kKM-1")
+)
 
 tt<-table(df$hcpck,df$claKM)
 tt
@@ -433,6 +443,12 @@ tt
 
 
 --------------------------------------------------------------------------------
+
+# CA analysis
+```{r}
+
+```
+
 
 # CA analysis for your data should contain your factor version of the numeric target (previous) in K= 7 (maximum 10) levels and 2 factors:
 
