@@ -403,7 +403,7 @@ According to the previous plot, the optimal number of clusters per k-means is ??
 ## Classification
 ```{r}
 dist<-dist(ppcc)  # coordenades són reals - Euclidea
-kc<-kmeans(dist, centers=7, iter.max=30, trace=TRUE) 
+kc<-kmeans(dist, centers=5, iter.max=30, trace=TRUE) 
 
 df$claKM<-0
 df$claKM<-kc$cluster
@@ -426,17 +426,24 @@ barplot(
 table(df$hcpck,df$claKM)
 
 # we must do a relabel
-df$hcpck<-factor(df$hcpck,labels=paste("kHP-",1:5))
-df$claKM<-factor(
-  df$claKM,levels=c(1,4,2,4,2,4,1),
+df$hcpck<-factor(
+  df$hcpck,
   labels=c(
+    "kHP-1",
+    "kHP-2",
+    "kHP-3",
+    "kHP-4",
+    "kHP-5")
+  )
+df$claKM<-factor(
+  df$claKM,
+  levels=c(3,5,2,1,4),
+  labels=c(
+    "kKM-3",
+    "kKM-5",
+    "kKM-2",
     "kKM-1",
-    "kKM-4",
-    "kKM-2",
-    "kKM-4",
-    "kKM-2",
-    "kKM-4",
-    "kKM-1")
+    "kKM-4")
 )
 
 tt<-table(df$hcpck,df$claKM)
