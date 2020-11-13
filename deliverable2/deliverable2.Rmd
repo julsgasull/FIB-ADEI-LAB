@@ -378,6 +378,7 @@ res.pca <- PCA(
   graph=FALSE
 )
 ppcc<-res.pca$ind$coord[,1:3] # 3 components principals
+dim(ppcc)
 ```
 
 ### Optimal number of clusters
