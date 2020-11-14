@@ -3,13 +3,13 @@ title: "Deliverable 2"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
-  html_document:
-    toc: no
-    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
+  html_document:
+    toc: no
+    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
@@ -35,10 +35,10 @@ rm(list=ls())                       # Clean workspace
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
-filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -256,24 +256,26 @@ And we see that for this **category**, period afternoon mean is 0.28 units over 
 
 ## Perform a PCA taking into account also supplementary variables the supplementary variables can be quantitative and/or categorical 
 
+We want to take analyze the supplementary factor **kind of rate**, so we want to add lines that join the categories of this factor for the first factorial plane. With the following plot we can see it.
+
 ```{r}
-plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],pch=19,col="grey30")
-points(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],pch=15,col="cadetblue1")
-lines(res.pca$quali.sup$coord[3:4,1],res.pca$quali.sup$coord[3:4,2],lwd=2,lty=2,col="coral")
-text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="cadetblue1",cex=0.5)
+plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],pch=19,col="grey30") #draw all the individuals in grey
+points(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],pch=15,col="cadetblue1") # points associated with the categories gravitatorial centers
+lines(res.pca$quali.sup$coord[3:4,1],res.pca$quali.sup$coord[3:4,2],lwd=2,lty=2,col="coral") # draw a line that joins the categories that we want to take a look at
+text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="cadetblue1",cex=0.5) #add the names of the different categories
 
 res.pca$quali.sup$coord
 
-# no sé si hem de fer alguna cosa més aquí al video del 16/10 no explica gaire cosa (sobre el min 50 llarg).
 ```
 --------------------------------------------------------------------------------
 
 # Hierarchical Clustering
+
 ```{r}
 res.hcpc <- HCPC(res.pca,nb.clust = 5, order = TRUE)
 ```
 
-*Note*: the reason we chose this number of clusters is because, after trying different numbers, we thought it was the best way to distribute the data.
+*Note*: If we chose the default number of cluster it would be 3, as we can guess from the inertia reduction plot, that follows the Elbow's rule (number of black lines plus 1). In our case, due to the amount of data we have, the reason why we chose 5 as the number of clusters is because, after trying different numbers, we thought it was the best way to distribute the data.
 
 ## Description of clusters
 Number of observations in each cluster:
@@ -282,34 +284,82 @@ table(res.hcpc$data.clust$clust)
 barplot(table(res.hcpc$data.clust$clust), col="darkslateblue", border="darkslateblue", main="[hierarchical] #observations/cluster")
 ```
 
+##Interpret the results of the classification
+
 ### The description of the clusters by the variables 
 ```{r}
 names(res.hcpc$desc.var)
 
 res.hcpc$desc.var$test.chi2   # categorical variables which characterizes the clusters
+```
+We start wit the description of the categorical variables that characterizes the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variable that affects more to the clustering is **period** because is the one with the smallest p.value. The variables associated to the clusters are:
+
+* period
+* Trip_distance_range
+* TipIsGiven
+* Paymnet_type
+* VendorID
+
+Next, we want to see for each cluster which are the categories that characterize them.The clusters that contain more individuals are the first, the second and the fourth one. Cluster number 4 has less individuals. We proceed to analyze them.
+```{r}
 res.hcpc$desc.var$category    # description of each cluster by the categories
+```
+**Cluster 1**
+The first thing we can notice from this cluster is that **Trip_type=Street-Hail** that intervents in the 97.58% from the sample, in this cluster is the 100% of the observations, which means that all the observations in this cluster have this type of trip. We have 42.78% from the Trip_type=Street-Hail observations in this cluster. As we can see and expect, from the other trip_type that we have in this cluster is that **Trip_type=Dispatch** that intervents in the 2.42% from the sample, in this cluster is not represented, we get 0% of the observations. Then, we can notice is the kind of rate. We can see that **RateCodeID=Rate-1**, the one that represents the standard rate, and means the 97.25% of our sample, in this cluster is the 99.95% of the observations, almost every observation from this cluster is a standard rate trip. In this cluster we have 42.90% of the observations from this category. In the other hand, we have the kind of rate, that contains the other options, represents the 2.75% of our sample, in this cluster is the 0.05% of the observations. In this cluster, we have the 0.79% of the observations from this category.
+
+**Cluster 2**
+The first thing we can notice from this cluster is that **RateCodeID=Rate-1** (standard rate) and **Trip_type=Street-Hail** are the most represented in the cluster. We have 94.98% of the observations in the cluster that represent street-hail trips, and we also have 94.86% of the observations in the cluster that represent the standard rate trips. We have 74.72% of the morning period trips of the observations in the sample represented in this cluster, 73.21% of the dispatch type trips of the observations in the sample represented in this cluster, 66.59% of the valley period trips of the observations in the sample represented in this cluster, we also have the 66.14% of the other kind of rates f the observations in the sample represented in this cluster. In the other hand, we only have 3.16% of the long distance trips in the sample represented in this cluster and this category only means the 1.29% of the observations in the cluster of this category. We have 10.11% of the night period trips in the sample represented in this cluster and we have almost 19% of the afternoon period trips in the sample represented in this cluster.
+
+**Cluster 3**
+The first thing we can notice from this cluster is that almost every observation is from standard rate kind. We can see that 99.24% of the observations in the cluster are **RateCodeID=Rate-1**, and the cluster contains the 5.78% of the observations in the sample of this kind. The rest of observations in the cluster are from **RateCodeID=Rate-Other** kind.The next thing we can notice from this cluster is that, also, almost every observation is from Verfione kind of vendor. We have the 94.27% of the observations in this cluster of **VendorID=f.Vendor-VeriFone** category. This categories represents the 78.95% from our sample, and the cluster contains the 6.77% of obervations of this kind. For the other kind of vendor, **VendorID=f.Vendor-Mobile**, that represents the 21.05% of our sample, we have that in this cluster, 5.73% of the observations are from this vendor, and the cluster contains 1.54% of observations of this kind. If we take a look at the period categories, we see that **period=Period night** represents 43.51% of the observations in the cluster, and we have the 6.94% of the observations of this kind from the sample. In this cluster the night period is over represented because this kind of period represents the 35.52% of observations from our sample. For the **period=Period valley**, we have 20.99% of the observations in the cluster of this kind of period. We have in this cluster 4.37% of the observations of this kind from our sample. The last kind of period that we have in this cluster is the moring one, that represents the 5.73% of the observations in the cluster and we have 2.77% of the observations from the sample of this kind in this cluster.
+
+**Cluster 4**
+In this cluster, we can see that the category more represented is **Trip_type=Street-Hail** with 96.31% of the observations in the cluster. We get 16.18% of the observations of this kind from the sample in the cluster. Another category that is very represented is the standard rate, **RateCodeID=Rate-1**, with 95.25% of the observations in the cluster. From the sample, we get in this cluster, 16.06% of the observations of this kind. We can notice that we have 87.52% of long distance trip observations from the sample in this cluster. We can see that this category is over represented in this cluster because this category represents the 14.38% of the sample, and 76.78% of the observations in the cluster are of this category. In the other hand, we can see that short distance trips that represents 1.85% of the observations in the cluster and we only got 0.47% of the observations of this kind from the sample.
+
+
+**Cluster 5**
+This cluster is the smallest one, we only have 39 observations from the sample. We can see in this cluster is that the **RateCodeID=Rate-1** represents the 89.75% of the observations in this cluster. In this cluster we only have 0.78% of the observations from the sample of this kind. The rest 10.25% are the **RateCodeID=Rate-Other** observtions in the cluster. In this case, we have a 3.15% of the observations from the sample of this kind in this cluster. Then we have that 82.05% of the observations in the cluster that paid credit card, and we got 1.53% of the observations from sample sample of this kind this cluster. The other 17.95% of the observations in the cluster paid in cash, and we got less representation from the sample in this cluster for this category, we only got 0.28% of the observations from the sample.
+
+We now proceed to see the quantitatives variables that characterizes the clusters.
+```{r}
 res.hcpc$desc.var$quanti.var  # quantitative variables which characterizes the clusters
+```
+We can see in the output that all the variables that appear are slightly over represented in the clusters. We can notice that the greatest represented is the Total_amount with 0.98 units over the global mean, we can also remark the Passenger_count with 0.78 units over the mean and the Extra variable with 0.63 units over the mean. The least over represented are the Pickup_longitude with 0.004 units over the mean, the Dropoff_longitude with 0.01 units over the mean, the Pickup_latitude with 0.016 units over the mean and the Dropoff_latitude with 0.02 units over the total mean.
+
+We want to know now which variables are associated with the quantitative variables.
+```{r}
 res.hcpc$desc.var$quanti      # description of each cluster by the quantitative variables
 ```
 
-### The description of the clusters by the axes
-!!! Segons ella, diu que no és important, que no creu que aporti res.
-```{r}
-names(res.hcpc$desc.axes)
+**Cluster 1**
+For this cluster, we can see that the **traveltime** is around 3 units under the overall mean, the **Fare_amount** as well and the **Total_amount** too. We can also see that the **Trip_distance** is 1 unit under the overall mean and the **espeed** as well. We see that the only variable that is over the overall mean is the variable **Extra** with less than 0.3 units over it.
 
-res.hcpc$desc.axes$quanti.var # ?
-res.hcpc$desc.axes$quanti     # principal dimensions that are the most associated with clusters
-```
+**Cluster 2**
+For the second cluster, happens something similar as with the first one. We see that the **Total_amount** is around 3.7 units under the overall mean, **espeed** around 2 units under as well, **Tip_amount** around 0.5 under the overall mean too, **traveltime** and **Fare_amount** around 3 units under the overall mean as well, **Trip_distance** around 1 unit under the mean. In this clusters the only variables ver the overall mean are **Dropoff_latitude** and **Pickup_latitude** but they are not remarkable since the increase is super light.
+
+**Cluster 3**
+In this cluster we can see that the most remarkable variable is **Passenger_count** with almost 4 units over the overall mean, then we also have **Total_amount** with 0.1 units over the meant. In the other hand, we have **Total_amount** and **Fare_amount** with around 1 unit under the overall mean. **Trip_distance** is around 0.5 units under the overall mean.
+
+**Cluster 4**
+In this cluster we can see clearly the most remarkable vairables. We have 5 variables cleary over the overall mean. These are: **Total_amount** with 26 units over the mean, **Fare_amount** and **traveltime** with 14 units over the mean, **espeed** with 8 units over the mean and **Trip_distance** with 5 units over the overall mean.
+
+**Cluster 5**
+In this cluster every variable is over the overall mean. Every variable except **Pickup_longitude** are remarkably over the overall mean. Firstly, we have the **Total_amount** around 30 units over, then we have **Fare_amount** 18 units over, **espeed** 14 units over, **traveltime** 12 units over, **Trip_distance** 6 units over, **Tolls_amount** 5 units over and **Tip_amount** 3.7 units over the overall mean.
 
 ### The description of the clusters by the individuals
 ```{r}
-names(res.hcpc$desc.ind)
-
 res.hcpc$desc.ind$para  # representative individuals of each cluster
-res.hcpc$desc.ind$dist  # ?
 ```
+What we obtain are the more representative individuals,paragons, for each cluster. We get the rownames of each paragon in every single cluster.
+
+```{r}
+res.hcpc$desc.ind$dist  # individuals distant from each cluster
+```
+What we obtain are those individuals of each cluster that that far away in the same cluster from the rest of the individuals. We also obtain the rownames of each individual with the bigger distance respect the other ones in the cluster.
 
 #### Examine the values of individuals that characterize classes
+
+We get the grpahical representation for the individuals that characterize classes (para and dist).
 ```{r}
 # characteristic individuals
 para1<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[1]]))
@@ -324,43 +374,37 @@ para5<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[5]]))
 dist5<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[5]]))
 
 plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],col="grey50",cex=0.5,pch=16)
-points(res.pca$ind$coord[para1,1],res.pca$ind$coord[para1,2],col="chartreuse",cex=1,pch=16)
+points(res.pca$ind$coord[para1,1],res.pca$ind$coord[para1,2],col="blue",cex=1,pch=16)
 points(res.pca$ind$coord[dist1,1],res.pca$ind$coord[dist1,2],col="chartreuse3",cex=1,pch=16)
-points(res.pca$ind$coord[para2,1],res.pca$ind$coord[para2,2],col="darkorchid1",cex=1,pch=16)
+points(res.pca$ind$coord[para2,1],res.pca$ind$coord[para2,2],col="blue",cex=1,pch=16)
 points(res.pca$ind$coord[dist2,1],res.pca$ind$coord[dist2,2],col="darkorchid3",cex=1,pch=16)
-points(res.pca$ind$coord[para3,1],res.pca$ind$coord[para3,2],col="firebrick1",cex=1,pch=16)
+points(res.pca$ind$coord[para3,1],res.pca$ind$coord[para3,2],col="blue",cex=1,pch=16)
 points(res.pca$ind$coord[dist3,1],res.pca$ind$coord[dist3,2],col="firebrick3",cex=1,pch=16)
-points(res.pca$ind$coord[para4,1],res.pca$ind$coord[para4,2],col="palevioletred1",cex=1,pch=16)
+points(res.pca$ind$coord[para4,1],res.pca$ind$coord[para4,2],col="blue",cex=1,pch=16)
 points(res.pca$ind$coord[dist4,1],res.pca$ind$coord[dist4,2],col="palevioletred3",cex=1,pch=16)
-points(res.pca$ind$coord[para5,1],res.pca$ind$coord[para5,2],col="royalblue1",cex=1,pch=16)
-points(res.pca$ind$coord[dist5,1],res.pca$ind$coord[dist5,2],col="royalblue3",cex=1,pch=16)
+points(res.pca$ind$coord[para5,1],res.pca$ind$coord[para5,2],col="blue",cex=1,pch=16)
+points(res.pca$ind$coord[dist5,1],res.pca$ind$coord[dist5,2],col="royalblue1",cex=1,pch=16)
 ```
 
 ### Partition quality
+We are going to evaluate the partition quality.
 
 #### Gain in inertia (in %)
 ```{r}
+#res.hcpc$call$t$within[1] = Total sum of squares
+#(res.hcpc$call$t$within[1]-res.hcpc$call$t$within[5] = between sum of squares
 ((res.hcpc$call$t$within[1]-res.hcpc$call$t$within[5])/res.hcpc$call$t$within[1])*100
 ```
+The quality of this reduction if of 57.49%.
 
-#### Per assolir una representetivitat de clustering del 80% necessitem...
+In case we wanted to achieve an 80% of the clustering representativity we would need 18 clusters.
 ```{r}
-((res.hcpc$call$t$within[1]-res.hcpc$call$t$within[1:50])/res.hcpc$call$t$within[1])*100
-```
-
-...18 clusters.
-
-#### Hierarchical tree
-```{r}
-names(res.hcpc$call$t)            # results for the hierarchical tree
-res.hcpc$call$t$nb.clust          # the suggested level to cut the tree
-res.hcpc$call$t$within[1:5]       # within inertias
-res.hcpc$call$t$quot[1:5]         # ratio between within inertias
-res.hcpc$call$t$inert.gain[1:5]   # inertia gain
+((res.hcpc$call$t$within[1]-res.hcpc$call$t$within[18])/res.hcpc$call$t$within[1])*100
 ```
 
 ### Save the results into dataframe
 ```{r}
+res.hcpc$call$t$inert.gain[1:5] 
 df$hcpck<-res.hcpc$data.clust$clust
 ```
 
