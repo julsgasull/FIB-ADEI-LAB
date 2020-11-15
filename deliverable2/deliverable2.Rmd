@@ -539,12 +539,13 @@ summary(res.ca)
 ```
 The first thing we can see from the summary is that we have a chi square statistic of 6099.333, great enough to reject the H0, which means the intensity of the relation is high. If we take a look at the variances from the different dimensions, we can see that all together sum more than 1. 
 
-## Eigenvalues and dominant axes analysis. How many axes we have to consider
+## Eigenvalues and dominant axes analysis. How many axes we have to consider?
 
 ```{r}
 mean(res.ca$eig[,1])
 ```
 Following the kaiser kriteria and the value got in the output, we should retain dimensions with a variance greater than 0.3343199. In this case, the first dimension fulfills this because its variance is 0.751, but it is not enough to work with data so, we would choose 2 o 3 dimensions for this case.
+
 --------------------------------------------------------------------------------
 # MCA analysis for your data should contain:
 
