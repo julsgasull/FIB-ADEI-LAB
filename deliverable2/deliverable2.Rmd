@@ -88,11 +88,7 @@ Note - web that we used in order to use factoextra
 We have already seen profiling in the previous installment. So now, let’s proceed to look at the main components.
 ```{r}
 library(FactoMineR)
-res.pca <- PCA(
-  df[,c(1:10,12,13,15:17,19,21,22,25,27)], 
-  quanti.sup=c(3:6,13), 
-  quali.sup = c(1,2,14:16,19:20)
-)
+res.pca <- PCA(df[,c(1:10,12,13,15:17,19,21,22,25,27)],quanti.sup=c(3:6,13),quali.sup=c(1,2,14:16,19:20))
 
 plot.PCA(res.pca,choix=c("var"), invisible=c("quanti.sup"))
 plot.PCA(res.pca,choix=c("var"), invisible=c("var"))
@@ -414,87 +410,60 @@ df$hcpck<-res.hcpc$data.clust$clust
 
 ## Description of clusters
 ```{r}
-res.pca <- PCA(
-  df[,c(1:10,12,13,15:17,19,21,22,25,27)], 
-  quanti.sup=c(3:6,13),
-  quali.sup = c(1,2,14:16,19:20),
-  ncp=5,
-  graph=FALSE
-)
-ppcc<-res.pca$ind$coord[,1:3] # 3 components principals
+res.pca <- PCA(df[,c(1:10,12,13,15:17,19,21,22,25,27)],quanti.sup=c(3:6,13),quali.sup=c(1,2,14:16,19:20),ncp=5,graph=FALSE)
+ppcc<-res.pca$ind$coord[,1:3] # 3 components principals (kaiser)
 dim(ppcc)
 ```
 
 ### Optimal number of clusters
 ```{r}
-# library("factoextra")
-# fviz_nbclust(ppcc, kmeans, method = "gap_stat")
-# no funciona bé --> s'ha de repassar
+library("factoextra")
+#fviz_nbclust(ppcc, kmeans, method = "gap_stat")
 ```
 
-According to the previous plot, the optimal number of clusters per k-means is ???.
-
-### Whatever
-```{r}
-# library("NbClust") # It takes a lot ....
-# set.seed(123)
-# res.nbclust <- NbClust(ppcc, distance = "euclidean",
-#                   min.nc = 2, max.nc = 10, 
-#                   method = "complete", index ="all") # Time consuming
-# # time consuming su madre, porto literal 10 min executant-lo i segueix igual
-```
+According to the previous plot, the optimal number of clusters per k-means is 1, so we guess maybe something is wrong or missing.
 
 ## Classification
-```{r}
-dist<-dist(ppcc)  # coordenades són reals - Euclidea
-kc<-kmeans(dist, centers=5, iter.max=30, trace=TRUE) 
 
+```{r}
+dist<-dist(ppcc)  # coordenates are real - Euclidean metric
+kc<-kmeans(dist, 5, iter.max=30, trace=TRUE) #caclulate the distances, it turns into a matrix
+```
+We see from the output that in 4 iterations it has converged.
+We now procceed to save in the data frame the number of clusters.
+```{r}
 df$claKM<-0
 df$claKM<-kc$cluster
 df$claKM<-factor(df$claKM)
-barplot(
-  table(df$claKM),
-  col="darkslateblue", 
-  border="darkslateblue", 
-  main="[k-means] #observations/cluster"
-)
+barplot(table(df$claKM),col="darkslateblue",border="darkslateblue",main="[k-means]#observations/cluster")
 ```
 
 ### Gain in inertia (in %)
+The american school does the partition quality evaluation in 5 clusters is done very fast, and after executing the following chunk we get an explicability of the 77.99%
 ```{r}
 100*(kc$betweenss/kc$totss)
 ```
 
-### Comparison of clusters
+###kmeans clusters characteristics
+If we want to know the characteristics of each cluster, as we did with the hierarchical, we need to execute a catdes to obtain these characteristics. In the following output we get them, but we are not going to explain them because the process is the same as we already did in the hierarchical.
+```{r}
+dim(df)
+res.cat <-catdes(df,30)
+res.cat
+```
+
+### Comparison of clusters (confusion table)
+We want to compare the hierarchical clustering, previously done, and the kmeans clustering, so proceed to do the following.
 ```{r}
 table(df$hcpck,df$claKM)
 
 # we must do a relabel
-df$hcpck<-factor(
-  df$hcpck,
-  labels=c(
-    "kHP-1",
-    "kHP-2",
-    "kHP-3",
-    "kHP-4",
-    "kHP-5")
-  )
-df$claKM<-factor(
-  df$claKM,
-  levels=c(3,5,2,1,4),
-  labels=c(
-    "kKM-3",
-    "kKM-5",
-    "kKM-2",
-    "kKM-1",
-    "kKM-4")
-)
-
-tt<-table(df$hcpck,df$claKM)
-tt
+df$hcpck<-factor(df$hcpck,labels=c("kHP-1","kHP-2","kHP-3","kHP-4","kHP-5"))
+df$claKM<-factor(df$claKM,levels=c(3,5,2,1,4),labels=c("kKM-3","kKM-5","kKM-2","kKM-1","kKM-4"))
+tt<-table(df$hcpck,df$claKM); tt
 100*sum(diag(tt)/sum(tt))
 ```
-
+We have a concordance of the 54.73% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
 
 --------------------------------------------------------------------------------
 
