@@ -501,9 +501,9 @@ res.ca <- CA(tt)
 Those observations far away from the gravity center will mean that represent less observations on the sample. If rows and columns are nearby, this will mean that there is a correspondence between them, which means that they occur simultaneously in the sample.
 
 ```{r}
-summary(res.ca, dig=2)
+summary(res.ca)
 ```
-We conclude that we can reject the H0 for these pair of factors, and now we are going to see if we can see if there is independence between the cost and the travel time, so the first thing we are going to do is factor the travel time.
+We conclude that we can not reject the H0 for these pair of factors, and now we are going to see if we can see if there is independence between the cost and the travel time, so the first thing we are going to do is factor the travel time.
 ```{r}
 df$f.tt[df$traveltime<=5] = "[0,5]"
 df$f.tt[(df$traveltime>5) & (df$traveltime<=10)] = "(5,10]"
