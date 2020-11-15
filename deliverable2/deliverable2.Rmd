@@ -525,8 +525,10 @@ We are now going to take a look to the simple correspondences.
 ```{r}
 res.ca <- CA(tt)
 
-plot(res.ca$row$coord[,1],res.ca$row$coord[,2],pch=19,col="blue")
+plot(res.ca$row$coord[,1],res.ca$row$coord[,2],pch=19,col="blue",xlim=c(-1.5,1.5),ylim=c(-1.5,1.5),xlab="Axis 1",ylab="Axis 2", main="CA f.cost vs f.tt")
 points(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red")
+text(res.ca$row$coord[,1],res.ca$row$coord[,2],lwd=2,col="blue",labels=levels(df$f.cost))
+text(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red",labels=levels(df$f.tt))
 lines(res.ca$row$coord[,1],res.ca$row$coord[,2],lwd=2,col="blue")
 lines(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red")
 ```
