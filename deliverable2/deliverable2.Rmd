@@ -468,16 +468,82 @@ We have a concordance of the 54.73% so we can say that they are different, if we
 --------------------------------------------------------------------------------
 
 # CA analysis
+
+## Are there any row categories that can be combined/avoided to explain the discretization of the numeric target.
+
+### CA analysis for your data should contain your factor version of the numeric target (previous) in K= 7 (maximum 10) levels and 2 factors.
+
+The first thing we need to do is factor our numeric target variable, Total_amount, and name it f.cost. We are going to set 6 different categories.
+
+```{r}
+df$f.cost[df$Total_amount<=8] = "[0,8]"
+df$f.cost[(df$Total_amount>8) & (df$Total_amount<=11)] = "(8,11]"
+df$f.cost[(df$Total_amount>11) & (df$Total_amount<=18)] = "(11,18]"
+df$f.cost[(df$Total_amount>18) & (df$Total_amount<= 30)] = "(18,30]"
+df$f.cost[(df$Total_amount>30) & (df$Total_amount<= 50)] = "(30,50]"
+df$f.cost[df$Total_amount>50] = "(50,129)"
+df$f.cost<-factor(df$f.cost)
+table(df$f.cost)
+
+```
+Once we have this factor, proceed to create a variable that associates the cost with the passenger groups, and we we a contingency table with 5 rows, one per kind of cost and 3 columns, one per each kind of group.
+
+```{r}
+tt<-table(df[,c("f.cost","passenger_groups")]);tt
+chisq.test(tt,  simulate.p.value = TRUE) #to see if the rows and columns are independents. H0: Rows and columns are independent
+```
+We get a p-value greater than 0.05 so we can assume the H0. ( 0.5217 < 0.05 = FALSE).
+
+We are now going to take a look to the simple correspondences. 
 ```{r}
 res.ca <- CA(tt)
 ```
+Those observations far away from the gravity center will mean that represent less observations on the sample. If rows and columns are nearby, this will mean that there is a correspondence between them, which means that they occur simultaneously in the sample.
 
+```{r}
+summary(res.ca, dig=2)
+```
+We conclude that we can reject the H0 for these pair of factors, and now we are going to see if we can see if there is independence between the cost and the travel time, so the first thing we are going to do is factor the travel time.
+```{r}
+df$f.tt[df$traveltime<=5] = "[0,5]"
+df$f.tt[(df$traveltime>5) & (df$traveltime<=10)] = "(5,10]"
+df$f.tt[(df$traveltime>10) & (df$traveltime<=15)] = "(10,15]"
+df$f.tt[(df$traveltime>15) & (df$traveltime<= 20)] = "(15,20]"
+df$f.tt[(df$traveltime>20) & (df$traveltime<= 50)] = "(20,50]"
+df$f.tt<-factor(df$f.tt)
+table(df$f.tt)
+```
+Once we have this factor, proceed to create a variable that associates the cost with the traveltime.
 
-# CA analysis for your data should contain your factor version of the numeric target (previous) in K= 7 (maximum 10) levels and 2 factors:
+```{r}
+tt<-table(df[,c("f.cost","f.tt")]);tt
+chisq.test(tt) #to see if the rows and columns are independents. H0: Rows and columns are independent
+```
+We get a p-value smaller than 0.05 so we can reject the H0. ((< 2.2e-16) < 0.05). So there is dependence between the traveltime and the cost, as we suspected.
+
+We are now going to take a look to the simple correspondences. 
+```{r}
+res.ca <- CA(tt)
+
+plot(res.ca$row$coord[,1],res.ca$row$coord[,2],pch=19,col="blue")
+points(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red")
+lines(res.ca$row$coord[,1],res.ca$row$coord[,2],lwd=2,col="blue")
+lines(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red")
+```
+We can see in the plot, clearly that there are some categories that occur simultaneously in the sample, for instant the trips up to 5 minutes with the cost up to 8, the trips between 5-10 minutes and the costs between 8-11, the same happen with the trips between 10-15 minutes and the costs between 11-18.
+
+```{r}
+summary(res.ca)
+```
+The first thing we can see from the summary is that we have a chi square statistic of 6099.333, great enough to reject the H0, which means the intensity of the relation is high. If we take a look at the variances from the different dimensions, we can see that all together sum more than 1. 
 
 ## Eigenvalues and dominant axes analysis. How many axes we have to consider
-## Are there any row categories that can be combined/avoided to explain the discretization of the numeric target.
 
+```{r}
+mean(res.ca$eig[,1])
+```
+Following the kaiser kriteria and the value got in the output, we should retain dimensions with a variance greater than 0.3343199. In this case, the first dimension fulfills this because its variance is 0.751, but it is not enough to work with data so, we would choose 2 o 3 dimensions for this case.
+--------------------------------------------------------------------------------
 # MCA analysis for your data should contain:
 
 ## Eigenvalues and dominant axes analysis. How many axes we have to consider for next Hierarchical Classification stage?
@@ -486,6 +552,7 @@ res.ca <- CA(tt)
 ## Interpreting the axes association to factor map.
 ## Perform a MCA taking into account also supplementary variables (use all numeric variables) quantitative and/or categorical. How supplementary variables enhance the axis interpretation?
 
+--------------------------------------------------------------------------------
 # Hierarchical Clustering (from MCA)
 
 ## Description of clusters
