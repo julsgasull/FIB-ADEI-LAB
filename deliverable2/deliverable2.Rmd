@@ -35,10 +35,10 @@ rm(list=ls())                       # Clean workspace
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
-#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -171,10 +171,7 @@ df[which(row.names(df) %in% row.names(df)[rang[1:10]]),1:28]
 ```
 
 ### Detection of multivariant outliers and influent data.
-```{r}
-# no sé què posar aquí
-```
-
+Since we’ve commented before that we don’t consider multivariate outliers, no action should be taken here.
 
 ## Interpreting the axes: Variables point of view coordinates, quality of representation, contribution of the variables
 ```{r}
@@ -544,9 +541,108 @@ Following the kaiser kriteria and the value got in the output, we should retain 
 
 --------------------------------------------------------------------------------
 # MCA analysis for your data should contain:
+The Multiple correspondence analysis (MCA) is an extension of the simple correspondence analysis for summarizing and visualizing a data table containing more than two categorical variables. 
 
-## Eigenvalues and dominant axes analysis. How many axes we have to consider for next Hierarchical Classification stage?
+MCA is generally used to analyse a data set from survey. The goal is to identify:
+* A group of individuals with similar profile in their answers to the questions
+* The associations between variable categories
+
+First, we load the libraries we'll use:
+```{r}
+library(FactoMineR)
+library(factoextra)
+```
+
+Now, we can start computing the MCA for our categorical variables:
+```{r}
+res.mca <- MCA(
+  df[,c(1:6,15:17,19,25,27:28)], 
+  quanti.sup=c(3:7), 
+  quali.sup=c(12)
+)
+
+plot(res.mca,invisible=c("ind","quali.sup"),hab="quali") 
+plot(res.mca,invisible=c("var","quali.sup"),cex=.5,label="none") 
+plot(res.mca,invisible=c("ind","var"),hab="quali")
+names(res.mca)
+```
+
+
+## Eigenvalues and dominant axes analysis
+
+First we get the proportion of variances retained by the different dimensions (axes).
+```{r}
+eig.val <- get_eigenvalue(res.mca)
+head(eig.val)
+```
+
+Now, we visualize the percentages of inertia explained by each MCA dimensions:
+```{r}
+fviz_screeplot(res.mca, addlabels=TRUE, ylim=c(0,45))
+```
+
+How many axes we have to consider for next Hierarchical Classification stage?
+```{r}
+# TO DO
+```
+
 ## Individuals point of view: Are they any individuals "too contributive"? Are there any groups?
+```{r}
+ind <- get_mca_ind(res.mca)
+ind
+
+
+# Coordinates of column points
+head(ind$coord)
+# Quality of representation
+head(ind$cos2)
+# Contributions
+head(ind$contrib)
+```
+
+Contribution of individuals to the dimensions
+```{r}
+fviz_mca_ind(
+  res.mca, 
+  geom = c("point"),
+  col.ind = "contrib", 
+  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+  #repel = TRUE, # Avoid text overlapping (slow if many points)
+  ggtheme = theme_minimal()
+)
+
+fviz_contrib(res.mca, choice = "ind", axes = 1:2, top = 20)
+```
+
+Groups:
+```{r}
+fviz_mca_ind(res.mca, 
+             label = "none", # hide individual labels
+             habillage = "VendorID", # color by groups 
+             palette = c("#00AFBB", "#E7B800"),
+             addEllipses = TRUE, ellipse.type = "confidence",
+             ggtheme = theme_minimal()) 
+fviz_mca_ind(res.mca, 
+             label = "none", # hide individual labels
+             habillage = "RateCodeID", # color by groups 
+             palette = c("#00AFBB", "#E7B800"),
+             addEllipses = TRUE, ellipse.type = "confidence",
+             ggtheme = theme_minimal()) 
+fviz_mca_ind(res.mca, 
+             label = "none", # hide individual labels
+             habillage = "Trip_type", # color by groups 
+             palette = c("#00AFBB", "#E7B800"),
+             addEllipses = TRUE, ellipse.type = "confidence",
+             ggtheme = theme_minimal())
+fviz_mca_ind(res.mca, 
+             label = "none", # hide individual labels
+             habillage = "TipIsGiven", # color by groups 
+             palette = c("#00AFBB", "#E7B800"),
+             addEllipses = TRUE, ellipse.type = "confidence",
+             ggtheme = theme_minimal())
+```
+
+
 ## Interpreting map of categories: average profile versus extreme profiles (rare categories)
 ## Interpreting the axes association to factor map.
 ## Perform a MCA taking into account also supplementary variables (use all numeric variables) quantitative and/or categorical. How supplementary variables enhance the axis interpretation?
