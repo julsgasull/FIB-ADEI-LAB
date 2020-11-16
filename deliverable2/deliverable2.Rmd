@@ -532,7 +532,7 @@ text(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red",labels=levels(df$
 lines(res.ca$row$coord[,1],res.ca$row$coord[,2],lwd=2,col="blue")
 lines(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red")
 ```
-We can see in the plot, clearly that there are some categories that occur simultaneously in the sample, for instant the trips up to 5 minutes with the cost up to 8, the trips between 5-10 minutes and the costs between 8-11, the same happen with the trips between 10-15 minutes and the costs between 11-18.
+We can see in the plot, clearly that there are some categories that occur simultaneously in the sample, for instant the trips up to 5 minutes with the cost up to 8, the trips between 5-10 minutes and the costs between 8-11, the same happen with the trips between 10-15 minutes and the costs between 11-18. There is a clear relation between the f.cost and f.tt categories, even though we can not see a Guttman's effect from manual the relation is there.
 
 ```{r}
 summary(res.ca)
