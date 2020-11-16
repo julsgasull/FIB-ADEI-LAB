@@ -95,10 +95,7 @@ plot.PCA(res.pca,choix=c("var"), invisible=c("var"))
 plot.PCA(res.pca,choix=c("ind"), invisible=c("ind"))
 ```
 
-Multivariant outliers should be included as supplementary observations:
-```{r}
-# TO DO: explicar quins son multivariant outliers, la profe diu al video del 23/10 que aquests son uns plots i no tenen mes importancia.
-```
+Multivariant outliers should be included as supplementary observations: Since the data set we have is pretty good, we considered that we don't have multivariate outliers
 
 ## Eigenvalues and dominant axes analysis
 Eigenvalues correspond to the amount of the variation explained by each principal component (PC). Eigenvalues are large for the first PC and small for the subsequent PCs.
@@ -261,7 +258,6 @@ lines(res.pca$quali.sup$coord[3:4,1],res.pca$quali.sup$coord[3:4,2],lwd=2,lty=2,
 text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="cadetblue1",cex=0.5) #add the names of the different categories
 
 res.pca$quali.sup$coord
-
 ```
 --------------------------------------------------------------------------------
 
