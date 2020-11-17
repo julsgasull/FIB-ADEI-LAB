@@ -56,7 +56,7 @@ load(paste0(filepath,"/Taxi5000_del1.RData"))
 ## Clean data
 ```{r}
 # remove some columns
-names(df)
+#names(df)
 df$lpep_pickup_datetime <- NULL
 df$Lpep_dropoff_datetime <- NULL
 df$Store_and_fwd_flag <- NULL
@@ -82,9 +82,6 @@ vars_quantitatives<-names(df)[c(3:10,12,20:22)]
 vars_categorical<-names(df)[c(1,2,16:17,19,25,28)]
 ```
 
-Note - web that we used in order to use factoextra     
-* http://www.sthda.com/english/wiki/wiki.php?id_contents=7851&fbclid=IwAR01E5XVvCrSKnpkCdAppbpvv7YMGvxSWaSSwb4SIgrXjrxoIpMIlNblYFY
-
 We have already seen profiling in the previous installment. So now, let’s proceed to look at the main components.
 ```{r}
 library(FactoMineR)
@@ -95,12 +92,12 @@ plot.PCA(res.pca,choix=c("var"), invisible=c("var"))
 plot.PCA(res.pca,choix=c("ind"), invisible=c("ind"))
 ```
 
-Multivariant outliers should be included as supplementary observations: Since the data set we have is pretty good, we considered that we don't have multivariate outliers
+**Multivariant outliers should be included as supplementary observations:** Since the data set we have is pretty good, we considered that we don't have multivariate outliers
 
 ## Eigenvalues and dominant axes analysis
 Eigenvalues correspond to the amount of the variation explained by each principal component (PC). Eigenvalues are large for the first PC and small for the subsequent PCs.
 ```{r}
-summary(res.pca, nb.dec=2,nbind=1, nbelements = 1000, ncp=5)
+# summary(res.pca, nb.dec=2,nbind=1, nbelements = 1000, ncp=5)
 ```
 
 ### How many axes we have to interpret according to Kaiser?
@@ -132,10 +129,10 @@ We could say, then, that there is little difference between dimension 3 and 4, o
 ## Individuals point of view
 ### Contribution
 ```{r}
-head(res.pca$ind$contrib) # contribition of individuals to the princial components
+# head(res.pca$ind$contrib) # contribition of individuals to the princial components
 fviz_pca_ind(res.pca, col.ind="contrib", geom = "point") +
 scale_color_gradient2(low="darkslateblue", mid="white",
-                      high="violetred1", midpoint=0.40)
+                      high="red", midpoint=0.40)
 ```
 
 We can see that there are some individuals that are too contributive. So now, let's try to understand them better with extreme individuals.
@@ -193,12 +190,14 @@ res.des$Dim.1
 ```
 
 In the first dimension we see that for the **quantitative** variables the most positively related, from more to less, are:
+
 * Trip_distance (0.95)
 * Fare_amount (0.94)
 * Total_amount (0.93) 
 * traveltime (0.80)
 
 If we take look at the  **qualitatives** ones, we that the most related is 
+
 * Trip_distance_range (0.69)
 
 Finally, if we take a look at the **categories** we see that for the Trip_distance_range category long distance trips show a mean 2.23 units over the global mean and short distance ones show a mean -1.94 units under the global mean, so we can reject the H0 done in the t.Student test.
@@ -234,6 +233,7 @@ res.des$Dim.3
 ```
 
 For the last dimension we took into account, the third one, we see that the most related **quantitative** variables are:
+
 * Passenger_count (0.53)
 * Tolls_amount (0.53)
 * espeed (0.51), 
@@ -255,8 +255,7 @@ plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],pch=19,col="grey30") #draw all 
 points(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],pch=15,col="cadetblue1") # points associated with the categories gravitatorial centers
 lines(res.pca$quali.sup$coord[3:4,1],res.pca$quali.sup$coord[3:4,2],lwd=2,lty=2,col="coral") # draw a line that joins the categories that we want to take a look at
 text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="cadetblue1",cex=0.5) #add the names of the different categories
-
-res.pca$quali.sup$coord
+# res.pca$quali.sup$coord
 ```
 --------------------------------------------------------------------------------
 
@@ -275,12 +274,11 @@ table(res.hcpc$data.clust$clust)
 barplot(table(res.hcpc$data.clust$clust), col="darkslateblue", border="darkslateblue", main="[hierarchical] #observations/cluster")
 ```
 
-##Interpret the results of the classification
+## Interpret the results of the classification
 
 ### The description of the clusters by the variables 
 ```{r}
 names(res.hcpc$desc.var)
-
 res.hcpc$desc.var$test.chi2   # categorical variables which characterizes the clusters
 ```
 We start wit the description of the categorical variables that characterizes the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variable that affects more to the clustering is **period** because is the one with the smallest p.value. The variables associated to the clusters are:
@@ -295,27 +293,39 @@ Next, we want to see for each cluster which are the categories that characterize
 ```{r}
 res.hcpc$desc.var$category    # description of each cluster by the categories
 ```
+
 **Cluster 1**
+
 The first thing we can notice from this cluster is that **Trip_type=Street-Hail** that intervents in the 97.58% from the sample, in this cluster is the 100% of the observations, which means that all the observations in this cluster have this type of trip. We have 42.78% from the Trip_type=Street-Hail observations in this cluster. As we can see and expect, from the other trip_type that we have in this cluster is that **Trip_type=Dispatch** that intervents in the 2.42% from the sample, in this cluster is not represented, we get 0% of the observations. Then, we can notice is the kind of rate. We can see that **RateCodeID=Rate-1**, the one that represents the standard rate, and means the 97.25% of our sample, in this cluster is the 99.95% of the observations, almost every observation from this cluster is a standard rate trip. In this cluster we have 42.90% of the observations from this category. In the other hand, we have the kind of rate, that contains the other options, represents the 2.75% of our sample, in this cluster is the 0.05% of the observations. In this cluster, we have the 0.79% of the observations from this category.
 
+
 **Cluster 2**
+
 The first thing we can notice from this cluster is that **RateCodeID=Rate-1** (standard rate) and **Trip_type=Street-Hail** are the most represented in the cluster. We have 94.98% of the observations in the cluster that represent street-hail trips, and we also have 94.86% of the observations in the cluster that represent the standard rate trips. We have 74.72% of the morning period trips of the observations in the sample represented in this cluster, 73.21% of the dispatch type trips of the observations in the sample represented in this cluster, 66.59% of the valley period trips of the observations in the sample represented in this cluster, we also have the 66.14% of the other kind of rates f the observations in the sample represented in this cluster. In the other hand, we only have 3.16% of the long distance trips in the sample represented in this cluster and this category only means the 1.29% of the observations in the cluster of this category. We have 10.11% of the night period trips in the sample represented in this cluster and we have almost 19% of the afternoon period trips in the sample represented in this cluster.
 
+
 **Cluster 3**
+
 The first thing we can notice from this cluster is that almost every observation is from standard rate kind. We can see that 99.24% of the observations in the cluster are **RateCodeID=Rate-1**, and the cluster contains the 5.78% of the observations in the sample of this kind. The rest of observations in the cluster are from **RateCodeID=Rate-Other** kind.The next thing we can notice from this cluster is that, also, almost every observation is from Verfione kind of vendor. We have the 94.27% of the observations in this cluster of **VendorID=f.Vendor-VeriFone** category. This categories represents the 78.95% from our sample, and the cluster contains the 6.77% of obervations of this kind. For the other kind of vendor, **VendorID=f.Vendor-Mobile**, that represents the 21.05% of our sample, we have that in this cluster, 5.73% of the observations are from this vendor, and the cluster contains 1.54% of observations of this kind. If we take a look at the period categories, we see that **period=Period night** represents 43.51% of the observations in the cluster, and we have the 6.94% of the observations of this kind from the sample. In this cluster the night period is over represented because this kind of period represents the 35.52% of observations from our sample. For the **period=Period valley**, we have 20.99% of the observations in the cluster of this kind of period. We have in this cluster 4.37% of the observations of this kind from our sample. The last kind of period that we have in this cluster is the moring one, that represents the 5.73% of the observations in the cluster and we have 2.77% of the observations from the sample of this kind in this cluster.
 
+
 **Cluster 4**
+
 In this cluster, we can see that the category more represented is **Trip_type=Street-Hail** with 96.31% of the observations in the cluster. We get 16.18% of the observations of this kind from the sample in the cluster. Another category that is very represented is the standard rate, **RateCodeID=Rate-1**, with 95.25% of the observations in the cluster. From the sample, we get in this cluster, 16.06% of the observations of this kind. We can notice that we have 87.52% of long distance trip observations from the sample in this cluster. We can see that this category is over represented in this cluster because this category represents the 14.38% of the sample, and 76.78% of the observations in the cluster are of this category. In the other hand, we can see that short distance trips that represents 1.85% of the observations in the cluster and we only got 0.47% of the observations of this kind from the sample.
 
 
 **Cluster 5**
+
 This cluster is the smallest one, we only have 39 observations from the sample. We can see in this cluster is that the **RateCodeID=Rate-1** represents the 89.75% of the observations in this cluster. In this cluster we only have 0.78% of the observations from the sample of this kind. The rest 10.25% are the **RateCodeID=Rate-Other** observtions in the cluster. In this case, we have a 3.15% of the observations from the sample of this kind in this cluster. Then we have that 82.05% of the observations in the cluster that paid credit card, and we got 1.53% of the observations from sample sample of this kind this cluster. The other 17.95% of the observations in the cluster paid in cash, and we got less representation from the sample in this cluster for this category, we only got 0.28% of the observations from the sample.
+
 
 We now proceed to see the quantitatives variables that characterizes the clusters.
 ```{r}
 res.hcpc$desc.var$quanti.var  # quantitative variables which characterizes the clusters
 ```
+
 We can see in the output that all the variables that appear are slightly over represented in the clusters. We can notice that the greatest represented is the Total_amount with 0.98 units over the global mean, we can also remark the Passenger_count with 0.78 units over the mean and the Extra variable with 0.63 units over the mean. The least over represented are the Pickup_longitude with 0.004 units over the mean, the Dropoff_longitude with 0.01 units over the mean, the Pickup_latitude with 0.016 units over the mean and the Dropoff_latitude with 0.02 units over the total mean.
+
 
 We want to know now which variables are associated with the quantitative variables.
 ```{r}
@@ -323,18 +333,27 @@ res.hcpc$desc.var$quanti      # description of each cluster by the quantitative 
 ```
 
 **Cluster 1**
+
 For this cluster, we can see that the **traveltime** is around 3 units under the overall mean, the **Fare_amount** as well and the **Total_amount** too. We can also see that the **Trip_distance** is 1 unit under the overall mean and the **espeed** as well. We see that the only variable that is over the overall mean is the variable **Extra** with less than 0.3 units over it.
 
+
 **Cluster 2**
+
 For the second cluster, happens something similar as with the first one. We see that the **Total_amount** is around 3.7 units under the overall mean, **espeed** around 2 units under as well, **Tip_amount** around 0.5 under the overall mean too, **traveltime** and **Fare_amount** around 3 units under the overall mean as well, **Trip_distance** around 1 unit under the mean. In this clusters the only variables ver the overall mean are **Dropoff_latitude** and **Pickup_latitude** but they are not remarkable since the increase is super light.
 
+
 **Cluster 3**
+
 In this cluster we can see that the most remarkable variable is **Passenger_count** with almost 4 units over the overall mean, then we also have **Total_amount** with 0.1 units over the meant. In the other hand, we have **Total_amount** and **Fare_amount** with around 1 unit under the overall mean. **Trip_distance** is around 0.5 units under the overall mean.
 
+
 **Cluster 4**
+
 In this cluster we can see clearly the most remarkable vairables. We have 5 variables cleary over the overall mean. These are: **Total_amount** with 26 units over the mean, **Fare_amount** and **traveltime** with 14 units over the mean, **espeed** with 8 units over the mean and **Trip_distance** with 5 units over the overall mean.
 
+
 **Cluster 5**
+
 In this cluster every variable is over the overall mean. Every variable except **Pickup_longitude** are remarkably over the overall mean. Firstly, we have the **Total_amount** around 30 units over, then we have **Fare_amount** 18 units over, **espeed** 14 units over, **traveltime** 12 units over, **Trip_distance** 6 units over, **Tolls_amount** 5 units over and **Tip_amount** 3.7 units over the overall mean.
 
 ### The description of the clusters by the individuals
@@ -439,7 +458,7 @@ The american school does the partition quality evaluation in 5 clusters is done 
 100*(kc$betweenss/kc$totss)
 ```
 
-###kmeans clusters characteristics
+### k-means clusters characteristics
 If we want to know the characteristics of each cluster, as we did with the hierarchical, we need to execute a catdes to obtain these characteristics. In the following output we get them, but we are not going to explain them because the process is the same as we already did in the hierarchical.
 ```{r}
 dim(df)
@@ -543,10 +562,11 @@ Following the kaiser kriteria and the value got in the output, we should retain 
 
 --------------------------------------------------------------------------------
 
-# MCA analysis for your data should contain:
+# MCA analysis
 The Multiple correspondence analysis (MCA) is an extension of the simple correspondence analysis for summarizing and visualizing a data table containing more than two categorical variables. 
 
 MCA is generally used to analyse a data set from survey. The goal is to identify:
+
 * A group of individuals with similar profile in their answers to the questions
 * The associations between variable categories
 
@@ -664,7 +684,7 @@ fviz_contrib(
 )
 ```
 
-## Interpreting the axes association to factor map.
+## Interpreting the axes association to factor map
 ```{r}
 res.desc <- dimdesc(res.mca, axes = c(1,2))
 ```
@@ -673,36 +693,126 @@ res.desc <- dimdesc(res.mca, axes = c(1,2))
 res.desc[[1]]
 ```
 
-// FALTA DESCRIPCIÓ
+There is no info for the **quantitative** variables here.
+
+In the first dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
+
+* RateCodeID (0.95)
+* Trip_type (0.94)
+
+If we look at the **categories**, we see that the most related are,
+
+* for Trip_type:
+  + Dispatch (1.68)
+  + Long_dist (0.24)
+* and for RateCodeID:
+  + Rate-Other (1.58)
 
 ### Description of dimension 2
 ```{r}
 res.desc[[2]]
 ```
 
-// FALTA DESCRIPCIÓ
+There is no info for the **quantitative** variables here.
+
+For the second dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
+
+* Payment_type (0.53)
+* VendorID (0.26)
+
+We see that they are not very large numbers, however.
+
+If we look at the **categories**, we see that the most related are,
+
+* for Payment_type:
+  + No paid (1.84)
+* and for VendorID:
+  + f.Vendor-Mobile (0.26)
 
 ## Perform a MCA taking into account also supplementary variables (use all numeric variables) quantitative and/or categorical. How supplementary variables enhance the axis interpretation?
 ```{r}
-names(df)
-summary(df)
-
-summary(df[,c(3:10, 12:13, 15, 18, 20:22)])
 res.mca_all <- MCA(
   df[,c(1:32)], 
   quanti.sup=c(3:10, 12:13, 15, 18, 20:22), 
-  quali.sup=c(27,31)
+  quali.sup=c(27,31),
+  graph=FALSE
 )
 ```
 
 ### Description of dimensions
 ```{r}
 res.desc <- dimdesc(res.mca_all, axes = c(1,2))
-res.desc[[1]] # Description of dimension 1
-res.desc[[2]] # Description of dimension 2
+```
+#### Description of dimension 1
+```{r}
+res.desc[[1]]
 ```
 
-// FALTA DESCRIPCIÓ
+In this dimension, since we have taken into account all the variables, we now have information for the **quantitative** variables. We see that, more or less, the most positively related are:
+
+* Fare_amount (0.35)
+* Trip_distance (0.31)
+* Total_amount (0.29)
+
+We also see that they do not contribute much given the numbers.
+
+However, there is a little more inverse relationship with Extra, with a -0.47.
+
+Regarding the **qualitative** variables, the new relationship is as follows:
+
+* RateCodeID (0.69)
+* MTA_tax (0.71)
+* improvement_surcharge (0.70)
+* Trip_type (0.71)
+
+If we look at the **categories**, we see that the most related are,
+
+* for Trip_type:
+  + Dispatch (1.43) -> same as before but less related
+* for improvement_surcharge:
+  + improvement_surcharge_No (1.38)
+* for MTA_tax:
+  + MTA_tax_No (1.39)
+* for Trip_distance_range:
+  + Long_dist (0.24)
+* and for RateCodeID:
+  + Rate-Other (1.33) -> same as before but less related
+  
+
+#### Description of dimension 2
+```{r}
+res.desc[[2]]
+```
+
+In this dimension, since we have taken into account all the variables, we now have information for the **quantitative** variables. We see that, more or less, the most positively related are:
+
+* Extra (0.59540871)
+* Passenger_count (0.18753711)
+
+For the second dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
+
+* period (0.72)
+* pickup (0.78)
+* dropoff (0.76)
+* hcpck (0.45)
+* MTA_tax (0.16)
+* ...
+* Payment_type (0.0013) -> we see that it has lowed down in front of the other variables
+* VendorID -> it does not even appear
+We see that they are not very large numbers, however.
+
+If we look at the **categories**, we see that the most related are,
+
+* for period:
+  + Period night (0.40)
+  + Period afternoon (0.46)
+* ...
+* for Payment_type:
+  + No paid (1.84) -> now it's inversed
+* and for VendorID:
+  + f.Vendor-Mobile  -> it does not even appear
+
+
 --------------------------------------------------------------------------------
 # Hierarchical Clustering (from MCA)
 
