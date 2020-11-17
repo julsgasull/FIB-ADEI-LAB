@@ -3,13 +3,13 @@ title: "Deliverable 2"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
+  html_document:
+    toc: no
+    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
-    toc: no
-    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
@@ -119,8 +119,10 @@ So let's look at exactly where we have this minimal difference:
 ```{r}
 fviz_screeplot(
   res.pca, 
-  barfill = "darkslateblue",
-  barcolor = "darkslateblue",
+  addlabels=TRUE, 
+  ylim=c(0,50), 
+  barfill="darkslateblue", 
+  barcolor="darkslateblue",
   linecolor = "skyblue1"
 )
 ```
@@ -540,6 +542,7 @@ mean(res.ca$eig[,1])
 Following the kaiser kriteria and the value got in the output, we should retain dimensions with a variance greater than 0.3343199. In this case, the first dimension fulfills this because its variance is 0.751, but it is not enough to work with data so, we would choose 2 o 3 dimensions for this case.
 
 --------------------------------------------------------------------------------
+
 # MCA analysis for your data should contain:
 The Multiple correspondence analysis (MCA) is an extension of the simple correspondence analysis for summarizing and visualizing a data table containing more than two categorical variables. 
 
@@ -556,97 +559,150 @@ library(factoextra)
 Now, we can start computing the MCA for our categorical variables:
 ```{r}
 res.mca <- MCA(
-  df[,c(1:6,15:17,19,25,27:28)], 
-  quanti.sup=c(3:7), 
-  quali.sup=c(12)
+  df[,c(1:2,15:17,19,25,27:28,31)], 
+  quanti.sup=c(3), 
+  quali.sup=c(8,10),
+  graph=FALSE
 )
-
-plot(res.mca,invisible=c("ind","quali.sup"),hab="quali") 
-plot(res.mca,invisible=c("var","quali.sup"),cex=.5,label="none") 
-plot(res.mca,invisible=c("ind","var"),hab="quali")
-names(res.mca)
 ```
 
+As we can see in the plot "Variables representation", the correlation between the Payment_type factor taking into account the eta2 and the second factorial axis is a value greater than 0.5. On the other hand, we can see that something similar happens with the Trip_type factor and RateCodeID in dimension 1.
+```{r}
+fviz_mca_var(
+  res.mca, 
+  choice="mca.cor", 
+  repel=TRUE
+)
+```
+
+Now, let’s analyze the plot a bit. As we can see, the “No paid” category (Payment_type variable) is the one farthest from the center of the plot. The farther from the center of gravity, the more rarely this feature value appears in the sample represented by the dimensions.
+```{r}
+plot(res.mca,invisible=c("ind","quali.sup"),hab="quali") 
+```
+
+Let’s look at the supplementary quantitative variable Total_amount. We can see that it is closer to the Dim2 than to the Dim1.
+```{r}
+fviz_mca_var(res.mca, choice="quanti.sup", repel=TRUE, ggtheme=theme_minimal())
+```
+
+Cloud of individuals:
+```{r}
+fviz_mca_ind(
+  res.mca,
+  geom=c("point"),
+  col.ind="darkslateblue"
+)
+```
 
 ## Eigenvalues and dominant axes analysis
 
-First we get the proportion of variances retained by the different dimensions (axes).
+*How many axes we have to consider for next Hierarchical Classification stage?*
+We consider, according to the generalized Kaiser theorem, all those dimensions such that their eigenvalue is greater than the mean. We see that the average gives us 0.1428571. Therefore, we will take up to dimension 6, which represents the 62.07% of the sample.
 ```{r}
-eig.val <- get_eigenvalue(res.mca)
-head(eig.val)
+mean(res.mca$eig[,1])
+head(get_eigenvalue(res.mca), 10)
 ```
 
-Now, we visualize the percentages of inertia explained by each MCA dimensions:
+We can also visualize the percentages of inertia explained by each MCA dimensions:
 ```{r}
-fviz_screeplot(res.mca, addlabels=TRUE, ylim=c(0,45))
+fviz_screeplot(
+  res.mca, 
+  addlabels=TRUE, 
+  ylim=c(0,20), 
+  barfill="darkslateblue", 
+  barcolor="darkslateblue",
+  linecolor="skyblue1"
+)
 ```
 
-How many axes we have to consider for next Hierarchical Classification stage?
-```{r}
-# TO DO
-```
 
-## Individuals point of view: Are they any individuals "too contributive"? Are there any groups?
-```{r}
-ind <- get_mca_ind(res.mca)
-ind
-
-
-# Coordinates of column points
-head(ind$coord)
-# Quality of representation
-head(ind$cos2)
-# Contributions
-head(ind$contrib)
-```
-
-Contribution of individuals to the dimensions
+## Individuals point of view
+Are they any individuals "too contributive"?
 ```{r}
 fviz_mca_ind(
   res.mca, 
-  geom = c("point"),
-  col.ind = "contrib", 
-  gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
-  #repel = TRUE, # Avoid text overlapping (slow if many points)
-  ggtheme = theme_minimal()
+  geom=c("point"),
+  col.ind="contrib", 
+  gradient.cols=c("darkslateblue", "red")
 )
-
-fviz_contrib(res.mca, choice = "ind", axes = 1:2, top = 20)
 ```
 
-Groups:
+Are there any groups?
 ```{r}
-fviz_mca_ind(res.mca, 
-             label = "none", # hide individual labels
-             habillage = "VendorID", # color by groups 
-             palette = c("#00AFBB", "#E7B800"),
-             addEllipses = TRUE, ellipse.type = "confidence",
-             ggtheme = theme_minimal()) 
-fviz_mca_ind(res.mca, 
-             label = "none", # hide individual labels
-             habillage = "RateCodeID", # color by groups 
-             palette = c("#00AFBB", "#E7B800"),
-             addEllipses = TRUE, ellipse.type = "confidence",
-             ggtheme = theme_minimal()) 
-fviz_mca_ind(res.mca, 
-             label = "none", # hide individual labels
-             habillage = "Trip_type", # color by groups 
-             palette = c("#00AFBB", "#E7B800"),
-             addEllipses = TRUE, ellipse.type = "confidence",
-             ggtheme = theme_minimal())
-fviz_mca_ind(res.mca, 
-             label = "none", # hide individual labels
-             habillage = "TipIsGiven", # color by groups 
-             palette = c("#00AFBB", "#E7B800"),
-             addEllipses = TRUE, ellipse.type = "confidence",
-             ggtheme = theme_minimal())
+fviz_mca_ind(res.mca, label="none", habillage="VendorID", palette=c("darkslateblue", "red"))
+fviz_mca_ind(res.mca, label="none", habillage="RateCodeID", palette=c("darkslateblue", "red"))
+fviz_mca_ind(res.mca, label="none", habillage="Trip_type", palette=c("darkslateblue", "red"))
 ```
 
+We can see that individuals are more grouped according to some variables than others. For example, the f.VendorID-Mobile is along the entire dimension 1 but also in the center of gravity. In contrast, the Rate-Other is only in the first dimension and does not touch the second at all.
 
 ## Interpreting map of categories: average profile versus extreme profiles (rare categories)
-## Interpreting the axes association to factor map.
-## Perform a MCA taking into account also supplementary variables (use all numeric variables) quantitative and/or categorical. How supplementary variables enhance the axis interpretation?
+```{r}
+plot.MCA(res.mca,choix=c("ind"),invisible=c("ind"),axes=c(1,2))
+#lines(res.mca$var$coord[11:14,1],res.mca$var$coord[11:14,2],lwd=1,col="black") # Speed
+#lines(res.mca$quali.sup$coord[3:6,1],res.mca$quali.sup$coord[3:6,2],lwd=2,col="darkgreen")
+names(res.mca)
+res.mca$var
+plot.MCA(res.mca,choix=c("ind"),invisible=c("ind"),axes=c(3,4))
+plot.MCA(res.mca,choix=c("var"),axes=c(3,4))
+```
 
+!!!!!!!!!!!!! LA PROFE NO HA EXPLICAT RES :(
+```{r}
+fviz_mca_var(res.mca, repel=TRUE)
+fviz_mca_var(res.mca, col.var="black", shape.var = 15, repel = TRUE)
+```
+
+Contribution for variables:
+```{r}
+fviz_contrib(
+  res.mca, 
+  choice="var", 
+  axes=1:2, 
+  fill="darkslateblue", 
+  col="darkslateblue"
+)
+```
+
+## Interpreting the axes association to factor map.
+```{r}
+res.desc <- dimdesc(res.mca, axes = c(1,2))
+```
+### Description of dimension 1
+```{r}
+res.desc[[1]]
+```
+
+// FALTA DESCRIPCIÓ
+
+### Description of dimension 2
+```{r}
+res.desc[[2]]
+```
+
+// FALTA DESCRIPCIÓ
+
+## Perform a MCA taking into account also supplementary variables (use all numeric variables) quantitative and/or categorical. How supplementary variables enhance the axis interpretation?
+```{r}
+names(df)
+summary(df)
+
+summary(df[,c(3:10, 12:13, 15, 18, 20:22)])
+res.mca_all <- MCA(
+  df[,c(1:32)], 
+  quanti.sup=c(3:10, 12:13, 15, 18, 20:22), 
+  quali.sup=c(27,31)
+)
+```
+
+### Description of dimensions
+```{r}
+res.desc <- dimdesc(res.mca_all, axes = c(1,2))
+res.desc[[1]] # Description of dimension 1
+res.desc[[2]] # Description of dimension 2
+```
+
+// FALTA DESCRIPCIÓ
 --------------------------------------------------------------------------------
 # Hierarchical Clustering (from MCA)
 
