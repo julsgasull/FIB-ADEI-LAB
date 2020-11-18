@@ -586,20 +586,6 @@ res.mca <- MCA(
 )
 ```
 
-As we can see in the plot "Variables representation", the correlation between the Payment_type factor taking into account the eta2 and the second factorial axis is a value greater than 0.5. On the other hand, we can see that something similar happens with the Trip_type factor and RateCodeID in dimension 1.
-```{r}
-fviz_mca_var(
-  res.mca, 
-  choice="mca.cor", 
-  repel=TRUE
-)
-```
-
-Now, let’s analyze the plot a bit. As we can see, the “No paid” category (Payment_type variable) is the one farthest from the center of the plot. The farther from the center of gravity, the more rarely this feature value appears in the sample represented by the dimensions.
-```{r}
-plot(res.mca,invisible=c("ind","quali.sup"),hab="quali") 
-```
-
 Let’s look at the supplementary quantitative variable Total_amount. We can see that it is closer to the Dim2 than to the Dim1.
 ```{r}
 fviz_mca_var(res.mca, choice="quanti.sup", repel=TRUE, ggtheme=theme_minimal())
@@ -635,7 +621,6 @@ fviz_screeplot(
 )
 ```
 
-
 ## Individuals point of view
 Are they any individuals "too contributive"?
 ```{r}
@@ -657,31 +642,34 @@ fviz_mca_ind(res.mca, label="none", habillage="Trip_type", palette=c("darkslateb
 We can see that individuals are more grouped according to some variables than others. For example, the f.VendorID-Mobile is along the entire dimension 1 but also in the center of gravity. In contrast, the Rate-Other is only in the first dimension and does not touch the second at all.
 
 ## Interpreting map of categories: average profile versus extreme profiles (rare categories)
+
+Before looking at the categories, let's look at its variables:
+
+As we can see in the plot "Variables representation", the correlation between the Payment_type factor taking into account the eta2 and the second factorial axis is a value greater than 0.5. On the other hand, we can see that something similar happens with the Trip_type factor and RateCodeID in dimension 1.
 ```{r}
-plot.MCA(res.mca,choix=c("ind"),invisible=c("ind"),axes=c(1,2))
-#lines(res.mca$var$coord[11:14,1],res.mca$var$coord[11:14,2],lwd=1,col="black") # Speed
-#lines(res.mca$quali.sup$coord[3:6,1],res.mca$quali.sup$coord[3:6,2],lwd=2,col="darkgreen")
-names(res.mca)
-res.mca$var
-plot.MCA(res.mca,choix=c("ind"),invisible=c("ind"),axes=c(3,4))
-plot.MCA(res.mca,choix=c("var"),axes=c(3,4))
+fviz_mca_var(res.mca, choice="mca.cor", repel=TRUE)
 ```
 
-!!!!!!!!!!!!! LA PROFE NO HA EXPLICAT RES :(
+Now, let’s analyze the categories. 
+
+As we can see, the “No paid” category ("Payment_type" variable) is the one farthest from the center of the plot (in dimension 2). The farther from the center of gravity, the more rarely this feature value appears in the sample represented by the dimension. In addition, we see that in dimension 1 we also have two extremes, the "Rate-Other" category ("RateCodeID" variable) and the "Dispatch" category ("Trip_type" variable). As we have said, this means that these categories are rarely represented in this dimension.
+
+Regardering the center of mass, we can say that we find the categories most represented by the dimensions.
+
+To give an example, let's suppose we look at the first dimension. An observation that we could find with high probability would be the following:
+
+* RateCodeID = Rate-1
+* Trip_type = Street-Hail
+
+On the other hand, an observation that we could rarely find there would be...
+
+* RateCodeID = Rate-Other
+* Trip_type = Street-Dispatch
+
+We would follow the same logic for dimension 2 considering the Payment_type variable.
+
 ```{r}
 fviz_mca_var(res.mca, repel=TRUE)
-fviz_mca_var(res.mca, col.var="black", shape.var = 15, repel = TRUE)
-```
-
-Contribution for variables:
-```{r}
-fviz_contrib(
-  res.mca, 
-  choice="var", 
-  axes=1:2, 
-  fill="darkslateblue", 
-  col="darkslateblue"
-)
 ```
 
 ## Interpreting the axes association to factor map
