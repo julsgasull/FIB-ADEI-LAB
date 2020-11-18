@@ -35,10 +35,10 @@ rm(list=ls())                       # Clean workspace
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
-filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -281,13 +281,7 @@ barplot(table(res.hcpc$data.clust$clust), col="darkslateblue", border="darkslate
 names(res.hcpc$desc.var)
 res.hcpc$desc.var$test.chi2   # categorical variables which characterizes the clusters
 ```
-We start wit the description of the categorical variables that characterizes the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variable that affects more to the clustering is **period** because is the one with the smallest p.value. The variables associated to the clusters are:
-
-* period
-* Trip_distance_range
-* TipIsGiven
-* Paymnet_type
-* VendorID
+We start wit the description of the categorical variables that characterize the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variables that affect more to the clustering are **period** and **Trip_distance_range** because are the one with the smallest p.value. The variables associated to the clusters are the ones that appear on the output.
 
 Next, we want to see for each cluster which are the categories that characterize them.The clusters that contain more individuals are the first, the second and the fourth one. Cluster number 4 has less individuals. We proceed to analyze them.
 ```{r}
@@ -459,7 +453,8 @@ The american school does the partition quality evaluation in 5 clusters is done 
 ```
 
 ### k-means clusters characteristics
-If we want to know the characteristics of each cluster, as we did with the hierarchical, we need to execute a catdes to obtain these characteristics. In the following output we get them, but we are not going to explain them because the process is the same as we already did in the hierarchical.
+If we want to know the characteristics of each cluster, as we did with the hierarchical, we need to execute a catdes to obtain these characteristics. In the following output we get them, ???????
+ WE NEED TO EXPLAIN IT!!!!! (but we are not going to explain them because the process is the same as we already did in the hierarchical.)
 ```{r}
 dim(df)
 res.cat <-catdes(df,30)
@@ -804,7 +799,115 @@ If we look at the **categories**, we see that the most related are,
 --------------------------------------------------------------------------------
 # Hierarchical Clustering (from MCA)
 
+
+```{r}
+res.hcpcMCA <- HCPC(res.mca,nb.clust = 5, order = TRUE)
+```
+
+*Note*: If we chose the default number of cluster it would be 5, as we can guess from the inertia reduction plot, that follows the Elbow's rule (number of black lines plus 1). In our case, after trying with bigger number of clusters, we decided that the default number of cluster was fine for our case and data.
+
 ## Description of clusters
+Number of observations in each cluster:
+```{r}
+table(res.hcpcMCA$data.clust$clust)
+barplot(table(res.hcpcMCA$data.clust$clust), col="darkslateblue", border="darkslateblue", main="[hierarchical] #observations/cluster")
+```
+
+## Interpret the results of the classification
+
+### The description of the clusters by the variables 
+```{r}
+names(res.hcpcMCA$desc.var)
+res.hcpcMCA$desc.var$test.chi2   # categorical variables which characterizes the clusters
+```
+We start wit the description of the categorical variables that characterize the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variables that affect more to the clustering are **RateCodeID**, **Payment_type**, **Trip_type** and **period** because are the one with the smallest p.value. The variables associated to the clusters are the ones that appear on the output.
+
+Next, we want to see for each cluster which are the categories that characterize them.The clusters that contain more individuals are the first, the second and the fourth one. Clusters number 1 and 5 are the ones that have less individuals. We proceed to analyze them.
+```{r}
+res.hcpcMCA$desc.var$category    # description of each cluster by the categories
+```
+!!!PENDENT EXPLICAR
+**Cluster 1**
+**Cluster 2**
+**Cluster 3**
+**Cluster 4**
+**Cluster 5**
+We now proceed to see the quantitatives variables that characterizes the clusters.
+```{r}
+res.hcpcMCA$desc.var$quanti.var  # quantitative variables which characterizes the clusters
+```
+We can see in the output that the variable that appears is slightly over represented in the clusters. We can notice that **Total_amount** is over represented with 0.04 units over the global mean. So it is practically the same as the gobal mean.
+
+We want to know now which variables are associated with the quantitative variables.
+```{r}
+res.hcpcMCA$desc.var$quanti      # description of each cluster by the quantitative variables
+```
+!!!!PENDENT EXPLICAR
+**Cluster 1**
+**Cluster 2**
+**Cluster 3**
+**Cluster 4**
+**Cluster 5**
+
+### Partition quality
+We are going to evaluate the partition quality.
+
+#### Gain in inertia (in %)
+```{r}
+#res.hcpcMCA$call$t$within[1] = Total sum of squares
+#(res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[5] = between sum of squares
+((res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[5])/res.hcpcMCA$call$t$within[1])*100
+```
+The quality of this reduction if of 59.15%.
+
+In case we wanted to achieve an 80% of the clustering representativity we would need 13 clusters.
+```{r}
+((res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[13])/res.hcpcMCA$call$t$within[1])*100
+```
+
+
 ## Parangons and class-specific individuals.
-## Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on Duration target.
+
+### The description of the clusters by the individuals
+```{r}
+res.hcpcMCA$desc.ind$para  # representative individuals of each cluster
+```
+What we obtain are the more representative individuals,paragons, for each cluster. We get the rownames of each paragon in every single cluster.
+
+```{r}
+res.hcpcMCA$desc.ind$dist  # individuals distant from each cluster
+```
+What we obtain are those individuals of each cluster that that far away in the same cluster from the rest of the individuals. We also obtain the rownames of each individual with the bigger distance respect the other ones in the cluster.
+
+#### Examine the values of individuals that characterize classes
+
+We get the grpahical representation for the individuals that characterize classes (para and dist).
+```{r}
+# characteristic individuals
+para1<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$para[[1]]))
+dist1<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$dist[[1]]))
+para2<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$para[[2]]))
+dist2<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$dist[[2]]))
+para3<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$para[[3]]))
+dist3<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$dist[[3]]))
+para4<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$para[[4]]))
+dist4<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$dist[[4]]))
+para5<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$para[[5]]))
+dist5<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$dist[[5]]))
+
+plot(res.mca$ind$coord[,1],res.mca$ind$coord[,2],col="grey50",cex=0.5,pch=16)
+points(res.mca$ind$coord[para1,1],res.mca$ind$coord[para1,2],col="blue",cex=1,pch=16)
+points(res.mca$ind$coord[dist1,1],res.mca$ind$coord[dist1,2],col="chartreuse3",cex=1,pch=16)
+points(res.mca$ind$coord[para2,1],res.mca$ind$coord[para2,2],col="blue",cex=1,pch=16)
+points(res.mca$ind$coord[dist2,1],res.mca$ind$coord[dist2,2],col="darkorchid3",cex=1,pch=16)
+points(res.mca$ind$coord[para3,1],res.mca$ind$coord[para3,2],col="blue",cex=1,pch=16)
+points(res.mca$ind$coord[dist3,1],res.mca$ind$coord[dist3,2],col="firebrick3",cex=1,pch=16)
+points(res.mca$ind$coord[para4,1],res.mca$ind$coord[para4,2],col="blue",cex=1,pch=16)
+points(res.mca$ind$coord[dist4,1],res.mca$ind$coord[dist4,2],col="palevioletred3",cex=1,pch=16)
+points(res.mca$ind$coord[para5,1],res.mca$ind$coord[para5,2],col="blue",cex=1,pch=16)
+points(res.mca$ind$coord[dist5,1],res.mca$ind$coord[dist5,2],col="royalblue1",cex=1,pch=16)
+```
+
+## Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on f.cost target.
+
 ## Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on the binary target.
