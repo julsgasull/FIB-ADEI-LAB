@@ -1022,14 +1022,7 @@ text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pc
 ## RateCodeID          4.483773e-23  4
 ## Trip_type           1.609776e-21  4
 ## VendorID            2.096463e-08  4</code></pre>
-<p>We start wit the description of the categorical variables that characterizes the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variable that affects more to the clustering is <strong>period</strong> because is the one with the smallest p.value. The variables associated to the clusters are:</p>
-<ul>
-<li>period</li>
-<li>Trip_distance_range</li>
-<li>TipIsGiven</li>
-<li>Paymnet_type</li>
-<li>VendorID</li>
-</ul>
+<p>We start wit the description of the categorical variables that characterize the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variables that affect more to the clustering are <strong>period</strong> and <strong>Trip_distance_range</strong> because are the one with the smallest p.value. The variables associated to the clusters are the ones that appear on the output.</p>
 <p>Next, we want to see for each cluster which are the categories that characterize them.The clusters that contain more individuals are the first, the second and the fourth one. Cluster number 4 has less individuals. We proceed to analyze them.</p>
 <pre class="r"><code>res.hcpc$desc.var$category    # description of each cluster by the categories</code></pre>
 <pre><code>## $`1`
@@ -2903,7 +2896,8 @@ library(factoextra)</code></pre>
 ## f.cost              1.448630e-51 20
 ## VendorID            2.325462e-27  4
 ## TipIsGiven          2.455088e-11  4</code></pre>
-<p>!!!!PENDENT EXPLICAR</p>
+<p>We start wit the description of the categorical variables that characterize the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variables that affect more to the clustering are <strong>RateCodeID</strong>, <strong>Payment_type</strong>, <strong>Trip_type</strong> and <strong>period</strong> because are the one with the smallest p.value. The variables associated to the clusters are the ones that appear on the output.</p>
+<p>Next, we want to see for each cluster which are the categories that characterize them.The clusters that contain more individuals are the first, the second and the fourth one. Clusters number 1 and 5 are the ones that have less individuals. We proceed to analyze them.</p>
 <pre class="r"><code>res.hcpcMCA$desc.var$category    # description of each cluster by the categories</code></pre>
 <pre><code>## $`1`
 ##                                Cla/Mod   Mod/Cla     Global      p.value
@@ -3104,6 +3098,7 @@ library(factoextra)</code></pre>
 <pre class="r"><code>res.hcpcMCA$desc.var$quanti.var  # quantitative variables which characterizes the clusters</code></pre>
 <pre><code>##                    Eta2      P-value
 ## Total_amount 0.03950465 3.518655e-39</code></pre>
+<p>We can see in the output that the variable that appears is slightly over represented in the clusters. We can notice that <strong>Total_amount</strong> is over represented with 0.04 units over the global mean. So it is practically the same as the gobal mean.</p>
 <p>We want to know now which variables are associated with the quantitative variables.</p>
 <pre class="r"><code>res.hcpcMCA$desc.var$quanti      # description of each cluster by the quantitative variables</code></pre>
 <pre><code>## $`1`
