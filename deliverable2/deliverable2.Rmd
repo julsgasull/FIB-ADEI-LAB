@@ -453,16 +453,28 @@ The american school does the partition quality evaluation in 5 clusters is done 
 ```
 
 ### k-means clusters characteristics
-If we want to know the characteristics of each cluster, as we did with the hierarchical, we need to execute a catdes to obtain these characteristics. In the following output we get them, ???????
- WE NEED TO EXPLAIN IT!!!!! (but we are not going to explain them because the process is the same as we already did in the hierarchical.)
+If we want to know the characteristics of each cluster, as we did with the hierarchical, we need to execute a catdes to obtain these characteristics. In the following output we get them.
 ```{r}
 dim(df)
 res.cat <-catdes(df,30)
 res.cat
 ```
+We proceed to explain the data obtained.
+
+### The description of the clusters by the variables 
+
+We start wit the description of the categorical variables that characterize the clusters, so in this output we do
+not have dimensions because it is the total association. We can see the intensity of the variables, in our case the
+variables that affect more to the clustering are **Trip_distance_range**, **paidTolls** and  because are the one with the
+smallest p.value. The variables associated to the clusters are the ones that appear on the output.
+Next, we want to see for each cluster which are the categories that characterize them.The clusters that contain
+more individuals are the first, the second and the fourth one. Cluster number 4 has less individuals. We proceed
+to analyze them.
+
+???????????????????????
 
 ### Comparison of clusters (confusion table)
-We want to compare the hierarchical clustering, previously done, and the kmeans clustering, so proceed to do the following.
+We want to compare the hierarchical clustering, previously done, and the k-means clustering, so proceed to do the following.
 ```{r}
 table(df$hcpck,df$claKM)
 
