@@ -3,13 +3,13 @@ title: "Deliverable 2"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
-  html_document:
-    toc: no
-    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
+  html_document:
+    toc: no
+    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
@@ -833,9 +833,11 @@ The first thing we can notice from this cluster is that all observations are of 
 **Cluster 2**
 The first thing we can see from the cluster is that all of the observations present are of the category **Trip_type=Street-Hail** and we have in this cluster a representation of the 24.12% of the observations of this category from sample. Something similar happens to the category **RateCodeID=Rate-1**. We can also see that we have the 88.38% of the observations from sample of the category **period=Period afternoon** represented in this cluster and they represent the 95.77% of the observations of the cluster. We can also notice that around the 80% of the observations in this cluster are single passengers and we have 22.27% of the observations of this category from the sample represented here.
 
-!!!PENDENT EXPLICAR
 **Cluster 3**
+The first thing we can notice is that every observation in the cluster is of the kind of **passenger_groups=Single** and **Trip_type=Street-Hail** and we have represented the 36.89% and 31.77%, respectively, of the observations from the sample of these categories. We can also see that almost every observation in the cluster (99.86%) is of **RateCodeID=Rate-1** and we have represented in this cluster the 31.83% of the observations with this category from the sample. We can see that we have the 84.87% of the **period=Period morning** observations of the sample represented in this cluster, and the 77.22% of the **period=Period valley** observations as well. The 67.90% of the observations of the cluster are **period=Period morning**. The 69.29% of the observations in the cluster are short distance trips and the 65.60% observations in the cluster did not left any tips.
+
 **Cluster 4**
+The first thing we can see is that every observation in the cluster is of the kind **Trip_type=Street-Hail** and we have the 43.27% of the observations from the sample of this kind are represented in this cluster. We can also notice that almost every observation in the cluster is of the kind **RateCodeID=Rate-1** and we have 43.35% of the observations  of this kind from the sample represented here. We can see that the 96.71% of the **period=Period night** observations from the sample are represented in the cluster, and the 81.35% of the observations in the cluster are of this kind too. We can see that we have represented the 74.43% of **passenger_groups=Group**, the 71.58% of **Trip_distance=Long_dist** and the 71.49% of **f.cost=(30,50]** observations of these kinds from the sample represented in this cluster.
 
 **Cluster 5**
 The first thing we can notice from this cluster is that we have represented in this cluster all the observations of **Trip_type=Dispatch** from the sample here and they represent the 93.33% of the observations of this kind in the cluster, so the rest are **Trip_type=Street-Hail** and we only have a representation of 0.18% of the observations from the sample in this cluster. We can also see that the 80% of the observations in the cluster did not left any tip and the other 20% left some tips, we have a very small representation of observations from the sample of these two categories in this cluster. We can also see that almost every observation in the cluster (99.17%) is of **RateCodeID=Rate-Ohter** and we have the 93.70% of the observations from the sample of this category represented in this cluster. We can see that in this cluster we have represented the 15.87% of the observations from the sample of the category **f.cost=(50,129)**.
@@ -850,13 +852,18 @@ We want to know now which variables are associated with the quantitative variabl
 ```{r}
 res.hcpcMCA$desc.var$quanti      # description of each cluster by the quantitative variables
 ```
-!!!!PENDENT EXPLICAR
-**Cluster 1**
-**Cluster 2**
-**Cluster 3**
-**Cluster 4**
-**Cluster 5**
+We can notice that every cluster has remarked the Total_amount variable except the first one, that does not have any variable to be described.
 
+**Cluster 2**
+We can see that the **Total_amount** is around 2 units under the overall mean.
+
+**Cluster 3**
+We can see that the **Total_amount** is around 1 unit under the overall mean.
+
+**Cluster 4**
+We can see that the **Total_amount** is around 2 units over the overall mean.
+
+**Cluster 5**
 ### Partition quality
 We are going to evaluate the partition quality.
 
