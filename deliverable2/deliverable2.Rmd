@@ -3,14 +3,14 @@ title: "Deliverable 2"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
+  word_document:
+    toc: no
+    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
   html_document:
-    toc: no
-    toc_depth: '4'
-  word_document:
     toc: no
     toc_depth: '4'
 geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
@@ -35,10 +35,10 @@ rm(list=ls())                       # Clean workspace
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
-#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -92,7 +92,8 @@ plot.PCA(res.pca,choix=c("var"), invisible=c("var"))
 plot.PCA(res.pca,choix=c("ind"), invisible=c("ind"))
 ```
 
-**Multivariant outliers should be included as supplementary observations:** Since the data set we have is pretty good, we considered that we don't have multivariate outliers
+## Multivariant outliers should be included as supplementary observations:
+Since the data set we have is pretty good, we considered that we don't have multivariate outliers
 
 ## Eigenvalues and dominant axes analysis
 Eigenvalues correspond to the amount of the variation explained by each principal component (PC). Eigenvalues are large for the first PC and small for the subsequent PCs.
@@ -659,6 +660,10 @@ fviz_mca_var(res.mca, choice="mca.cor", repel=TRUE)
 
 Now, let’s analyze the categories. 
 
+```{r}
+fviz_mca_var(res.mca, repel=TRUE)
+```
+
 As we can see, the “No paid” category ("Payment_type" variable) is the one farthest from the center of the plot (in dimension 2). The farther from the center of gravity, the more rarely this feature value appears in the sample represented by the dimension. In addition, we see that in dimension 1 we also have two extremes, the "Rate-Other" category ("RateCodeID" variable) and the "Dispatch" category ("Trip_type" variable). As we have said, this means that these categories are rarely represented in this dimension.
 
 Regardering the center of mass, we can say that we find the categories most represented by the dimensions.
@@ -674,10 +679,6 @@ On the other hand, an observation that we could rarely find there would be...
 * Trip_type = Street-Dispatch
 
 We would follow the same logic for dimension 2 considering the Payment_type variable.
-
-```{r}
-fviz_mca_var(res.mca, repel=TRUE)
-```
 
 ## Interpreting the axes association to factor map
 ```{r}
