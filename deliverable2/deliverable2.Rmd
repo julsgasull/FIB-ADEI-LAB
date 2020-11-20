@@ -3,14 +3,14 @@ title: "Deliverable 2"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
-  word_document:
+  html_document:
     toc: no
     toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
+  word_document:
     toc: no
     toc_depth: '4'
 geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
@@ -937,5 +937,187 @@ points(res.mca$ind$coord[para5,1],res.mca$ind$coord[para5,2],col="blue",cex=1,pc
 points(res.mca$ind$coord[dist5,1],res.mca$ind$coord[dist5,2],col="royalblue1",cex=1,pch=16)
 ```
 
-## Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on Duration target.
-## Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on the binary target.
+## Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA)focusing on... 
+
+```{r}
+df$hcpckMCA<-res.hcpcMCA$data.clust$clust
+
+# With Hierarchical Clustering (PCA)
+table(df$hcpck,df$hcpckMCA)
+df$hcpckMCA_hcpck<-factor(
+  df$hcpckMCA,
+  levels=c(4,3,2,1,5),
+  labels=c("kHPmca-4","kHPmca-3","kHPmca-2","kHPmca-1","kHPmca-5")
+)
+tt1<-table(df$hcpck,df$hcpckMCA_hcpck); tt1
+100*sum(diag(tt1)/sum(tt1))
+```
+We have a concordance of the 48.58% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
+
+
+```{r}
+# With k-means (PCA)
+table(df$claKM, df$hcpckMCA)
+df$hcpckMCA_claKM<-factor(
+  df$hcpckMCA,
+  levels=c(2,3,1,4,5),
+  labels=c("kHPmca-2","kHPmca-3","kHPmca-1","kHPmca-4","kHPmca-5")
+)
+tt2<-table(df$claKM,df$hcpckMCA_claKM); tt
+100*sum(diag(tt2)/sum(tt2))
+```
+We have a concordance of the 39.69% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
+
+### Quantitative target (Total_amount)
+
+hcpc
+```{r}
+# res.hcpc$desc.var$quanti.var  # quantitative variables which characterizes the clusters
+# #                          Eta2       P-value
+# # Total_amount      0.539522699  0.000000e+00
+```
+
+kmeans
+```{r}
+# res.cat <-catdes(df,30)
+# res.cat
+# # Link between the cluster variable and the quantitative variables
+# # ================================================================
+# #                          Eta2       P-value
+# # Total_amount      0.688303660  0.000000e+00
+# # 
+# # Description of each cluster by quantitative variables
+# # =====================================================
+# # $`1`
+# #                      v.test Mean in category Overall mean sd in category  Overall sd      p.value
+# # Total_amount      17.328080       19.3954753  13.92640493     3.88246513 10.04487145 2.888095e-67
+# # 
+# # $`2`
+# #                     v.test Mean in category Overall mean sd in category  Overall sd       p.value
+# # Total_amount     29.183431       26.5066872   13.9264049     9.88546826 10.04487145 3.147246e-187
+# # 
+# # $`3`
+# #                       v.test Mean in category Overall mean sd in category  Overall sd      p.value
+# # Total_amount      -12.119349       10.1373934  13.92640493     4.45694924 10.04487145 8.341900e-34
+# # 
+# # $`4`
+# #                    v.test Mean in category Overall mean sd in category  Overall sd       p.value
+# # Total_amount     39.12185        51.124128  13.92640493    18.90835873 10.04487145  0.000000e+00
+# # 
+# # $`5`
+# #                       v.test Mean in category Overall mean sd in category  Overall sd       p.value
+# # Total_amount      -33.723082        9.0324649  13.92640493     3.54907115 10.04487145 2.653016e-249
+```
+
+hcpc_mca
+```{r}
+# # res.hcpcMCA$desc.var$quanti.var  # quantitative variables which characterizes the clusters
+# #                    Eta2      P-value
+# # Total_amount 0.03950465 3.518655e-39
+```
+
+
+
+### Binary target (TipIsGiven)
+hcpc
+```{r}
+# res.hcpc$desc.var$test.chi2   # categorical variables which characterizes the clusters
+# #                          p.value df
+# # TipIsGiven          4.279197e-36  4
+
+# res.hcpc$desc.var$category    # description of each cluster by the categories
+# # $`1`
+# #                                   Cla/Mod      Mod/Cla    Global       p.value     v.test
+# # TipIsGiven=No                  43.6502429  65.18134715 62.340472  7.289207e-04   3.378464
+# # TipIsGiven=Yes                 38.5985066  34.81865285 37.659528  7.289207e-04  -3.378464
+# #
+# # $`2`
+# #                                  Cla/Mod   Mod/Cla    Global       p.value     v.test
+# # TipIsGiven=No                  38.965996 68.727050 62.340472  2.645583e-11   6.665059
+# # TipIsGiven=Yes                 29.350948 31.272950 37.659528  2.645583e-11  -6.665059
+# # 
+# # $`3`
+# #                             Cla/Mod    Mod/Cla    Global      p.value    v.test
+# # nothing to see here
+# # 
+# # $`4`
+# #                                   Cla/Mod   Mod/Cla    Global      p.value     v.test
+# # TipIsGiven=Yes                 24.6984492 56.728232 37.659528 2.002989e-31  11.661577
+# # TipIsGiven=No                  11.3809854 43.271768 62.340472 2.002989e-31 -11.661577
+# # 
+# # $`5`
+# #                                   Cla/Mod   Mod/Cla    Global      p.value    v.test
+# # TipIsGiven=Yes                 1.60827111 71.794872 37.659528 1.783365e-05  4.290419
+# # TipIsGiven=No                  0.38167939 28.205128 62.340472 1.783365e-05 -4.290419
+```
+
+kmeans
+```{r}
+# res.cat <-catdes(df,30)
+# res.cat
+# # Link between the cluster variable and the categorical variables (chi-square test)
+# # =================================================================================
+# #                             p.value df
+# # TipIsGiven             4.163217e-45  4
+# # 
+# # Description of each cluster by the categories
+# # =============================================
+# # $`1`
+# #                                   Cla/Mod    Mod/Cla    Global       p.value    v.test
+# # TipIsGiven=Yes                  23.721999 49.6991576 37.659528  5.633107e-15  7.811903
+# # TipIsGiven=No                   14.503817 50.3008424 62.340472  5.633107e-15 -7.811903
+# # 
+# # $`2`
+# #                                    Cla/Mod    Mod/Cla    Global       p.value     v.test
+# # TipIsGiven=Yes                  15.6232051 55.9670782 37.659528  5.218460e-18   8.648492
+# # TipIsGiven=No                    7.4253990 44.0329218 62.340472  5.218460e-18  -8.648492
+# # 
+# # $`3`
+# #                                    Cla/Mod     Mod/Cla     Global       p.value     v.test
+# # TipIsGiven=No                   19.5697432  66.8246445 62.3404716  2.794274e-03   2.989508
+# # TipIsGiven=Yes                  16.0827111  33.1753555 37.6595284  2.794274e-03  -2.989508
+# # 
+# # $`4`
+# #                                     Cla/Mod    Mod/Cla     Global      p.value     v.test
+# # TipIsGiven=Yes                    3.9058013 62.3853211 37.6595284 1.424189e-07   5.262100
+# # TipIsGiven=No                     1.4226232 37.6146789 62.3404716 1.424189e-07  -5.262100
+# # 
+# # $`5`
+# #                                   Cla/Mod     Mod/Cla     Global       p.value     v.test
+# # TipIsGiven=No                   57.078418  69.9107522 62.3404716  2.371984e-27  10.834134
+# # TipIsGiven=Yes                  40.666284  30.0892478 37.6595284  2.371984e-27 -10.834134 
+```
+
+hcpc_mca
+```{r}
+# res.hcpcMCA$desc.var$test.chi2   # categorical variables which characterizes the clusters
+# #                          p.value df
+# # TipIsGiven          2.455088e-11  4
+
+# res.hcpcMCA$desc.var$category    # description of each cluster by the categories
+# # $`1`
+# #                                Cla/Mod   Mod/Cla     Global      p.value    v.test
+# # TipIsGiven=No                1.0409438 100.00000 62.3404716 6.580800e-07  4.973343
+# # TipIsGiven=Yes               0.0000000   0.00000 37.6595284 6.580800e-07 -4.973343
+# # 
+# # $`2`
+# #                                  Cla/Mod     Mod/Cla     Global       p.value     v.test
+# # nothing to see here
+# # 
+# # $`3`
+# #                                  Cla/Mod     Mod/Cla     Global       p.value     v.test
+# # TipIsGiven=No                  32.616239  65.5966504 62.3404716  2.137595e-03   3.070418
+# # TipIsGiven=Yes                 28.317059  34.4033496 37.6595284  2.137595e-03  -3.070418
+# # 
+# # $`4`
+# #                                  Cla/Mod     Mod/Cla     Global       p.value     v.test
+# # TipIsGiven=Yes                 46.984492  41.9057377 37.6595284  3.681425e-07   5.084734
+# # TipIsGiven=No                  39.347675  58.0942623 62.3404716  3.681425e-07  -5.084734
+# # 
+# # $`5`
+# #                                     Cla/Mod    Mod/Cla    Global       p.value     v.test
+# # TipIsGiven=No                    3.33102012 80.0000000 62.340472  2.655335e-05   4.201175
+# # TipIsGiven=Yes                   1.37851809 20.0000000 37.659528  2.655335e-05  -4.201175
+```
+
+
