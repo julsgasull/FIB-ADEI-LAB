@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 20.6.29) (preloaded format=pdflatex 2020.8.2)  19 NOV 2020 19:44
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 20.6.29) (preloaded format=pdflatex 2020.8.2)  20 NOV 2020 15:22
 entering extended mode
 **./deliverable2.tex
 (deliverable2.tex
@@ -724,201 +724,201 @@ Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-35-1.pdf
   used on input line 1818.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [30] [31 <./deliverable2_files/figure-latex/unnamed-chunk-35-1.pdf>] [32] [33] 
-[34] [35] [36] [37] [38] [39] [40] [41]
-<deliverable2_files/figure-latex/unnamed-chunk-41-1.pdf, id=477, 469.755pt x 32
+[34] [35]
+<deliverable2_files/figure-latex/unnamed-chunk-41-1.pdf, id=456, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-41-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-41-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-41-1.pdf
-  used on input line 2634.
+  used on input line 2212.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 2634--2639
+Underfull \hbox (badness 10000) in paragraph at lines 2212--2217
 [][]
  []
 
-[42]
-Overfull \hbox (61.86064pt too wide) in paragraph at lines 2673--2673
+
+Overfull \hbox (61.86064pt too wide) in paragraph at lines 2251--2251
 []\T1/lmtt/m/n/10 ## The chi square of independence between the two variables i
 s equal to 8.867721 (p-value =  0.5447017 ).[] 
  []
 
-[43 <./deliverable2_files/figure-latex/unnamed-chunk-41-1.pdf>]
-<deliverable2_files/figure-latex/unnamed-chunk-45-1.pdf, id=496, 469.755pt x 32
+[36 <./deliverable2_files/figure-latex/unnamed-chunk-41-1.pdf>]
+<deliverable2_files/figure-latex/unnamed-chunk-45-1.pdf, id=467, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-45-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-45-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-45-1.pdf
-  used on input line 2744.
+  used on input line 2322.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[44 <./deliverable2_files/figure-latex/unnamed-chunk-45-1.pdf>]
-<deliverable2_files/figure-latex/unnamed-chunk-45-2.pdf, id=507, 469.755pt x 32
+[37]
+<deliverable2_files/figure-latex/unnamed-chunk-45-2.pdf, id=473, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-45-2.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-45-2.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-45-2.pdf
-  used on input line 2757.
+  used on input line 2335.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-
-Overfull \hbox (19.86076pt too wide) in paragraph at lines 2814--2814
+[38 <./deliverable2_files/figure-latex/unnamed-chunk-45-1.pdf> <./deliverable2_
+files/figure-latex/unnamed-chunk-45-2.pdf>]
+Overfull \hbox (19.86076pt too wide) in paragraph at lines 2392--2392
 []\T1/lmtt/m/n/10 ## The chi square of independence between the two variables i
 s equal to 6099.333 (p-value =  0 ).[] 
  []
 
-[45 <./deliverable2_files/figure-latex/unnamed-chunk-45-2.pdf>]
-<deliverable2_files/figure-latex/unnamed-chunk-50-1.pdf, id=518, 469.755pt x 32
+[39]
+<deliverable2_files/figure-latex/unnamed-chunk-50-1.pdf, id=496, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-50-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-50-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-50-1.pdf
-  used on input line 2895.
+  used on input line 2473.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[46]
-<deliverable2_files/figure-latex/unnamed-chunk-51-1.pdf, id=525, 469.755pt x 32
+<deliverable2_files/figure-latex/unnamed-chunk-51-1.pdf, id=497, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-51-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-51-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-51-1.pdf
-  used on input line 2909.
+  used on input line 2487.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[47 <./deliverable2_files/figure-latex/unnamed-chunk-50-1.pdf> <./deliverable2_
-files/figure-latex/unnamed-chunk-51-1.pdf>]
-<deliverable2_files/figure-latex/unnamed-chunk-53-1.pdf, id=541, 469.755pt x 32
+[40 <./deliverable2_files/figure-latex/unnamed-chunk-50-1.pdf>]
+<deliverable2_files/figure-latex/unnamed-chunk-53-1.pdf, id=507, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-53-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-53-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-53-1.pdf
-  used on input line 2967.
+  used on input line 2545.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[48 <./deliverable2_files/figure-latex/unnamed-chunk-53-1.pdf>]
-<deliverable2_files/figure-latex/unnamed-chunk-54-1.pdf, id=552, 469.755pt x 32
+[41 <./deliverable2_files/figure-latex/unnamed-chunk-51-1.pdf>]
+<deliverable2_files/figure-latex/unnamed-chunk-54-1.pdf, id=518, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-54-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-54-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-54-1.pdf
-  used on input line 2986.
+  used on input line 2564.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<deliverable2_files/figure-latex/unnamed-chunk-55-1.pdf, id=553, 469.755pt x 32
+[42 <./deliverable2_files/figure-latex/unnamed-chunk-53-1.pdf>]
+<deliverable2_files/figure-latex/unnamed-chunk-55-1.pdf, id=529, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-55-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-55-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-55-1.pdf
-  used on input line 2996.
+  used on input line 2574.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[49 <./deliverable2_files/figure-latex/unnamed-chunk-54-1.pdf>]
-<deliverable2_files/figure-latex/unnamed-chunk-55-2.pdf, id=565, 469.755pt x 32
+<deliverable2_files/figure-latex/unnamed-chunk-55-2.pdf, id=530, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-55-2.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-55-2.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-55-2.pdf
-  used on input line 3004.
+  used on input line 2582.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<deliverable2_files/figure-latex/unnamed-chunk-55-3.pdf, id=566, 469.755pt x 32
+[43 <./deliverable2_files/figure-latex/unnamed-chunk-54-1.pdf> <./deliverable2_
+files/figure-latex/unnamed-chunk-55-1.pdf>]
+<deliverable2_files/figure-latex/unnamed-chunk-55-3.pdf, id=547, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-55-3.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-55-3.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-55-3.pdf
-  used on input line 3012.
+  used on input line 2590.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[50 <./deliverable2_files/figure-latex/unnamed-chunk-55-1.pdf> <./deliverable2_
-files/figure-latex/unnamed-chunk-55-2.pdf>]
-<deliverable2_files/figure-latex/unnamed-chunk-56-1.pdf, id=581, 469.755pt x 32
+[44 <./deliverable2_files/figure-latex/unnamed-chunk-55-2.pdf> <./deliverable2_
+files/figure-latex/unnamed-chunk-55-3.pdf>]
+<deliverable2_files/figure-latex/unnamed-chunk-56-1.pdf, id=563, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-56-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-56-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-56-1.pdf
-  used on input line 3039.
+  used on input line 2617.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[51 <./deliverable2_files/figure-latex/unnamed-chunk-55-3.pdf>]
-<deliverable2_files/figure-latex/unnamed-chunk-57-1.pdf, id=592, 469.755pt x 32
+<deliverable2_files/figure-latex/unnamed-chunk-57-1.pdf, id=564, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-57-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-57-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-57-1.pdf
-  used on input line 3087.
+  used on input line 2665.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[52 <./deliverable2_files/figure-latex/unnamed-chunk-56-1.pdf>] [53 <./delivera
-ble2_files/figure-latex/unnamed-chunk-57-1.pdf>] [54] [55] [56] [57] [58] [59]
-<deliverable2_files/figure-latex/unnamed-chunk-65-1.pdf, id=643, 469.755pt x 32
+[45 <./deliverable2_files/figure-latex/unnamed-chunk-56-1.pdf>] [46 <./delivera
+ble2_files/figure-latex/unnamed-chunk-57-1.pdf>] [47] [48] [49] [50] [51] [52]
+<deliverable2_files/figure-latex/unnamed-chunk-65-1.pdf, id=615, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-65-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-65-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-65-1.pdf
-  used on input line 3748.
+  used on input line 3326.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<deliverable2_files/figure-latex/unnamed-chunk-65-2.pdf, id=644, 469.755pt x 32
+<deliverable2_files/figure-latex/unnamed-chunk-65-2.pdf, id=616, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-65-2.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-65-2.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-65-2.pdf
-  used on input line 3749.
+  used on input line 3327.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<deliverable2_files/figure-latex/unnamed-chunk-65-3.pdf, id=645, 469.755pt x 32
+<deliverable2_files/figure-latex/unnamed-chunk-65-3.pdf, id=617, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-65-3.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-65-3.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-65-3.pdf
-  used on input line 3750.
+  used on input line 3328.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 3748--3751
+Underfull \hbox (badness 10000) in paragraph at lines 3326--3329
 [][]
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3748--3751
+Underfull \hbox (badness 10000) in paragraph at lines 3326--3329
 []
  []
 
-[60] [61 <./deliverable2_files/figure-latex/unnamed-chunk-65-1.pdf> <./delivera
+[53] [54 <./deliverable2_files/figure-latex/unnamed-chunk-65-1.pdf> <./delivera
 ble2_files/figure-latex/unnamed-chunk-65-2.pdf>]
-<deliverable2_files/figure-latex/unnamed-chunk-66-1.pdf, id=668, 469.755pt x 32
+<deliverable2_files/figure-latex/unnamed-chunk-66-1.pdf, id=639, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-66-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-66-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-66-1.pdf
-  used on input line 3781.
+  used on input line 3359.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[62 <./deliverable2_files/figure-latex/unnamed-chunk-65-3.pdf>] [63 <./delivera
-ble2_files/figure-latex/unnamed-chunk-66-1.pdf>] [64] [65] [66] [67] [68]
-<deliverable2_files/figure-latex/unnamed-chunk-75-1.pdf, id=717, 469.755pt x 32
+[55 <./deliverable2_files/figure-latex/unnamed-chunk-65-3.pdf>] [56 <./delivera
+ble2_files/figure-latex/unnamed-chunk-66-1.pdf>] [57] [58] [59] [60] [61]
+<deliverable2_files/figure-latex/unnamed-chunk-75-1.pdf, id=688, 469.755pt x 32
 5.215pt>
 File: deliverable2_files/figure-latex/unnamed-chunk-75-1.pdf Graphic file (type
  pdf)
 <use deliverable2_files/figure-latex/unnamed-chunk-75-1.pdf>
 Package pdftex.def Info: deliverable2_files/figure-latex/unnamed-chunk-75-1.pdf
-  used on input line 4289.
+  used on input line 3902.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[69]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 4301.
-[70 <./deliverable2_files/figure-latex/unnamed-chunk-75-1.pdf>]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 4301.
+[62]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 3914.
+[63 <./deliverable2_files/figure-latex/unnamed-chunk-75-1.pdf>]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 3914.
 (deliverable2.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 4301.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 4301.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 3914.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 3914.
  ) 
 Here is how much of TeX's memory you used:
- 14039 strings out of 480790
- 216200 string characters out of 2907021
- 541012 words of memory out of 3000000
+ 14034 strings out of 480790
+ 216235 string characters out of 2907021
+ 515765 words of memory out of 3000000
  29488 multiletter control sequences out of 15000+200000
- 587610 words of font info for 116 fonts, out of 3000000 for 9000
+ 587693 words of font info for 117 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  44i,6n,42p,2124b,469s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Program Files/MiKTeX/fonts/enc/dvips/lm/lm-ts1.enc}{C:/Program Files/MiKT
@@ -929,9 +929,9 @@ ype1/public/lm/lmr12.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmr17.p
 fb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/Program Files/
 MiKTeX/fonts/type1/public/lm/lmtk10.pfb><C:/Program Files/MiKTeX/fonts/type1/pu
 blic/lm/lmtt10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmtti10.pfb>
-Output written on deliverable2.pdf (70 pages, 3064096 bytes).
+Output written on deliverable2.pdf (63 pages, 3051106 bytes).
 PDF statistics:
- 994 PDF objects out of 1000 (max. 8388607)
- 194 named destinations out of 1000 (max. 500000)
+ 964 PDF objects out of 1000 (max. 8388607)
+ 187 named destinations out of 1000 (max. 500000)
  12957 words of extra memory for PDF output out of 14400 (max. 10000000)
 
