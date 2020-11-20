@@ -835,7 +835,7 @@ res.hcpcMCA$desc.var$test.chi2   # categorical variables which characterizes the
 ```
 We start wit the description of the categorical variables that characterize the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variables that affect more to the clustering are **RateCodeID**, **Payment_type**, **Trip_type** and **period** because are the one with the smallest p.value. The variables associated to the clusters are the ones that appear on the output.
 
-Next, we want to see for each cluster which are the categories that characterize them.The clusters that contain more individuals are the first, the second and the fourth one. Clusters number 1 and 5 are the ones that have less individuals. We proceed to analyze them.
+Next, we want to see for each cluster which are the categories that characterize them. The clusters that contain more individuals are the first, the second and the fourth one. Clusters number 1 and 5 are the ones that have less individuals. We proceed to analyze them.
 ```{r}
 res.hcpcMCA$desc.var$category    # description of each cluster by the categories
 ```
@@ -877,13 +877,14 @@ We can see that the **Total_amount** is around 1 unit under the overall mean.
 We can see that the **Total_amount** is around 2 units over the overall mean.
 
 **Cluster 5**
+
+
 ### Partition quality
 We are going to evaluate the partition quality.
 
 #### Gain in inertia (in %)
 ```{r}
-#res.hcpcMCA$call$t$within[1] = Total sum of squares
-#(res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[5] = between sum of squares
+# ( between sum of squares / total sum of squares ) * 100
 ((res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[5])/res.hcpcMCA$call$t$within[1])*100
 ```
 The quality of this reduction if of 59.15%.
@@ -900,7 +901,7 @@ In case we wanted to achieve an 80% of the clustering representativity we would 
 ```{r}
 res.hcpcMCA$desc.ind$para  # representative individuals of each cluster
 ```
-What we obtain are the more representative individuals,paragons, for each cluster. We get the rownames of each paragon in every single cluster.
+What we obtain are the more representative individuals, paragons, for each cluster. We get the rownames of each paragon in every single cluster.
 
 ```{r}
 res.hcpcMCA$desc.ind$dist  # individuals distant from each cluster
@@ -936,6 +937,5 @@ points(res.mca$ind$coord[para5,1],res.mca$ind$coord[para5,2],col="blue",cex=1,pc
 points(res.mca$ind$coord[dist5,1],res.mca$ind$coord[dist5,2],col="royalblue1",cex=1,pch=16)
 ```
 
-## Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on f.cost target.
-
+## Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on Duration target.
 ## Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on the binary target.
