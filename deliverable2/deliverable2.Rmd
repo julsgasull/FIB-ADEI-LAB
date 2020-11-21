@@ -3,13 +3,13 @@ title: "Deliverable 2"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
+  html_document:
+    toc: no
+    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
-    toc: no
-    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
@@ -35,10 +35,10 @@ rm(list=ls())                       # Clean workspace
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
-#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -470,39 +470,62 @@ variables that affect more to the clustering are **Trip_distance_range**, **paid
 
 Next, we want to see for each cluster which are the categories that characterize them.
 
+
 **Cluster 1**
+
 The first thing we can notice is that almost observation in the cluster is of the kind **paidTolls=No** (99.88%), we can also see that 87.61% of the observations in the cluster are **passenger_groups=Single** and we have the 18.74% of the observations of this kind from the sample present in this cluster. We can see that 70.88% of the observations in the cluster are **Trip_distance_range=Medium_dist** and we have the 59.74% of the observations of this kind from sample present in this cluster. We can also notice that 76.05% if the observations in the cluster are **VendorID=f.Vendor-VeriFone**. We can see that the cluster 4 from the hierarchical clustering (**hcpck=4**) is present in this cluster, we observe that 38.87% of the observations in the cluster are from that cluster 4 and we have the 42.61% of the observations from the sample present in this cluster.
 
+
 **Cluster 2**
+
 We can see that 95.88% of the observations in the cluster are **improvement_surcharge=Yes** and **Trip_type=Street-Hail**. We can also see that 95.27% of the observations in the cluster are **MTA_tax=Yes**, 94.86% of the observations in the cluster are **RateCodeID=Rate-1**. We can also see that we have the 70.37% of the observations in the cluster are **Trip_distance_range=Long_dist** and we have 51.43% of the observations of this kind from the sample present in this cluster. We can see that the clusters 3 and 4 from the hierarchical clustering (**hacpck=3**, **hcpck=4**) are present in the cluster. We observe that 22.84% and 75.31% of the observations in the cluster are from those clusters respectively, and we have the 42.37% and 48.28% of the observations from the sample present in this cluster.
 
+
 **Cluster 3**
+
 The first thing we can notice is that all observations in the cluster are **paidTolls=No**. Then, we see that we the 99.76% of the observations in the cluster are **RateCodeID=Rate-1**, **MTA_tax=Yes**, **improvement_surcharge=Yes** and **Trip_type=Street-Hail**. We can also see that the majority of the observations in the cluster (89.22%) are **Trip_distance_range=Short_dist** and we have 25.37% of the observations of this kind from the sample in this cluster. We can see that we have 54.34% of the observations of **dropoff=18**, 53.50% of **pickup=18**, 52.19% of **pickup=17**, 50.16% of **dropoff=19** and 50.13% of **passenger_groups=Group** kinds from the sample in this cluster. We can notice that 54.20% of the observations of **hcpck=3** (cluster 3 from hierarchical clustering) and 35.96% observations of **hcpck=1** (cluster 1 from hierarchical clustering) kinds from the sample are present in this cluster.
 
+
 **Cluster 4**
+
 The first thing we can notice is that the 100% of the observations from the sample that represent the cluster 5 from hierarchical clustering (**hcpck=5**) are present in this cluster, we can also see that the 95% of the observations from the sample that are of the kind **paidTolls=yes** are present in this cluster. We can see that 89.91% of the observations in the cluster are **Trip_distance_range=Long_dist** and we have 14,74% of the observations of this kind from the sample present in this cluster. We can also notice that 69.72% of the observations in the cluster are **Payment_type=Credit card**, 92.25% of the observations in the cluster are **RateCodeID=Rate-1**, 63.30% of the observations in the cluster are from the cluster 4 from the hierarchical clustering (**hcpck=4**), 62.39% of the observations in the cluster left some tip (**TipIsGiven=Yes**).
 
+
 **Cluster 5**
+
 The first thing we can notice is that every observation in the cluster had not paid any toll (**paidTolls=No**) and we have 51.42% of the observations of this kind from the sample are present in this cluster. We have the 97.11% of the observations in the cluster are **Trip_type=Street-Hail**, 96.94% are **MTA_tax=Yes** and 96.90% are **improvement_surcharge=Yes**, and we have around the 50% of the observations of these kinds from the sample present in this cluster. The majority of the observations in the cluster (94.94%) are **passenger_groups=Single** and we have the 57.08% of the observations of this kind from the sample present in this cluster. We also see that 89.42% of the observations from the sample are **Trip_distance_range=Short_dist** and we have 70.79% of the observations of this kind from the sample present in this cluster. From this cluster we can notice that is the one with biggest data representation from the sample, probably because it is a big cluster so we have a lot of data present here, that is why a lot of the categories present here are highly represented.
+
 
 We now proceed to see the quantitative variables that characterizes the clusters. We can see in the output that all the variables that appear are slightly over represented in the clusters. We can notice that the greatest represented is the **Fare_amount** with 0.70 units over the global mean, **Total_amount** with 0.69 units over the mean and **Trip_distance** with 0.68 units over the mean. The other variables are not remarkably over the mean.
 
+
 We want to know now which variables are associated with the quantitative variables.
 
+
 **Cluster 1**
+
 We can see that almost every variable is over the overall mean. We can see that **Total_amount** and **traveltime** are around 6 units over the overall mean. **Fare_amount** is around 5 units over the overall mean, **espeed** is around 3 units over the overall mean and **Trip_distance** and **tlenkm** are around 2 units over the overall mean.
 
+
 **Cluster 2**
+
 We can see almost every variable is over the overall mean. We can see that **Total_amount** and **traveltime** are around 13 units over the overall mean, **Fare_amount** is around 11 units over the overall mean, **espeed** is around 7 units over the overall mean, **tlenkm** is around 6 units over the overall mean and **Trip_distance** is around 4 units over the overall mean. **Tip_amount**, **Passenger_count** and **hour** are around 1 unis under the overall mean.
 
+
 **Cluster 3**
+
 We can see that **hour** is around 2 units over the overall mean and **Passenger_count** is around 0.6 units over the overall mean, the rest of the variables in the cluster are under the mean. **traveltime**, **Fare_amount** and **espeed** are around 4 units under the overall mean. **Total_amount** is around 3 units under the overall mean, **tlenkm** is around 2 units under the overall mean and **Trip_distance** is around 1 unit under the overall mean. 
 
+
 **Cluster 4**
+
 We can see that every variable except **Pickup_latitude** and **Dropoff_latitude** are over the mean. We can see that **Total_amount** is around 38 units over the overall mean, **Fare_amount** is around 28 units over the overall mean, **traveltime** is around 26 units over the overall mean, **tlenkm** is around 16 units over the overall mean, **espeed** is around 12 units over the overall mean, **Trip_distance** is around 10 units over the overall mean and **Tip_amount** is around 4 units over the overall mean.
 
+
 **Cluster 5**
+
 We can see that almost every variable is under the overall mean. **traveltime** is around 5 units under the overall mean, **Fare_amount** and **Total_amount** are around 4 units under the overall mean, **tlenkm** and **espeed** are around 2 units under the overall mean, **hour** and **Trip_distance** are around 1 unit under the overall mean.
+
 
 ### Comparison of clusters (confusion table)
 We want to compare the hierarchical clustering, previously done, and the k-means clustering, so proceed to do the following.
@@ -866,45 +889,67 @@ res.hcpcMCA$desc.var$test.chi2   # categorical variables which characterizes the
 We start wit the description of the categorical variables that characterize the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variables that affect more to the clustering are **RateCodeID**, **Payment_type**, **Trip_type** and **period** because are the one with the smallest p.value. The variables associated to the clusters are the ones that appear on the output.
 
 Next, we want to see for each cluster which are the categories that characterize them. The clusters that contain more individuals are the first, the second and the fourth one. Clusters number 1 and 5 are the ones that have less individuals. We proceed to analyze them.
+
 ```{r}
 res.hcpcMCA$desc.var$category    # description of each cluster by the categories
 ```
 
+
 **Cluster 1**
+
 The first thing we can notice from this cluster is that all observations are of **Payment_type=No paid**, even though this category only intervents in the sample 0.65% this cluster contains all the individuals of this payment type and all of the observations in the cluster are of **VendorID=f.Vendor-Mobile**, a category that intervents a 21.05% from the sample, but this cluster is that small that we only have a 3.08% of observations of this kind represented in the cluster. So, what is logical is that the other payment types represent a 0% in this cluster as well as the other vendor type. We can also see that all the observations in the did not left a tip, and again and because of the size of the cluster, even though the **TipIsGive=No** represents a 62.34% of the observations from sample, we only have a representation of the 1.04% of these individuals in this cluster. We can also notice that the majority of the trips are made by just one person (96.67%) and we have some morning trips (26.67%).
 
+
 **Cluster 2**
+
 The first thing we can see from the cluster is that all of the observations present are of the category **Trip_type=Street-Hail** and we have in this cluster a representation of the 24.12% of the observations of this category from sample. Something similar happens to the category **RateCodeID=Rate-1**. We can also see that we have the 88.38% of the observations from sample of the category **period=Period afternoon** represented in this cluster and they represent the 95.77% of the observations of the cluster. We can also notice that around the 80% of the observations in this cluster are single passengers and we have 22.27% of the observations of this category from the sample represented here.
 
+
 **Cluster 3**
+
 The first thing we can notice is that every observation in the cluster is of the kind of **passenger_groups=Single** and **Trip_type=Street-Hail** and we have represented the 36.89% and 31.77%, respectively, of the observations from the sample of these categories. We can also see that almost every observation in the cluster (99.86%) is of **RateCodeID=Rate-1** and we have represented in this cluster the 31.83% of the observations with this category from the sample. We can see that we have the 84.87% of the **period=Period morning** observations of the sample represented in this cluster, and the 77.22% of the **period=Period valley** observations as well. The 67.90% of the observations of the cluster are **period=Period morning**. The 69.29% of the observations in the cluster are short distance trips and the 65.60% observations in the cluster did not left any tips.
 
+
 **Cluster 4**
+
 The first thing we can see is that every observation in the cluster is of the kind **Trip_type=Street-Hail** and we have the 43.27% of the observations from the sample of this kind are represented in this cluster. We can also notice that almost every observation in the cluster is of the kind **RateCodeID=Rate-1** and we have 43.35% of the observations  of this kind from the sample represented here. We can see that the 96.71% of the **period=Period night** observations from the sample are represented in the cluster, and the 81.35% of the observations in the cluster are of this kind too. We can see that we have represented the 74.43% of **passenger_groups=Group**, the 71.58% of **Trip_distance=Long_dist** and the 71.49% of **f.cost=(30,50]** observations of these kinds from the sample represented in this cluster.
 
+
 **Cluster 5**
+
 The first thing we can notice from this cluster is that we have represented in this cluster all the observations of **Trip_type=Dispatch** from the sample here and they represent the 93.33% of the observations of this kind in the cluster, so the rest are **Trip_type=Street-Hail** and we only have a representation of 0.18% of the observations from the sample in this cluster. We can also see that the 80% of the observations in the cluster did not left any tip and the other 20% left some tips, we have a very small representation of observations from the sample of these two categories in this cluster. We can also see that almost every observation in the cluster (99.17%) is of **RateCodeID=Rate-Ohter** and we have the 93.70% of the observations from the sample of this category represented in this cluster. We can see that in this cluster we have represented the 15.87% of the observations from the sample of the category **f.cost=(50,129)**.
+
 
 We now proceed to see the quantitative variables that characterizes the clusters.
 ```{r}
 res.hcpcMCA$desc.var$quanti.var  # quantitative variables which characterizes the clusters
 ```
+
 We can see in the output that the variable that appears is slightly over represented in the clusters. We can notice that **Total_amount** is over represented with 0.04 units over the global mean. So it is practically the same as the global mean.
+
 
 We want to know now which variables are associated with the quantitative variables.
 ```{r}
 res.hcpcMCA$desc.var$quanti      # description of each cluster by the quantitative variables
 ```
+
 We can notice that every cluster has remarked the Total_amount variable except the first one, that does not have any variable to be described.
 
+
 **Cluster 2**
+
 We can see that the **Total_amount** is around 2 units under the overall mean.
 
+
 **Cluster 3**
+
 We can see that the **Total_amount** is around 1 unit under the overall mean.
 
+
 **Cluster 4**
+
 We can see that the **Total_amount** is around 2 units over the overall mean.
+
 
 **Cluster 5**
 We can see that the **Total_amount** is around 6 units over the overall mean.
@@ -917,7 +962,9 @@ We are going to evaluate the partition quality.
 # ( between sum of squares / total sum of squares ) * 100
 ((res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[5])/res.hcpcMCA$call$t$within[1])*100
 ```
+
 The quality of this reduction if of 59.15%.
+
 
 In case we wanted to achieve an 80% of the clustering representativity we would need 13 clusters.
 ```{r}
@@ -931,11 +978,14 @@ In case we wanted to achieve an 80% of the clustering representativity we would 
 ```{r}
 res.hcpcMCA$desc.ind$para  # representative individuals of each cluster
 ```
+
 What we obtain are the more representative individuals, paragons, for each cluster. We get the rownames of each paragon in every single cluster.
+
 
 ```{r}
 res.hcpcMCA$desc.ind$dist  # individuals distant from each cluster
 ```
+
 What we obtain are those individuals of each cluster that that far away in the same cluster from the rest of the individuals. We also obtain the rownames of each individual with the bigger distance respect the other ones in the cluster.
 
 #### Examine the values of individuals that characterize classes
@@ -982,6 +1032,7 @@ df$hcpckMCA_hcpck<-factor(
 tt1<-table(df$hcpck,df$hcpckMCA_hcpck); tt1
 100*sum(diag(tt1)/sum(tt1))
 ```
+
 We have a concordance of the 48.58% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
 
 
@@ -996,18 +1047,19 @@ df$hcpckMCA_claKM<-factor(
 tt2<-table(df$claKM,df$hcpckMCA_claKM); tt
 100*sum(diag(tt2)/sum(tt2))
 ```
+
 We have a concordance of the 39.69% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
 
 ### Quantitative target (Total_amount)
 
-hcpc
+#### hcpc
 ```{r}
 # res.hcpc$desc.var$quanti.var  # quantitative variables which characterizes the clusters
 # #                          Eta2       P-value
 # # Total_amount      0.539522699  0.000000e+00
 ```
 
-kmeans
+#### kmeans
 ```{r}
 # res.cat <-catdes(df,30)
 # res.cat
@@ -1039,7 +1091,7 @@ kmeans
 # # Total_amount      -33.723082        9.0324649  13.92640493     3.54907115 10.04487145 2.653016e-249
 ```
 
-hcpc_mca
+#### hcpc_mca
 ```{r}
 # # res.hcpcMCA$desc.var$quanti.var  # quantitative variables which characterizes the clusters
 # #                    Eta2      P-value
@@ -1049,7 +1101,7 @@ hcpc_mca
 
 
 ### Binary target (TipIsGiven)
-hcpc
+#### hcpc
 ```{r}
 # res.hcpc$desc.var$test.chi2   # categorical variables which characterizes the clusters
 # #                          p.value df
@@ -1081,7 +1133,7 @@ hcpc
 # # TipIsGiven=No                  0.38167939 28.205128 62.340472 1.783365e-05 -4.290419
 ```
 
-kmeans
+#### kmeans
 ```{r}
 # res.cat <-catdes(df,30)
 # res.cat
@@ -1118,7 +1170,7 @@ kmeans
 # # TipIsGiven=Yes                  40.666284  30.0892478 37.6595284  2.371984e-27 -10.834134 
 ```
 
-hcpc_mca
+#### hcpc_mca
 ```{r}
 # res.hcpcMCA$desc.var$test.chi2   # categorical variables which characterizes the clusters
 # #                          p.value df
