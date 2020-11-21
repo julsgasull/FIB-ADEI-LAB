@@ -3,13 +3,13 @@ title: "Deliverable 2"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
-  html_document:
-    toc: no
-    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
+  html_document:
+    toc: no
+    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
@@ -35,10 +35,10 @@ rm(list=ls())                       # Clean workspace
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
-filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -479,19 +479,30 @@ We can see that 95.88% of the observations in the cluster are **improvement_surc
 **Cluster 3**
 The first thing we can notice is that all observations in the cluster are **paidTolls=No**. Then, we see that we the 99.76% of the observations in the cluster are **RateCodeID=Rate-1**, **MTA_tax=Yes**, **improvement_surcharge=Yes** and **Trip_type=Street-Hail**. We can also see that the majority of the observations in the cluster (89.22%) are **Trip_distance_range=Short_dist** and we have 25.37% of the observations of this kind from the sample in this cluster. We can see that we have 54.34% of the observations of **dropoff=18**, 53.50% of **pickup=18**, 52.19% of **pickup=17**, 50.16% of **dropoff=19** and 50.13% of **passenger_groups=Group** kinds from the sample in this cluster. We can notice that 54.20% of the observations of **hcpck=3** (cluster 3 from hierarchical clustering) and 35.96% observations of **hcpck=1** (cluster 1 from hierarchical clustering) kinds from the sample are present in this cluster.
 
-?????????????????????
 **Cluster 4**
+The first thing we can notice is that the 100% of the observations from the sample that represent the cluster 5 from hierarchical clustering (**hcpck=5**) are present in this cluster, we can also see that the 95% of the observations from the sample that are of the kind **paidTolls=yes** are present in this cluster. We can see that 89.91% of the observations in the cluster are **Trip_distance_range=Long_dist** and we have 14,74% of the observations of this kind from the sample present in this cluster. We can also notice that 69.72% of the observations in the cluster are **Payment_type=Credit card**, 92.25% of the observations in the cluster are **RateCodeID=Rate-1**, 63.30% of the observations in the cluster are from the cluster 4 from the hierarchical clustering (**hcpck=4**), 62.39% of the observations in the cluster left some tip (**TipIsGiven=Yes**).
+
 **Cluster 5**
+The first thing we can notice is that every observation in the cluster had not paid any toll (**paidTolls=No**) and we have 51.42% of the observations of this kind from the sample are present in this cluster. We have the 97.11% of the observations in the cluster are **Trip_type=Street-Hail**, 96.94% are **MTA_tax=Yes** and 96.90% are **improvement_surcharge=Yes**, and we have around the 50% of the observations of these kinds from the sample present in this cluster. The majority of the observations in the cluster (94.94%) are **passenger_groups=Single** and we have the 57.08% of the observations of this kind from the sample present in this cluster. We also see that 89.42% of the observations from the sample are **Trip_distance_range=Short_dist** and we have 70.79% of the observations of this kind from the sample present in this cluster. From this cluster we can notice that is the one with biggest data representation from the sample, probably because it is a big cluster so we have a lot of data present here, that is why a lot of the categories present here are highly represented.
 
 We now proceed to see the quantitative variables that characterizes the clusters. We can see in the output that all the variables that appear are slightly over represented in the clusters. We can notice that the greatest represented is the **Fare_amount** with 0.70 units over the global mean, **Total_amount** with 0.69 units over the mean and **Trip_distance** with 0.68 units over the mean. The other variables are not remarkably over the mean.
 
 We want to know now which variables are associated with the quantitative variables.
 
 **Cluster 1**
+We can see that almost every variable is over the overall mean. We can see that **Total_amount** and **traveltime** are around 6 units over the overall mean. **Fare_amount** is around 5 units over the overall mean, **espeed** is around 3 units over the overall mean and **Trip_distance** and **tlenkm** are around 2 units over the overall mean.
+
 **Cluster 2**
+We can see almost every variable is over the overall mean. We can see that **Total_amount** and **traveltime** are around 13 units over the overall mean, **Fare_amount** is around 11 units over the overall mean, **espeed** is around 7 units over the overall mean, **tlenkm** is around 6 units over the overall mean and **Trip_distance** is around 4 units over the overall mean. **Tip_amount**, **Passenger_count** and **hour** are around 1 unis under the overall mean.
+
 **Cluster 3**
+We can see that **hour** is around 2 units over the overall mean and **Passenger_count** is around 0.6 units over the overall mean, the rest of the variables in the cluster are under the mean. **traveltime**, **Fare_amount** and **espeed** are around 4 units under the overall mean. **Total_amount** is around 3 units under the overall mean, **tlenkm** is around 2 units under the overall mean and **Trip_distance** is around 1 unit under the overall mean. 
+
 **Cluster 4**
+We can see that every variable except **Pickup_latitude** and **Dropoff_latitude** are over the mean. We can see that **Total_amount** is around 38 units over the overall mean, **Fare_amount** is around 28 units over the overall mean, **traveltime** is around 26 units over the overall mean, **tlenkm** is around 16 units over the overall mean, **espeed** is around 12 units over the overall mean, **Trip_distance** is around 10 units over the overall mean and **Tip_amount** is around 4 units over the overall mean.
+
 **Cluster 5**
+We can see that almost every variable is under the overall mean. **traveltime** is around 5 units under the overall mean, **Fare_amount** and **Total_amount** are around 4 units under the overall mean, **tlenkm** and **espeed** are around 2 units under the overall mean, **hour** and **Trip_distance** are around 1 unit under the overall mean.
 
 ### Comparison of clusters (confusion table)
 We want to compare the hierarchical clustering, previously done, and the k-means clustering, so proceed to do the following.
