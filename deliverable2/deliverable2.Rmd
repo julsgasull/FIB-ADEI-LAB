@@ -907,7 +907,7 @@ We can see that the **Total_amount** is around 1 unit under the overall mean.
 We can see that the **Total_amount** is around 2 units over the overall mean.
 
 **Cluster 5**
-
+We can see that the **Total_amount** is around 6 units over the overall mean.
 
 ### Partition quality
 We are going to evaluate the partition quality.
