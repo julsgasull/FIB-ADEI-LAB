@@ -3,13 +3,13 @@ title: "Deliverable 1"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
+  html_document:
+    toc: no
+    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
-    toc: no
-    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
