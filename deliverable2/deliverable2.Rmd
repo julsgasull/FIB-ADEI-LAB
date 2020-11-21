@@ -87,19 +87,16 @@ We have already seen profiling in the previous installment. So now, let’s proc
 library(FactoMineR)
 res.pca <- PCA(df[,c(1:10,12,13,15:17,19,21,22,25,27)],quanti.sup=c(3:6,13),quali.sup=c(1,2,14:16,19:20))
 
-plot.PCA(res.pca,choix=c("var"), invisible=c("quanti.sup"))
-plot.PCA(res.pca,choix=c("var"), invisible=c("var"))
-plot.PCA(res.pca,choix=c("ind"), invisible=c("ind"))
+#plot.PCA(res.pca,choix=c("var"), invisible=c("quanti.sup"))
+#plot.PCA(res.pca,choix=c("var"), invisible=c("var"))
+#plot.PCA(res.pca,choix=c("ind"), invisible=c("ind"))
 ```
 
-## Multivariant outliers should be included as supplementary observations:
+## Multivariant outliers should be included as supplementary observations
 Since the data set we have is pretty good, we considered that we don't have multivariate outliers
 
 ## Eigenvalues and dominant axes analysis
 Eigenvalues correspond to the amount of the variation explained by each principal component (PC). Eigenvalues are large for the first PC and small for the subsequent PCs.
-```{r}
-# summary(res.pca, nb.dec=2,nbind=1, nbelements = 1000, ncp=5)
-```
 
 ### How many axes we have to interpret according to Kaiser?
 A PC with an eigenvalue > 1 indicates that the PC accounts for more variance than accounted by one of the original variables in standardized data. This is commonly used as a cutoff point to determine the number of PCs to retain, using the Kaiser criteria.
@@ -252,11 +249,10 @@ And we see that for this **category**, period afternoon mean is 0.28 units over 
 We want to take analyze the supplementary factor **kind of rate**, so we want to add lines that join the categories of this factor for the first factorial plane. With the following plot we can see it.
 
 ```{r}
-plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],pch=19,col="grey30") #draw all the individuals in grey
+plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],pch=19,col="grey30") # draw all the individuals in grey
 points(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],pch=15,col="cadetblue1") # points associated with the categories gravitatorial centers
 lines(res.pca$quali.sup$coord[3:4,1],res.pca$quali.sup$coord[3:4,2],lwd=2,lty=2,col="coral") # draw a line that joins the categories that we want to take a look at
 text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="cadetblue1",cex=0.5) #add the names of the different categories
-# res.pca$quali.sup$coord
 ```
 --------------------------------------------------------------------------------
 
@@ -396,10 +392,10 @@ We are going to evaluate the partition quality.
 
 #### Gain in inertia (in %)
 ```{r}
-#res.hcpc$call$t$within[1] = Total sum of squares
-#(res.hcpc$call$t$within[1]-res.hcpc$call$t$within[5] = between sum of squares
+# ( between sum of squares / total sum of squares ) * 100
 ((res.hcpc$call$t$within[1]-res.hcpc$call$t$within[5])/res.hcpc$call$t$within[1])*100
 ```
+
 The quality of this reduction if of 57.49%.
 
 In case we wanted to achieve an 80% of the clustering representativity we would need 18 clusters.
@@ -573,11 +569,13 @@ We are now going to take a look to the simple correspondences.
 ```{r}
 res.ca <- CA(tt)
 ```
+
 Those observations far away from the gravity center will mean that represent less observations on the sample. If rows and columns are nearby, this will mean that there is a correspondence between them, which means that they occur simultaneously in the sample.
 
 ```{r}
 summary(res.ca)
 ```
+
 We conclude that we can not reject the H0 for these pair of factors, and now we are going to see if we can see if there is independence between the cost and the travel time, so the first thing we are going to do is factor the travel time.
 ```{r}
 df$f.tt[df$traveltime<=5] = "[0,5]"
@@ -588,12 +586,14 @@ df$f.tt[(df$traveltime>20) & (df$traveltime<= 50)] = "(20,50]"
 df$f.tt<-factor(df$f.tt)
 table(df$f.tt)
 ```
+
 Once we have this factor, proceed to create a variable that associates the cost with the traveltime.
 
 ```{r}
 tt<-table(df[,c("f.cost","f.tt")]);tt
 chisq.test(tt) #to see if the rows and columns are independents. H0: Rows and columns are independent
 ```
+
 We get a p-value smaller than 0.05 so we can reject the H0. ((< 2.2e-16) < 0.05). So there is dependence between the traveltime and the cost, as we suspected.
 
 We are now going to take a look to the simple correspondences. 
@@ -607,11 +607,13 @@ text(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red",labels=levels(df$
 lines(res.ca$row$coord[,1],res.ca$row$coord[,2],lwd=2,col="blue")
 lines(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red")
 ```
+
 We can see in the plot, clearly that there are some categories that occur simultaneously in the sample, for instant the trips up to 5 minutes with the cost up to 8, the trips between 5-10 minutes and the costs between 8-11, the same happen with the trips between 10-15 minutes and the costs between 11-18. There is a clear relation between the f.cost and f.tt categories, even though we can not see a Guttman's effect from manual the relation is there.
 
 ```{r}
 summary(res.ca)
 ```
+
 The first thing we can see from the summary is that we have a chi square statistic of 6099.333, great enough to reject the H0, which means the intensity of the relation is high. If we take a look at the variances from the different dimensions, we can see that all together sum more than 1. 
 
 ## Eigenvalues and dominant axes analysis. How many axes we have to consider?
@@ -619,6 +621,7 @@ The first thing we can see from the summary is that we have a chi square statist
 ```{r}
 mean(res.ca$eig[,1])
 ```
+
 Following the kaiser kriteria and the value got in the output, we should retain dimensions with a variance greater than 0.3343199. In this case, the first dimension fulfills this because its variance is 0.751, but it is not enough to work with data so, we would choose 2 o 3 dimensions for this case.
 
 --------------------------------------------------------------------------------
@@ -639,6 +642,7 @@ library(factoextra)
 
 Now, we can start computing the MCA for our categorical variables:
 ```{r}
+names(df[,c(1:2,15:17,19,25,27:28,31)])
 res.mca <- MCA(
   df[,c(1:2,15:17,19,25,27:28,31)], 
   quanti.sup=c(3), 
@@ -663,7 +667,8 @@ fviz_mca_ind(
 
 ## Eigenvalues and dominant axes analysis
 
-*How many axes we have to consider for next Hierarchical Classification stage?*
+**How many axes we have to consider for next Hierarchical Classification stage?**
+
 We consider, according to the generalized Kaiser theorem, all those dimensions such that their eigenvalue is greater than the mean. We see that the average gives us 0.1428571. Therefore, we will take up to dimension 6, which represents the 62.07% of the sample.
 ```{r}
 mean(res.mca$eig[,1])
@@ -876,7 +881,7 @@ res.hcpcMCA <- HCPC(res.mca,nb.clust = 5, order = TRUE)
 Number of observations in each cluster:
 ```{r}
 table(res.hcpcMCA$data.clust$clust)
-barplot(table(res.hcpcMCA$data.clust$clust), col="darkslateblue", border="darkslateblue", main="[hierarchical] #observations/cluster")
+barplot(table(res.hcpcMCA$data.clust$clust), col="darkslateblue", border="darkslateblue", main="[hierarchical from mca] #observations/cluster")
 ```
 
 ## Interpret the results of the classification
@@ -1052,14 +1057,14 @@ We have a concordance of the 39.69% so we can say that they are different, if we
 
 ### Quantitative target (Total_amount)
 
-#### hcpc
+* hcpc
 ```{r}
 # res.hcpc$desc.var$quanti.var  # quantitative variables which characterizes the clusters
 # #                          Eta2       P-value
 # # Total_amount      0.539522699  0.000000e+00
 ```
 
-#### kmeans
+* kmeans
 ```{r}
 # res.cat <-catdes(df,30)
 # res.cat
@@ -1067,139 +1072,141 @@ We have a concordance of the 39.69% so we can say that they are different, if we
 # # ================================================================
 # #                          Eta2       P-value
 # # Total_amount      0.688303660  0.000000e+00
-# # 
-# # Description of each cluster by quantitative variables
-# # =====================================================
-# # $`1`
-# #                      v.test Mean in category Overall mean sd in category  Overall sd      p.value
-# # Total_amount      17.328080       19.3954753  13.92640493     3.88246513 10.04487145 2.888095e-67
-# # 
-# # $`2`
-# #                     v.test Mean in category Overall mean sd in category  Overall sd       p.value
-# # Total_amount     29.183431       26.5066872   13.9264049     9.88546826 10.04487145 3.147246e-187
-# # 
-# # $`3`
-# #                       v.test Mean in category Overall mean sd in category  Overall sd      p.value
-# # Total_amount      -12.119349       10.1373934  13.92640493     4.45694924 10.04487145 8.341900e-34
-# # 
-# # $`4`
-# #                    v.test Mean in category Overall mean sd in category  Overall sd       p.value
-# # Total_amount     39.12185        51.124128  13.92640493    18.90835873 10.04487145  0.000000e+00
-# # 
-# # $`5`
-# #                       v.test Mean in category Overall mean sd in category  Overall sd       p.value
-# # Total_amount      -33.723082        9.0324649  13.92640493     3.54907115 10.04487145 2.653016e-249
 ```
 
-#### hcpc_mca
+* hcpc_mca
 ```{r}
 # # res.hcpcMCA$desc.var$quanti.var  # quantitative variables which characterizes the clusters
 # #                    Eta2      P-value
 # # Total_amount 0.03950465 3.518655e-39
 ```
 
+#### Comment
+To compare the variable Total_amount in the three different classifications, we will look at Eta2:
+
+* The closer to 1 is eta2 for a variable, the better the variance between groups is explained by this variable.
+* We can see that, in descending order, we have:
+  + k-means (0.69)
+  +  hcpc (0.54)
+  + hcpc_mca (0.04)
+* This means that in the last classification the variable to define the clusters is not taken into account so much.
 
 
 ### Binary target (TipIsGiven)
 #### hcpc
 ```{r}
-# res.hcpc$desc.var$test.chi2   # categorical variables which characterizes the clusters
-# #                          p.value df
-# # TipIsGiven          4.279197e-36  4
-
 # res.hcpc$desc.var$category    # description of each cluster by the categories
 # # $`1`
-# #                                   Cla/Mod      Mod/Cla    Global       p.value     v.test
-# # TipIsGiven=No                  43.6502429  65.18134715 62.340472  7.289207e-04   3.378464
-# # TipIsGiven=Yes                 38.5985066  34.81865285 37.659528  7.289207e-04  -3.378464
+# #                                   Cla/Mod      Mod/Cla    Global  
+# # TipIsGiven=No                  43.6502429  65.18134715 62.340472  
+# # TipIsGiven=Yes                 38.5985066  34.81865285 37.659528 
 # #
 # # $`2`
-# #                                  Cla/Mod   Mod/Cla    Global       p.value     v.test
-# # TipIsGiven=No                  38.965996 68.727050 62.340472  2.645583e-11   6.665059
-# # TipIsGiven=Yes                 29.350948 31.272950 37.659528  2.645583e-11  -6.665059
+# #                                  Cla/Mod   Mod/Cla    Global 
+# # TipIsGiven=No                  38.965996 68.727050 62.340472 
+# # TipIsGiven=Yes                 29.350948 31.272950 37.659528 
 # # 
 # # $`3`
-# #                             Cla/Mod    Mod/Cla    Global      p.value    v.test
+# #                             Cla/Mod    Mod/Cla    Global  
 # # nothing to see here
 # # 
 # # $`4`
-# #                                   Cla/Mod   Mod/Cla    Global      p.value     v.test
-# # TipIsGiven=Yes                 24.6984492 56.728232 37.659528 2.002989e-31  11.661577
-# # TipIsGiven=No                  11.3809854 43.271768 62.340472 2.002989e-31 -11.661577
+# #                                   Cla/Mod   Mod/Cla    Global 
+# # TipIsGiven=Yes                 24.6984492 56.728232 37.659528 
+# # TipIsGiven=No                  11.3809854 43.271768 62.340472
 # # 
 # # $`5`
-# #                                   Cla/Mod   Mod/Cla    Global      p.value    v.test
-# # TipIsGiven=Yes                 1.60827111 71.794872 37.659528 1.783365e-05  4.290419
-# # TipIsGiven=No                  0.38167939 28.205128 62.340472 1.783365e-05 -4.290419
+# #                                   Cla/Mod   Mod/Cla    Global
+# # TipIsGiven=Yes                 1.60827111 71.794872 37.659528 
+# # TipIsGiven=No                  0.38167939 28.205128 62.340472
 ```
 
 #### kmeans
 ```{r}
 # res.cat <-catdes(df,30)
 # res.cat
-# # Link between the cluster variable and the categorical variables (chi-square test)
-# # =================================================================================
-# #                             p.value df
-# # TipIsGiven             4.163217e-45  4
 # # 
 # # Description of each cluster by the categories
 # # =============================================
 # # $`1`
-# #                                   Cla/Mod    Mod/Cla    Global       p.value    v.test
-# # TipIsGiven=Yes                  23.721999 49.6991576 37.659528  5.633107e-15  7.811903
-# # TipIsGiven=No                   14.503817 50.3008424 62.340472  5.633107e-15 -7.811903
+# #                                   Cla/Mod    Mod/Cla    Global
+# # TipIsGiven=Yes                  23.721999 49.6991576 37.659528
+# # TipIsGiven=No                   14.503817 50.3008424 62.340472
 # # 
 # # $`2`
-# #                                    Cla/Mod    Mod/Cla    Global       p.value     v.test
-# # TipIsGiven=Yes                  15.6232051 55.9670782 37.659528  5.218460e-18   8.648492
-# # TipIsGiven=No                    7.4253990 44.0329218 62.340472  5.218460e-18  -8.648492
+# #                                    Cla/Mod    Mod/Cla    Global 
+# # TipIsGiven=Yes                  15.6232051 55.9670782 37.659528 
+# # TipIsGiven=No                    7.4253990 44.0329218 62.340472
 # # 
 # # $`3`
-# #                                    Cla/Mod     Mod/Cla     Global       p.value     v.test
-# # TipIsGiven=No                   19.5697432  66.8246445 62.3404716  2.794274e-03   2.989508
-# # TipIsGiven=Yes                  16.0827111  33.1753555 37.6595284  2.794274e-03  -2.989508
+# #                                    Cla/Mod     Mod/Cla     Global 
+# # TipIsGiven=No                   19.5697432  66.8246445 62.3404716
+# # TipIsGiven=Yes                  16.0827111  33.1753555 37.6595284 
 # # 
 # # $`4`
-# #                                     Cla/Mod    Mod/Cla     Global      p.value     v.test
-# # TipIsGiven=Yes                    3.9058013 62.3853211 37.6595284 1.424189e-07   5.262100
-# # TipIsGiven=No                     1.4226232 37.6146789 62.3404716 1.424189e-07  -5.262100
+# #                                     Cla/Mod    Mod/Cla     Global
+# # TipIsGiven=Yes                    3.9058013 62.3853211 37.6595284
+# # TipIsGiven=No                     1.4226232 37.6146789 62.3404716
 # # 
 # # $`5`
-# #                                   Cla/Mod     Mod/Cla     Global       p.value     v.test
-# # TipIsGiven=No                   57.078418  69.9107522 62.3404716  2.371984e-27  10.834134
-# # TipIsGiven=Yes                  40.666284  30.0892478 37.6595284  2.371984e-27 -10.834134 
+# #                                   Cla/Mod     Mod/Cla     Global 
+# # TipIsGiven=No                   57.078418  69.9107522 62.3404716
+# # TipIsGiven=Yes                  40.666284  30.0892478 37.6595284
 ```
 
 #### hcpc_mca
 ```{r}
-# res.hcpcMCA$desc.var$test.chi2   # categorical variables which characterizes the clusters
-# #                          p.value df
-# # TipIsGiven          2.455088e-11  4
-
 # res.hcpcMCA$desc.var$category    # description of each cluster by the categories
 # # $`1`
-# #                                Cla/Mod   Mod/Cla     Global      p.value    v.test
-# # TipIsGiven=No                1.0409438 100.00000 62.3404716 6.580800e-07  4.973343
-# # TipIsGiven=Yes               0.0000000   0.00000 37.6595284 6.580800e-07 -4.973343
+# #                                Cla/Mod   Mod/Cla     Global 
+# # TipIsGiven=No                1.0409438 100.00000 62.3404716
+# # TipIsGiven=Yes               0.0000000   0.00000 37.6595284
 # # 
 # # $`2`
-# #                                  Cla/Mod     Mod/Cla     Global       p.value     v.test
+# #                                  Cla/Mod     Mod/Cla     Global 
 # # nothing to see here
 # # 
 # # $`3`
-# #                                  Cla/Mod     Mod/Cla     Global       p.value     v.test
-# # TipIsGiven=No                  32.616239  65.5966504 62.3404716  2.137595e-03   3.070418
-# # TipIsGiven=Yes                 28.317059  34.4033496 37.6595284  2.137595e-03  -3.070418
+# #                                  Cla/Mod     Mod/Cla     Global  
+# # TipIsGiven=No                  32.616239  65.5966504 62.3404716 
+# # TipIsGiven=Yes                 28.317059  34.4033496 37.6595284  
 # # 
 # # $`4`
-# #                                  Cla/Mod     Mod/Cla     Global       p.value     v.test
-# # TipIsGiven=Yes                 46.984492  41.9057377 37.6595284  3.681425e-07   5.084734
-# # TipIsGiven=No                  39.347675  58.0942623 62.3404716  3.681425e-07  -5.084734
+# #                                  Cla/Mod     Mod/Cla     Global 
+# # TipIsGiven=Yes                 46.984492  41.9057377 37.6595284 
+# # TipIsGiven=No                  39.347675  58.0942623 62.3404716 
 # # 
 # # $`5`
-# #                                     Cla/Mod    Mod/Cla    Global       p.value     v.test
-# # TipIsGiven=No                    3.33102012 80.0000000 62.340472  2.655335e-05   4.201175
-# # TipIsGiven=Yes                   1.37851809 20.0000000 37.659528  2.655335e-05  -4.201175
+# #                                     Cla/Mod    Mod/Cla    Global 
+# # TipIsGiven=No                    3.33102012 80.0000000 62.340472 
+# # TipIsGiven=Yes                   1.37851809 20.0000000 37.659528 
 ```
 
+#### Comment
+To compare the variable TipIsGiven in the three different classifications, we will look at Cla / Mod, Mod / Cla and Global:
 
+* Cluster 1:
+   + hcpc: TipIsGiven = No is overrepresented
+   + kmeans: TipIsGiven = Yes is overrepresented
+   + hcpc_mca: TipIsGiven = No is overrepresented
+* Cluster 2:
+   + hcpc: TipIsGiven = No is overrepresented
+   + kmeans: TipIsGiven = Yes is overrepresented
+   + hcpc_mca: There is no data in the cluster of this variable
+* Cluster 3:
+   + hcpc: No data in the cluster of this variable
+   + kmeans: TipIsGiven = No is overrepresented
+   + hcpc_mca: TipIsGiven = No is overrepresented
+* Cluster 4:
+   + hcpc: TipIsGiven = Yes is overrepresented
+   + kmeans: TipIsGiven = Yes is overrepresented
+   + hcpc_mca: TipIsGiven = Yes is overrepresented
+* Cluster 5:
+   + hcpc: TipIsGiven = Yes is overrepresented
+   + kmeans: TipIsGiven = No is overrepresented
+   + hcpc_mca: TipIsGiven = No is overrepresented
+
+### Final comment
+We think that at first glance, we do not find the relationship between the different clusters of the different types of analysis. As we can see in the data, they are not distributed in the same way with respect to the two variables we had to analyze.
+
+It makes sense to think this, since these variables have not been taken into account in the analyzes, as they had the role of supplementary variables, which means that they only served us as explanatory variables, and not to decide how to form clusters.
