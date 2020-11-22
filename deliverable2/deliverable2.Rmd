@@ -3,14 +3,14 @@ title: "Deliverable 2"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
-  html_document:
+  word_document:
     toc: no
     toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  word_document:
+  html_document:
     toc: no
     toc_depth: '4'
 geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
@@ -150,7 +150,7 @@ fviz_pca_ind(res.pca, select.ind = list(names=contrib.extremes))
 
 We can now have a look at them:
 ```{r}
-df[which(row.names(df) %in% row.names(df)[rang[(length(rang)):length(rang)]]), 1:28]
+df[which(row.names(df) %in% row.names(df)[rang[length(rang)]]), 1:28]
 df[which(row.names(df) %in% row.names(df)[rang[1]]),1:28]
 ```
 
@@ -165,7 +165,7 @@ fviz_pca_ind(res.pca, select.ind = list(names=contrib.extremes))
 
 We can now have a look at them:
 ```{r}
-df[which(row.names(df) %in% row.names(df)[rang[(length(rang)):length(rang)]]), 1:28]
+df[which(row.names(df) %in% row.names(df)[rang[length(rang)]]), 1:28]
 df[which(row.names(df) %in% row.names(df)[rang[1]]),1:28]
 ```
 
@@ -1135,3 +1135,11 @@ To compare the variable TipIsGiven in the three different classifications, we wi
 We think that at first glance, we do not find the relationship between the different clusters of the different types of analysis. As we can see in the data, they are not distributed in the same way with respect to the two variables we had to analyze.
 
 It makes sense to think this, since these variables have not been taken into account in the analyzes, as they had the role of supplementary variables, which means that they only served us as explanatory variables, and not to decide how to form clusters.
+
+
+--------------------------------------------------------------------------------
+
+# Finally, save the data
+```{r}
+save.image("Taxi5000_del2.RData")
+```
