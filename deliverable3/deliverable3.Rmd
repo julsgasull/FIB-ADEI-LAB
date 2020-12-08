@@ -41,7 +41,8 @@ filepath<-"~/Github Repositories/FIB-ADEI-LAB/deliverable3"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
-requiredPackages <- c("missMDA","chemometrics","mvoutlier","effects","FactoMineR","car", "factoextra","RColorBrewer","dplyr","ggmap","ggthemes","knitr")
+requiredPackages <- c("missMDA","chemometrics","mvoutlier","effects","FactoMineR","car","lmtest","ggplot2","moments","factoextra","RColorBrewer","dplyr","ggmap","ggthemes","knitr")
+
 missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
 if(length(missingPackages)) install.packages(missingPackages)
 lapply(requiredPackages, require, character.only = TRUE)
@@ -50,19 +51,392 @@ lapply(requiredPackages, require, character.only = TRUE)
 ## Load processed data from last deliverable
 ```{r}
 load(paste0(filepath,"/Taxi5000_del2.RData"))
+summary(df)
 ```
 
-# Some useful information
+# Refactor
+```{r}
+names(df)
 
+names(df)[names(df) == "VendorID"] <- "f.vendor_id"
+names(df)[names(df) == "RateCodeID"] <- "f.code_rate_id"
+names(df)[names(df) == "Pickup_longitude"] <- "q.pickup_longitude"
+names(df)[names(df) == "Pickup_latitude"] <- "q.pickup_latitude"
+names(df)[names(df) == "Dropoff_longitude"] <- "q.dropoff_longitude"
+names(df)[names(df) == "Dropoff_latitude"] <- "q.dropoff_latitude"
+names(df)[names(df) == "Passenger_count"] <- "q.passenger_count"
+names(df)[names(df) == "Trip_distance"] <- "q.trip_distance"
+names(df)[names(df) == "Fare_amount"] <- "q.fare_amount"
+names(df)[names(df) == "Extra"] <- "q.extra"
+names(df)[names(df) == "MTA_tax"] <- "f.mta_tax"
+names(df)[names(df) == "Tip_amount"] <- "q.tip_amount"
+names(df)[names(df) == "Tolls_amount"] <- "q.tolls_amount"
+names(df)[names(df) == "improvement_surcharge"] <- "f.improvement_surcharge"
+names(df)[names(df) == "Total_amount"] <- "target.total_amount"
+names(df)[names(df) == "Payment_type"] <- "f.payment_type"
+names(df)[names(df) == "Trip_type"] <- "f.trip_type"
+names(df)[names(df) == "hour"] <- "q.hour"
+names(df)[names(df) == "period"] <- "f.period"
+names(df)[names(df) == "tlenkm"] <- "q.tlenkm"
+names(df)[names(df) == "traveltime"] <- "q.traveltime"
+names(df)[names(df) == "espeed"] <- "q.espeed"
+names(df)[names(df) == "pickup"] <- "qual.pickup"
+names(df)[names(df) == "dropoff"] <- "qual.dropoff"
+names(df)[names(df) == "Trip_distance_range"] <- "f.trip_distance_range"
+names(df)[names(df) == "paidTolls"] <- "f.paid_tolls"
+names(df)[names(df) == "TipIsGiven"] <- "target.tip_is_given"
+names(df)[names(df) == "passenger_groups"] <- "f.passenger_groups"
+#names(df)[names(df) == "f.cost"] <- ""
+#names(df)[names(df) == "f.tt"] <- ""
+
+df$hcpck <- NULL
+df$claKM <- NULL
+df$hcpckMCA <- NULL
+df$hcpckMCA_hcpck <- NULL
+df$hcpckMCA_claKM <- NULL
+
+names(df)
+```
+
+# Create factors needed for this deliverable (according to teacher's video recording)
+We must create: f.cost, f.dist, f.tt and f.hour.
+We already have f.cost and f.tt, so we will only have to create f.dist and f.hour:
+
+## f.dist
+```{r}
+# f.dist
+summary(df$q.trip_distance)
+df$f.dist[df$q.trip_distance<=1.6] = "(0, 1.6]"
+df$f.dist[(df$q.trip_distance>1.6) & (df$q.trip_distance<=3)] = "(1.6, 3]"
+df$f.dist[(df$q.trip_distance>3) & (df$q.trip_distance<=5.5)] = "(3, 5.5]"
+df$f.dist[(df$q.trip_distance>5.5) & (df$q.trip_distance<=30)] = "(5.5, 30]"
+df$f.dist<-factor(df$f.dist)
+summary(df$f.dist)
+```
+
+## f.hour
+```{r}
+summary(df$q.hour)
+df$f.hour[(df$q.hour>=17) & (df$q.hour<18)] = "17"
+df$f.hour[(df$q.hour>=18) & (df$q.hour<19)] = "18"
+df$f.hour[(df$q.hour>=19) & (df$q.hour<20)] = "19"
+df$f.hour[(df$q.hour>=20) & (df$q.hour<21)] = "20"
+df$f.hour[(df$q.hour>=21) & (df$q.hour<22)] = "21"
+df$f.hour[(df$q.hour>=22) & (df$q.hour<23)] = "22"
+df$f.hour[(df$q.hour<17)] = "other"
+df$f.hour[(df$q.hour>23)] = "other"
+df$f.hour<-factor(df$f.hour)
+summary(df$f.hour)
+
+# !!! per revisar !!! --> no entenc perquè surten NA's
+
+# totes les que fa ella: f.speed, f.nbpass, f.cost, f.len1, f.dist, f.tt, f.hour
+
+
+# també te creada una distància manhattan -> ldist: la fem?
+```
+
+# Listing out variables
+```{r}
+names(df)
+vars_con<-names(df)[c(3:10,12:13,15,18,20:22)];vars_con
+vars_dis<-names(df)[c(1:2,16,19,27:32)];vars_dis # si les fem --> posar: f.speed, f.nbpass, f.cost, f.len1, f.dist, f.tt, f.hour
+vars_res<-names(df)[c(15,27)];vars_res
+vars_cexp<-vars_con[c(5:10,12:15)];vars_cexp
+```
+
+# Useful information
 ## Y (Numeric Target).
+
 This variable will be the target for linear model building (connected to blocks Statistical Modeling I and II).
 
-## Explicative Variables for modeling purposes are generally (not all in this dataset):
+# Explanatory variables numeric only
 
-* Socioeconomic variables: gender, age, education, type of work, etc
-* Trip characteristics, etc.
-* Bank marketing history
-* Economic vars
+## Calculation of Pearson/Spearman correlation
+
+Before we begin to see correlations with our target, we should consider the normality of this.
+
+### Histogram
+```{r}
+hist(df$target.total_amount,40,freq=F,col="darkslateblue", border = "darkslateblue")
+mm<-mean(df$target.total_amount);ss<-sd(df$target.total_amount);mm;ss
+curve(dnorm(x,mean=mm,sd=ss),col="red",lwd=2,lty=3, add=T)
+```
+-------------------------- des d'aquí fins
+
+### Skewness
+```{r}
+skewness(df$target.total_amount)
+```
+
+Normal data should 0 - Right skewed data is present
+
+
+```{r}
+skewness(df$target.total_amount)  # Normal data should 0 - Right skewed data is present
+kurtosis(df$target.total_amount)  # Normal data should 3 - 5.35 >> 3
+
+
+
+shapiro.test(df$target.total_amount)  # H0 Rejected -> Non-normally distributed data
+
+
+
+
+
+```
+-------------------------- aquí -> NO TOCAR
+
+## Initial model: take the most correlated variables 
+```{r}
+round(cor(df[,c("target.total_amount",vars_cexp)], method="spearman"),dig=2)  # Non parametric
+#                     target.total_amount 
+# target.total_amount                1.00  
+# q.passenger_count                  0.01 
+# q.trip_distance                    0.93
+# q.fare_amount                      0.97
+# q.extra                            0.03
+# q.tip_amount                       0.41 
+# q.tolls_amount                     0.15
+# q.hour                            -0.01
+# q.tlenkm                           0.91 
+# q.traveltime                       0.89
+# q.espeed                           0.29
+```
+
+We see that the diagonal is full of '1', since this command gives us the correlation between the same variable. Apart from this diagonal, however, there are more high correlations. Let's see which ones are correlated with our target:
+
+* q.fare_amount: 0.97
+* q.trip_distance: 0.93
+* q.tlenkm: 0.91 (like trip_distance)
+* q.traveltime: 0.89
+* q.tip_amount: 0.41 (not much, but must be taken into account)
+* q.espeed: 0.29 (not much, but must be taken into account)
+* q.tolls_amount: 0.15  (not much, but must be taken into account)
+* we can see that some of them are not correlated:
+  + q.extra (0.03)
+  + q.passenger_count (0.01)
+  + q.hour (-0.01)
+  
+After seeing the correlation, to make an initial model, we should select the ones that are most correlated, which are:
+
+* q.fare_amount
+* q.trip_distance (we are not taking tlenkm because of redundance)
+* q.traveltime
+* q.tip_amount
+* q.espeed
+* q.tolls_amount
+
+## Second model: take the entire dataset with a condes
+```{r}
+res.con <- condes(df,num.var=which(names(df)=="target.total_amount"))
+```
+
+```{r}
+res.con$quanti
+#                     correlation       p.value
+# q.fare_amount        0.94148264  0.000000e+00
+# q.trip_distance      0.89362425  0.000000e+00
+# q.tlenkm             0.88032754  0.000000e+00
+# q.traveltime         0.76203644  0.000000e+00
+# q.tip_amount         0.56659305  0.000000e+00
+# q.espeed             0.39628381 1.114335e-173
+# q.tolls_amount       0.25720935  9.464350e-71
+# q.hour              -0.03063360  3.727083e-02
+# q.pickup_longitude  -0.04224985  4.063559e-03
+# q.dropoff_longitude -0.06428511  1.218465e-05
+# q.pickup_latitude   -0.12410097  2.487316e-17
+# q.dropoff_latitude  -0.14875548  2.750473e-24
+```
+
+Com hem pogut veure abans, les variables més correlacionades són:
+
+* q.fare_amount: 0.94
+  + it is normal for the rate to go up when the price goes up
+* q.trip_distance: 0.89
+  + the more distance, the more time, and therefore the more price
+* q.tlenkm: 0.88 
+  + just like the previous one
+* q.traveltime: 0.76
+  + the longer, the more price
+* q.tip_amount: 0.57
+  + not so much related, but we can keep in mind that people tend to give a percentage of the total price
+* q.espeed: 0.40
+* q.tolls_amount: 0.26
+
+```{r}
+res.con$quali
+#                                R2       p.value
+# f.trip_distance_range 0.556244056  0.000000e+00
+# f.cost                0.907773826  0.000000e+00
+# f.tt                  0.545488924  0.000000e+00
+# f.dist                0.631940443  0.000000e+00
+# f.paid_tolls          0.109368372 6.348085e-117
+# target.tip_is_given   0.058775333  7.976817e-63
+# f.payment_type        0.053488291  7.096416e-56
+# f.code_rate_id        0.013014975  7.244863e-15
+# f.mta_tax             0.002101250  1.823686e-03
+# f.trip_type           0.001221351  1.748826e-02
+# qual.dropoff          0.008342886  2.184336e-02
+```
+
+To talk about factor variables, we need to visualize res.con$quali. So let's see:
+
+* f.trip_distance_range
+  + we see that they are totally related, just as we see with que.trip_distance, since the longer distance, the longer time, and therefore the more price
+* f.cost
+  + is equivalent to our target
+* f.tt
+  + he longer time, the more price
+* f.dist
+  + just like with f.trip_distance_range
+* f.paid_tolls
+  + if you pay more, it means that the trip has lasted longer, and therefore has been longer, and is more likely to have gone through more tolls
+* target.tip_is_given
+  + just like before, but we can keep in mind that people tend to give a percentage of the total price
+
+
+
+
+
+### Part de la profe
+#### Multiple Linear Regression issues
+
+Explanatory variables numeric only
+
+*Target numeric Total_amount*
+
+```{r}
+names(df)
+vars_con<-names(df)[c(3:15,17:21)];vars_con
+vars_dis<-names(df)[c(1,2,16,22:36)];vars_dis
+vars_res<-names(df)[c(15,23)]
+
+vars_cexp<-vars_con[c(5:12,14:18)];vars_cexp
+
+# Calculation of Pearson/Spearman correlation
+
+# Y Normally distributed?
+
+skewness(df$Total_amount)  # Normal data should 0 - Right skewed data is present
+kurtosis(df$Total_amount)  # Normal data should 3 - 5.35 >> 3
+
+mm<-mean(df$Total_amount);ss<-sd(df$Total_amount);mm;ss
+hist(df$Total_amount,30,freq=F)
+curve(dnorm(x,mean=mm,sd=ss),col="blue",lwd=2,lty=3, add=T)
+
+shapiro.test(df$Total_amount)  # H0 Rejected -> Non-normally distributed data
+
+round(cor(df[,c("Total_amount",vars_cexp)], method="spearman"),dig=2)  # Non parametric
+
+# Or using condes()
+res.con <- condes(df,num.var=which(names(df)=="Total_amount"))
+res.con$quanti
+res.con$quali
+res.con$category
+summary(df[,vars_cexp])
+```
+
+```{r}
+
+# Initial model: Take the most correlated variables - Any of group distances, fare_amount, tip_amount, tolls_amount, traveltime, espeed
+# 
+# If few explanatory variables are available -> Take all of them
+# 
+vars_cexp
+cor(df$l1dist,df$tlenkm)
+
+m19 <- lm( Total_amount~., data=df[,c("Total_amount",vars_cexp)])
+summary(m19)
+vif(m19)  # Check association between explanatory vars
+Anova(m19)  # Efectes nets
+
+# 
+m20 <- lm( Total_amount~ tlenkm + Fare_amount + Extra + MTA_tax + Tip_amount + Tolls_amount + improvement_surcharge, data=df[,c("Total_amount",vars_cexp)]) # Should Fare_amount be retained?
+summary(m20)
+vif(m20)  # Check association between explanatory vars
+Anova(m20)  # Efectes nets
+
+# Cribratge - Remove explanatory variables
+
+m21 <- step( m20, k=log(nrow(df)) )  # BIC - Bayesian Information Criteria - Schwarz - Keep explicability and reduce complexity - Goal: Minimum BIC
+vif(m21)
+
+summary(m21)
+anova(m21,m20) # H0: m21 = m20  - H0 accepted pval > 0.05 (not too low)
+vif(m21)
+marginalModelPlots(m21)
+
+#Useful to try transformations: log() transformation
+#Avoid correlated explanatory variables 
+
+m22<-lm(Total_amount ~ Extra + MTA_tax + Tip_amount + 
+    Tolls_amount + improvement_surcharge + poly(tlenkm,3),data=df)
+summary(m22)
+Anova(m22)
+anova(m22,m21) # H0: m21 = m22  - H0 can not be tested  - Not nested
+vif(m22)
+marginalModelPlots(m22)
+
+#- At this point multicollinearity is removed ....
+
+# Example: m22a
+m22a<-lm(Total_amount ~ Extra + MTA_tax + Tip_amount + 
+    Tolls_amount + improvement_surcharge + tlenkm,data=df)
+summary(m22a)
+marginalModelPlots(m22a)
+
+# Total_amount related to Fare_amount and tlenkm, but MTA_tax and improvement_surcharge can not be considered together
+
+# R2 dels models i decidir  ....
+
+m23 <- m22a
+
+```
+
+##### Diagnostics
+
+```{r}
+par(mfrow=c(2,2))
+plot(m23, id.n=0 )
+par(mfrow=c(1,1))
+
+m24<-lm(log(Total_amount) ~ Extra + Tip_amount + Tolls_amount + improvement_surcharge + poly(tlenkm,2),data=df)
+summary(m24)
+Anova(m24)
+# May I use anova( m23,m24 )?
+BIC(m23,m22,m24) # H0: m23 = m24  - Not possible to test
+vif(m24)
+marginalModelPlots(m24)
+
+# Entendre el model
+library(effects)
+plot(allEffects(m24))
+
+par(mfrow=c(2,2))
+plot(m24, id.n=0 )
+par(mfrow=c(1,1))
+
+# End of Nov 27th, 2020
+
+summary(resid(m24))
+sel1<-Boxplot(rstudent(m24));sel1 # sel1 already contains row numbers
+# ll1<-which(row.names(df) %in% names(rstudent(m24)[sel1]));ll1
+sel2<-which(hatvalues(m24)>6*length(m24$coefficients)/nrow(df));sel2;length(sel2) # sel2 contains row names
+ll2<-which(row.names(df) %in% names(hatvalues(m24)[sel2]));ll2
+sel3<-which(abs(cooks.distance(m24))>4/(nrow(df)-length(m24$coefficients)));sel3;length(sel3)
+ll3<-which(row.names(df) %in% names(cooks.distance(m24)[sel3]));ll3
+# sel4<-Boxplot(cooks.distance(m24));sel4  # sel4 already contains row numbers
+sel3<-which((cooks.distance(m24))>0.1);sel3;length(sel3)# sel3 contains row names
+ll3<-which(row.names(df) %in% names(cooks.distance(m24)[sel3]));ll3
+
+df[sel3,1:23]
+
+influencePlot(m24,id=list(method="noteworthy", n=5, cex=0.5))
+with(df,tapply(Total_amount,RateCodeID,summary))
+```
+
+
 
 
 ## Multivariant Analysis conducted in previous deliverables has to be used to select the initial model. Students have some degrees in freedom in model building, but the following conditions are requested:
