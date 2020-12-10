@@ -443,25 +443,20 @@ plot(model_5, id.n=0 )
 par(mfrow=c(1,1))
 ```
 
-Veient els resultats, podem dir que:
-* No hi ha normalitat
-* I, pel que fa el gràfic de Residuals vs Leverage, les nostres variables estan dins del model de R, però no és garie fiable, així que no ens serveix molt.
+Looking at the results, we can say that:
+* There is no normalcy
+* And, in terms of the Residual vs Leverage graph, our variables are within the R model, but it's not very reliable, so it doesn't help us much.
 
-Tot això és donat a que la nostra variable target ja no estava distribuida de forma normal. Per solucuionar-ho, li apliquem el logaritme:
-
-NOTA: a l'aplicar l'algoritme ens ha donat el següent error: 
-
-* Error in lm.fit(x, y, offset = offset, singular.ok = singular.ok, ...) : 
-  + NA/NaN/Inf in 'y'
-  
-No entenem perquè
+All this is due to the fact that our target variable was no longer normally distributed. To solve this, we apply the logarithm:
 
 PER PREGUNTAAAAAAR-----------------------------------------------------------------
 ```{r}
+df$target.log_total_amout <- log(df$target.total_amount)
+sel<-which(df$target.log_total_amout=="-Inf")
+df[sel,"target.log_total_amout"]<-0 
 
-log(df$target.total_amount)
 model_6 <- lm(
-  log(target.total_amount)~ 
+  target.log_total_amout~ 
     q.passenger_count +
     q.extra +
     q.tip_amount +
@@ -472,47 +467,61 @@ model_6 <- lm(
   data=df
 ) 
 summary(model_6)
-vif(model_6)
-
-m24<-lm(log(target.total_amount) ~ q.extra + q.tip_amount + q.tolls_amount + poly(q.tlenkm,2),data=df)
-summary(m24)
-Anova(m24)
-# May I use anova( m23,m24 )?
-BIC(m23,m22,m24) # H0: m23 = m24  - Not possible to test
-vif(m24)
-marginalModelPlots(m24)
-
-# Entendre el model
-library(effects)
-plot(allEffects(m24))
-
-par(mfrow=c(2,2))
-plot(m24, id.n=0 )
-par(mfrow=c(1,1))
-
-# End of Nov 27th, 2020
-
 ```
+
+We see that when doing the logarithm, the coefficient of determination is getting lower and lower, now it is 76.15%. We have seen that it has gotten worse than the previous model. Therefore, we discard it. We will work with model_5.
+
+However, let's look at a comparison of the latest models used:
+
+```{r}
+BIC(model_4, model_5, model_6)
+```
+
+We can see that model_5 is much better than model_4, and given the coefficient of determination of model_6, it is clear that our winner is model_5.
+
+So, let's look at the effects of this model:
+
+```{r}
+library(effects)
+plot(allEffects(model_5))
+```
+
+We see that our model defines the following:
+
+* q.passenger_count does not depend on target.total_amount
+* q.extra grows if target.total_amount grows
+* q.tip_amount grows if target.total_amount grows
+* q.tolls_amount grows if target.total_amount grows
+* q.tlenkm grows if target.total_amount grows
+* q.traveltime grows if target.total_amount grows
+
+```{r}
+par(mfrow=c(2,2))
+plot(model_5, id.n=0 )
+par(mfrow=c(1,1))
+```
+
+We see that the waste is not yet entirely optimal.
 
 --------------------------------------------------------------------------------
 
 
 ```{r}
-summary(resid(m24))
-sel1<-Boxplot(rstudent(m24));sel1 # sel1 already contains row numbers
-# ll1<-which(row.names(df) %in% names(rstudent(m24)[sel1]));ll1
-sel2<-which(hatvalues(m24)>6*length(m24$coefficients)/nrow(df));sel2;length(sel2) # sel2 contains row names
-ll2<-which(row.names(df) %in% names(hatvalues(m24)[sel2]));ll2
-sel3<-which(abs(cooks.distance(m24))>4/(nrow(df)-length(m24$coefficients)));sel3;length(sel3)
-ll3<-which(row.names(df) %in% names(cooks.distance(m24)[sel3]));ll3
-# sel4<-Boxplot(cooks.distance(m24));sel4  # sel4 already contains row numbers
-sel3<-which((cooks.distance(m24))>0.1);sel3;length(sel3)# sel3 contains row names
-ll3<-which(row.names(df) %in% names(cooks.distance(m24)[sel3]));ll3
-
-df[sel3,1:23]
-
-influencePlot(m24,id=list(method="noteworthy", n=5, cex=0.5))
-with(df,tapply(Total_amount,RateCodeID,summary))
+# summary(resid(m24))
+# sel1<-Boxplot(rstudent(m24));sel1 # sel1 already contains row numbers
+# # ll1<-which(row.names(df) %in% names(rstudent(m24)[sel1]));ll1
+# sel2<-which(hatvalues(m24)>6*length(m24$coefficients)/nrow(df));sel2;length(sel2) # sel2 contains row names
+# ll2<-which(row.names(df) %in% names(hatvalues(m24)[sel2]));ll2
+# sel3<-which(abs(cooks.distance(m24))>4/(nrow(df)-length(m24$coefficients)));sel3;length(sel3)
+# ll3<-which(row.names(df) %in% names(cooks.distance(m24)[sel3]));ll3
+# # sel4<-Boxplot(cooks.distance(m24));sel4  # sel4 already contains row numbers
+# sel3<-which((cooks.distance(m24))>0.1);sel3;length(sel3)# sel3 contains row names
+# ll3<-which(row.names(df) %in% names(cooks.distance(m24)[sel3]));ll3
+# 
+# df[sel3,1:23]
+# 
+# influencePlot(m24,id=list(method="noteworthy", n=5, cex=0.5))
+# with(df,tapply(Total_amount,RateCodeID,summary))
 ```
 
 
