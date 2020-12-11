@@ -120,20 +120,14 @@ df$f.hour[(df$q.hour>=20) & (df$q.hour<21)] = "20"
 df$f.hour[(df$q.hour>=21) & (df$q.hour<22)] = "21"
 df$f.hour[(df$q.hour>=22) & (df$q.hour<23)] = "22"
 df$f.hour[(df$q.hour<17)] = "other"
-df$f.hour[(df$q.hour>23)] = "other"
-
-# !!! per revisar !!! --> no entenc perquè surten NA's
-
-# totes les que fa ella: f.speed, f.nbpass, f.cost, f.len1, f.dist, f.tt, f.hour
-
-
-# també te creada una distància manhattan -> ldist: la fem?
+df$f.hour[(df$q.hour>=23)] = "other"
+df$f.hour<-factor(df$f.hour)
 ```
 
 # Listing out variables
 ```{r}
 vars_con<-names(df)[c(3:10,12:13,15,18,20:22)];
-vars_dis<-names(df)[c(1:2,16,19,27:32)]; # si les fem --> posar: f.speed, f.nbpass, f.cost, f.len1, f.dist, f.tt, f.hour
+vars_dis<-names(df)[c(1:2,16,19,27:32)]; 
 vars_res<-names(df)[c(15,27)];
 vars_cexp<-vars_con[c(5:10,12:15)];
 ```
