@@ -713,7 +713,7 @@ abline(h=var_out$souti,col="red")
 
 table(df$Tolls_amount)
 ```
-As we see in the boxplot and the table, the majority of the individuals are 0, so the values bigger than 5.54 will be outliers. After having the outliers, we proceed to categorize this variable to see if an individual has paid or not  for a toll.
+As we see in the boxplot and the table, the majority of the individuals are 0, so the values bigger than 5.54 will be outliers.
 ```{r}
 llout<-which(df$Tolls_amount>5.54)
 iouts[llout]<-iouts[llout]+1
@@ -721,10 +721,6 @@ iouts[llout]<-iouts[llout]+1
 jouts[16]<-length(llout)
 df[llout,"Tolls_amount"]<-NA 
 # llout
-
-df$paidTolls[df$Tolls_amount == 0] = "No"
-df$paidTolls[df$Tolls_amount > 0] = "Yes"
-df$paidTolls <- factor(df$paidTolls)
 ```
 
 ### 20. Total_amount
@@ -898,6 +894,8 @@ summary(df$TipIsGiven)
 
 #### > tlenkm
 ```{r}
+ll<-which(res.imputation$completeObs[,"tlenkm"] <= 1)
+res.imputation$completeObs[ll,"tlenkm"] <- 1
 ll<-which(res.imputation$completeObs[,"tlenkm"] > 48.28)
 res.imputation$completeObs[ll,"tlenkm"] <- 48.28
 ```
@@ -919,9 +917,9 @@ res.imputation$completeObs[ll,"espeed"] <- 55
 ### > Passenger_count
 We decided to create categorical for this variable so we categorize it for single passengers, couple and groups (3 or more)
 ```{r}
-df$passenger_groups[df$Passenger_count == 1] = "Single"
-df$passenger_groups[df$Passenger_count == 2] = "Couple"
-df$passenger_groups[df$Passenger_count >= 3] = "Group"
+df$passenger_groups[res.imputation$completeObs[,"Passenger_count"]  == 1] = "Single"
+df$passenger_groups[res.imputation$completeObs[,"Passenger_count"] > 1 & res.imputation$completeObs[,"Passenger_count"] <= 2] = "Couple"
+df$passenger_groups[res.imputation$completeObs[,"Passenger_count"] >= 3] = "Group"
 df$passenger_groups <- factor(df$passenger_groups)
 
 ```
@@ -969,10 +967,14 @@ barplot(table(df$improvement_surcharge),main="improvement_surcharge Barplot",col
 ```
 
 ### > Tolls_amount
-As we checked before the imputation and detected as errors those individuals with negative amount, the negative values found now are going to be set as 0 because they result negative during the imputation.
+As we checked before the imputation and detected as errors those individuals with negative amount, the negative values found now are going to be set as 0 because they result negative during the imputation. After treating this values, we proceed to categorize this variable to see if an individual has paid or not  for a toll.
 ```{r}
 ll<-which(res.imputation$completeObs[,"Tolls_amount"] < 0)
 res.imputation$completeObs[ll,"Tolls_amount"] <- 0
+
+df$paidTolls[res.imputation$completeObs[,"Tolls_amount"] == 0] = "No"
+df$paidTolls[res.imputation$completeObs[,"Tolls_amount"] > 0] = "Yes"
+df$paidTolls <- factor(df$paidTolls)
 ```
 
 

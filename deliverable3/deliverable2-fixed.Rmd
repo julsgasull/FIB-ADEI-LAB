@@ -34,10 +34,10 @@ rm(list=ls())                       # Clean workspace
 ## Load Required Packages for this deliverable
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
-setwd("~/Github Repositories/FIB-ADEI-LAB/deliverable3")
-filepath<-"~/Github Repositories/FIB-ADEI-LAB/deliverable3"
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+#setwd("~/Github Repositories/FIB-ADEI-LAB/deliverable3")
+#filepath<-"~/Github Repositories/FIB-ADEI-LAB/deliverable3"
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3")
+filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -49,7 +49,8 @@ lapply(requiredPackages, require, character.only = TRUE)
 
 ## Load processed data from first deliverable
 ```{r}
-load(paste0(filepath,"/Taxi5000_del1.RData"))
+#load(paste0(filepath,"/Taxi5000_del1.RData"))
+load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2/Taxi5000_del1.RData")
 ```
 
 ## Clean data
@@ -408,7 +409,7 @@ dim(ppcc)
 ### Optimal number of clusters
 ```{r}
 library("factoextra")
-fviz_nbclust(ppcc, kmeans, method = "gap_stat") # !!!!Descomentar pel deliverable, triga molt.
+#fviz_nbclust(ppcc, kmeans, method = "gap_stat") # !!!!Descomentar pel deliverable, triga molt.
 ```
 
 According to the previous plot, the optimal number of clusters per k-means is 1, so we guess maybe something is wrong or missing.
@@ -547,7 +548,7 @@ df$f.tt[df$traveltime<=5] = "[0,5]"
 df$f.tt[(df$traveltime>5) & (df$traveltime<=10)] = "(5,10]"
 df$f.tt[(df$traveltime>10) & (df$traveltime<=15)] = "(10,15]"
 df$f.tt[(df$traveltime>15) & (df$traveltime<= 20)] = "(15,20]"
-df$f.tt[(df$traveltime>20) & (df$traveltime<= 50)] = "(20,50]"
+df$f.tt[(df$traveltime>20) & (df$traveltime<= 70)] = "(20,60]"
 df$f.tt<-factor(df$f.tt)
 table(df$f.tt)
 ```

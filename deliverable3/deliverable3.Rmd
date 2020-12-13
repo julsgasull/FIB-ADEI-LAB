@@ -34,10 +34,10 @@ rm(list=ls())                       # Clean workspace
 ## Load Required Packages for this deliverable
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
-setwd("~/Github Repositories/FIB-ADEI-LAB/deliverable3")
-filepath<-"~/Github Repositories/FIB-ADEI-LAB/deliverable3"
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+#setwd("~/Github Repositories/FIB-ADEI-LAB/deliverable3")
+#filepath<-"~/Github Repositories/FIB-ADEI-LAB/deliverable3"
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -50,7 +50,8 @@ lapply(requiredPackages, require, character.only = TRUE)
 
 ## Load processed data from last deliverable
 ```{r}
-load(paste0(filepath,"/Taxi5000_del2.RData"))
+#load(paste0(filepath,"/Taxi5000_del2.RData"))
+load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
 summary(df)
 ```
 
@@ -602,11 +603,12 @@ We see we haven’t won too much. So we stick to model_5.
 
 ```{r}
 
-m30<-lm(log(Total_amount) ~  Extra + Tip_amount + Tolls_amount + improvement_surcharge + espeed + log(tlenkm)  ,data=df)
-Anova(m30)
-vif(m30)
+model_8<-lm(log(target.total_amount) ~  q.extra + q.tip_amount + q.tolls_amount + f.improvement_surcharge + q.espeed  + log(q.tlenkm),data=df)
+Anova(model_8)
+vif(model_8)
+residualPlots(model_8)
 
-vars_enum<-c("Extra","Tip_amount","Tolls_amount","improvement_surcharge","tlenkm")
+vars_enum<-c("q.extra","q.tip_amount","q.tolls_amount","f.improvement_surcharge","tlenkm")
 vars_edis<-c("VendorID","RateCodeID","Payment_type","period")
 
 df$f.extra <- factor(df$Extra)
