@@ -101,8 +101,8 @@ knitr::opts_chunk$set(echo = TRUE)
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
 
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -124,10 +124,10 @@ rm(list=ls())                       # Clean workspace
 
 Data: green_tripdata_2016-01
 ```{r}
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
-#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable2")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable2"
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 df<-read.table(paste0(filepath,"/green_tripdata_2016-01.csv"),header=T, sep=",")
 # dim(df)       # Displays the sample size
 # names(df)     # Displays the names of the sample variables

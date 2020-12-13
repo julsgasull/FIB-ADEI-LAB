@@ -34,10 +34,10 @@ rm(list=ls())                       # Clean workspace
 ## Load Required Packages for this deliverable
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
-#setwd("~/Github Repositories/FIB-ADEI-LAB/deliverable3")
-#filepath<-"~/Github Repositories/FIB-ADEI-LAB/deliverable3"
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3")
-filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3"
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3")
+#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -49,8 +49,8 @@ lapply(requiredPackages, require, character.only = TRUE)
 
 ## Load processed data from first deliverable
 ```{r}
-#load(paste0(filepath,"/Taxi5000_del1.RData"))
-load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2/Taxi5000_del1.RData")
+load(paste0(filepath,"/Taxi5000_del1.RData"))
+#load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2/Taxi5000_del1.RData")
 ```
 
 ## Clean data
