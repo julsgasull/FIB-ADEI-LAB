@@ -3,13 +3,13 @@ title: "Deliverable 3"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
-  html_document:
-    toc: no
-    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
+  html_document:
+    toc: no
+    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
@@ -150,7 +150,7 @@ Before we begin to see correlations with our target, we should consider the norm
 ## Normality
 ```{r}
 hist(df$target.total_amount,50,freq=F,col="darkslateblue",border = "darkslateblue")
-mm<-mean(df$target.total_amount);ss<-sd(df$target.total_amount);mm;ss
+mm<-mean(df$target.total_amount);ss<-sd(df$target.total_amount)
 curve(dnorm(x,mean=mm,sd=ss),col="red",lwd=2,lty=3, add=T)
 
 shapiro.test(df$target.total_amount)
@@ -170,12 +170,12 @@ Normal data should have 0 skewness: we see that our data is right skewed (3.18).
 
 ### Kurtosis
 ```{r}
-kurtosis(df$target.total_amount)  # Normal data should 3 5.35 >> 3
+kurtosis(df$target.total_amount)
 ```
 
 Normal data should be 3. We have 21.1, so, in this case, our data is not normal.
 
-## Initial model: take the most correlated variables 
+## Method 1: take the most correlated variables 
 ```{r}
 # we use spearman method since out target is not normally distributed
 round(cor(df[,c("target.total_amount",vars_cexp)], method="spearman"),dig=2)
@@ -204,7 +204,7 @@ After seeing the correlation, to make an initial model, we should select the one
 * q.espeed
 * q.tolls_amount
 
-## Second model: take the entire dataset with a condes
+## Method 2:take the entire dataset with a condes
 ```{r}
 res.con <- condes(df,num.var=which(names(df)=="target.total_amount"))
 ```
@@ -247,7 +247,7 @@ To talk about factor variables, we need to visualize res.con$quali. So let's see
 * target.tip_is_given
   + just like before, but we can keep in mind that people tend to give a percentage of the total price
 
-## Third model: if few explanatory variables are available: take all of them
+## Method 3: if few explanatory variables are available -> take all of them
 ```{r}
 vars_cexp
 cor(df$q.trip_distance,df$q.tlenkm)
@@ -444,12 +444,12 @@ par(mfrow=c(1,1))
 ```
 
 Looking at the results, we can say that:
-* There is no normalcy
+
+* There is no normality
 * And, in terms of the Residual vs Leverage graph, our variables are within the R model, but it's not very reliable, so it doesn't help us much.
 
 All this is due to the fact that our target variable was no longer normally distributed. To solve this, we apply the logarithm:
 
-PER PREGUNTAAAAAAR-----------------------------------------------------------------
 ```{r}
 model_6 <- lm(
   log(target.total_amount)~ 
@@ -467,20 +467,45 @@ summary(model_6)
 
 We see that when doing the logarithm, the coefficient of determination is getting lower and lower, now it is 79.57%. We have seen that it has gotten worse than the previous model. Therefore, we discard it. We will work with model_5.
 
-However, let's look at a comparison of the latest models used:
+However, let's remember the last three models we used:
 
-```{r}
-BIC(model_4, model_5, model_6)
-```
+* Model 4
+  + Coefficient of determination = 85.71%
+  + VIFs: 
+    - q.passenger_count: 1.004131
+    - q.extra: 1.065525
+    - q.tip_amount: 1.226836
+    - q.tolls_amount: 1.063271
+    - q.hour: 1.072210
+    - q.tlenkm: 6.329422
+    - q.traveltime: 4.244321
+    - q.espeed: 2.768123
+* Model 5
+  + Coefficient of determination = 85.65%
+  + VIFs: 
+    - q.passenger_count: 1.003693
+    - q.extra: 1.006079
+    - q.tip_amount: 1.225445
+    - q.tolls_amount: 1.063204
+    - q.tlenkm: 2.452236
+    - q.traveltime: 2.270921
+* Model 6
+  + Coefficient of determination = 79.57%
+  + VIFs: 
+    - q.passenger_count: 1.003693
+    - q.extra: 1.006079
+    - q.tip_amount: 1.225445
+    - q.tolls_amount: 1.063204
+    - q.tlenkm: 2.452236
+    - q.traveltime: 2.270921
 
-We can see that model_5 is much better than model_4, and given the coefficient of determination of model_6, it is clear that our winner is model_5.
+According to the coefficient of explicability, the ranking is: model_4 >> model_5 >> model_6. As for the VIFs, however, the ranking is: model_6 >> model_5 >> model_4. Since VIFs are acceptable on both model_5 and model_6, and not acceptable on model_4, the smartest option is to choose model_5.
 
 So, let's look at the effects of this model:
 
 ```{r}
 library(effects)
 plot(allEffects(model_5))
-plot(allEffects(model_6))
 ```
 
 We see that our model defines the following:
@@ -495,11 +520,10 @@ We see that our model defines the following:
 ```{r}
 par(mfrow=c(2,2))
 plot(model_5, id.n=0 )
-plot(model_6, id.n=0 )
 par(mfrow=c(1,1))
 ```
 
-We see that the waste is not yet entirely optimal.
+We see that the residues are not completely optimal.
 
 --------------------------------------------------------------------------------
 
