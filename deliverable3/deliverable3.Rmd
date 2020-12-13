@@ -565,16 +565,145 @@ boxcox(
 
 We see the lambda parameter estimation method in the boxcox method. This gives us an idea of the power to which we need to raise the target variable in order to improve the properties of the linear model.
 
-Val la pena provar un nou model amb una arrel quadrada:
+It is worth trying a new model with a square root in the target variable:
 
 ```{r}
-m26<-lm(sqrt(Total_amount) ~ Extra + Tip_amount + Tolls_amount + improvement_surcharge + espeed + poly(tlenkm,3) ,data=df)
-summary(m26)
- 
+model_7 <- lm(
+  sqrt(target.total_amount)~ 
+    q.passenger_count +
+    q.extra +
+    q.tip_amount +
+    q.tolls_amount +
+    q.tlenkm +
+    q.traveltime
+  ,
+  data=df
+) 
+summary(model_7)
+```
+
+We see that the coefficient has improved, from 85.65% (modul_5) to 86.23% (model_7). But ... is it worth it from a residual point of view?
+
+```{r}
 par(mfrow=c(2,2))
-plot( m26, id.n=0 )
+plot( model_7, id.n=0 )
 par(mfrow=c(1,1))
 ```
+
+We see we haven’t won too much. So we stick to model_5.
+
+
+##### 2020.12.04 min 00:41:00
+
+----------------------------------------------------------------------------------------
+
+## Using factors as explanatory variables
+### Try to change numerical each regressor by its discretized factor
+
+```{r}
+
+m30<-lm(log(Total_amount) ~  Extra + Tip_amount + Tolls_amount + improvement_surcharge + espeed + log(tlenkm)  ,data=df)
+Anova(m30)
+vif(m30)
+
+vars_enum<-c("Extra","Tip_amount","Tolls_amount","improvement_surcharge","tlenkm")
+vars_edis<-c("VendorID","RateCodeID","Payment_type","period")
+
+df$f.extra <- factor(df$Extra)
+
+m31<-lm(log(Total_amount) ~ f.extra + Tip_amount + Tolls_amount + improvement_surcharge + espeed + log(tlenkm)  ,data=df)
+
+anova(m30, m31)  # NOT POSSIBLE
+BIC(m30,m31)
+
+m32<-lm(log(Total_amount) ~ f.extra + Tip_amount + f.tolls+ improvement_surcharge + espeed + log(tlenkm)  ,data=df)
+BIC(m30,m31,m32)
+
+m33<-lm(log(Total_amount) ~ f.extra + Tip_amount + f.tolls+ f.scharge + espeed + log(tlenkm)  ,data=df)
+BIC(m30,m31,m32,m33)
+
+m34<-lm(log(Total_amount) ~ f.extra + Tip_amount + f.tolls+ f.scharge + f.speed + log(tlenkm)  ,data=df)
+BIC(m30,m31,m32,m33,m34)
+
+m35 <- .....
+
+Anova(m35)
+summary(m35)
+model.matrix(m35)[1:12,]
+
+par(mfrow=c(2,2))
+plot( m35, id.n=0 )
+par(mfrow=c(1,1))
+
+influencePlot( m35, id=c(list="noteworthy",n=5))
+residualPlots( m35 )
+marginalModelPlots( m35 )
+
+ll1<-Boxplot(rstudent(m35));ll1
+# ll1<-which(row.names(df) %in% names(rstudent(m25)[sel1]));ll1
+df[ll1,]
+ll4 <- Boxplot( cooks.distance( m35 ));ll4
+ll4<-c(649, 4088)
+dfred<-df[-ll4,]
+
+# Outliers dels residus - Verticals - Cal suprimir-los: el model no pot explicar-los
+
+m36<-lm(log(Total_amount) ~ f.extra + Tip_amount + f.tolls+ f.scharge + f.speed + log(tlenkm)  ,data=dfred)
+summary(m36)
+Anova(m36)
+vif(m36)
+
+```
+
+### Adding factors: main effects
+
+```{r}
+names(df)
+m40<-lm(log(Total_amount) ~ Tip_amount + log(tlenkm)+ f.tolls+ f.scharge + f.speed + f.extra + RateCodeID + VendorID + Payment_type+period ,data=df)
+
+summary(m40)
+Anova( m40 )
+
+m41<-lm(log(Total_amount) ~ Tip_amount + log(tlenkm)+ f.tolls + f.speed + f.extra + RateCodeID + Payment_type+period ,data=df)
+
+anova(m41, m40)
+```
+
+
+```{r}
+# Interactions
+# 
+m50<-lm(log(Total_amount) ~ (Tip_amount + log(tlenkm))*(f.tolls + f.speed + f.extra + RateCodeID + Payment_type+period) ,data=df)
+
+m51<-step( m50, k=log(nrow(df)))
+Anova(m51)
+summary( m51 )
+
+
+m55<- ....
+
+ll1<-Boxplot(rstudent(m55));ll1
+sel2<-which(hatvalues(m55)>5*length(m55$coefficients)/nrow(df));sel2;length(sel2)
+ll2<-which(row.names(df) %in% names(hatvalues(m25)[sel2]));ll2
+sel3<-which(cooks.distance(m55)> 0.5 );sel3;length(sel3)
+ll3<-which(row.names(df) %in% names(cooks.distance(m55)[sel3]));ll3
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## Multivariant Analysis conducted in previous deliverables has to be used to select the initial model. Students have some degrees in freedom in model building, but the following conditions are requested:
