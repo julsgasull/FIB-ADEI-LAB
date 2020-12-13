@@ -3,13 +3,13 @@ title: "Deliverable 3"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
+  html_document:
+    toc: no
+    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
-    toc: no
-    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
@@ -282,12 +282,6 @@ When the variance inflation factor is greater than 5, we need to consider whethe
 
 In this case we have to choose how far we stay. Since we work better with km than with miles (or inches, or whatever it is), we could choose the variable q.tlenkm.
 
-```{r}
-Anova(model_1)
-```
-
-This table shows us whether or not it is necessary to have certain variables in our model. We can remove a variable from our model with the following:
-
 ### Model 1 with BIC
 ```{r}
 model_1_bic <- step( model_1, k=log(nrow(df)) )
@@ -504,8 +498,14 @@ According to the coefficient of explicability, the ranking is: model_4 >> model_
 So, let's look at the effects of this model:
 
 ```{r}
+Anova(model_5)
+```
+
+We see that now the net effects are significant.
+
+```{r}
 library(effects)
-plot(allEffects(model_5))
+plot(allEffects(model_5)) 
 ```
 
 We see that our model defines the following:
@@ -529,21 +529,51 @@ We see that the residues are not completely optimal.
 
 
 ```{r}
-# summary(resid(m24))
-# sel1<-Boxplot(rstudent(m24));sel1 # sel1 already contains row numbers
-# # ll1<-which(row.names(df) %in% names(rstudent(m24)[sel1]));ll1
-# sel2<-which(hatvalues(m24)>6*length(m24$coefficients)/nrow(df));sel2;length(sel2) # sel2 contains row names
-# ll2<-which(row.names(df) %in% names(hatvalues(m24)[sel2]));ll2
-# sel3<-which(abs(cooks.distance(m24))>4/(nrow(df)-length(m24$coefficients)));sel3;length(sel3)
-# ll3<-which(row.names(df) %in% names(cooks.distance(m24)[sel3]));ll3
-# # sel4<-Boxplot(cooks.distance(m24));sel4  # sel4 already contains row numbers
-# sel3<-which((cooks.distance(m24))>0.1);sel3;length(sel3)# sel3 contains row names
-# ll3<-which(row.names(df) %in% names(cooks.distance(m24)[sel3]));ll3
+
+##### ?? no trobo on ho explica
+# summary(resid(model_5))
+# sel1<-Boxplot(rstudent(model_5));sel1 # sel1 already contains row numbers
+# ll1<-which(row.names(df) %in% names(rstudent(model_5)[sel1]));ll1
 # 
-# df[sel3,1:23]
+# sel2<-which(hatvalues(model_5)>6*length(model_5$coefficients)/nrow(df));sel2;length(sel2) # sel2 contains row names
+# ll2<-which(row.names(df) %in% names(hatvalues(model_5)[sel2]));ll2
 # 
-# influencePlot(m24,id=list(method="noteworthy", n=5, cex=0.5))
+# sel3<-which(abs(cooks.distance(model_5))>4/(nrow(df)-length(model_5$coefficients)));sel3;length(sel3)
+# ll3<-which(row.names(df) %in% names(cooks.distance(model_5)[sel3]));ll3
+# 
+# sel4<-Boxplot(cooks.distance(model_5));sel4  # sel4 already contains row numbers
+# 
+# sel3<-which((cooks.distance(model_5))>0.1);sel3;length(sel3)# sel3 contains row names
+# ll3<-which(row.names(df) %in% names(cooks.distance(model_5)[sel3]));ll3
+# 
+# influencePlot(model_5,id=list(method="noteworthy", n=5, cex=0.5))
 # with(df,tapply(Total_amount,RateCodeID,summary))
+
+library(MASS)
+boxcox(
+    target.total_amount~ 
+    q.passenger_count +
+    q.extra +
+    q.tip_amount +
+    q.tolls_amount +
+    q.tlenkm +
+    q.traveltime
+  ,
+  data=df
+)
+```
+
+We see the lambda parameter estimation method in the boxcox method. This gives us an idea of the power to which we need to raise the target variable in order to improve the properties of the linear model.
+
+Val la pena provar un nou model amb una arrel quadrada:
+
+```{r}
+m26<-lm(sqrt(Total_amount) ~ Extra + Tip_amount + Tolls_amount + improvement_surcharge + espeed + poly(tlenkm,3) ,data=df)
+summary(m26)
+ 
+par(mfrow=c(2,2))
+plot( m26, id.n=0 )
+par(mfrow=c(1,1))
 ```
 
 
