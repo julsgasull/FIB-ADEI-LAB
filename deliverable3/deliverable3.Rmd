@@ -34,8 +34,8 @@ rm(list=ls())                       # Clean workspace
 ## Load Required Packages for this deliverable
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
-setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
-filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
+#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
+#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
 #setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
 #filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
@@ -50,8 +50,8 @@ lapply(requiredPackages, require, character.only = TRUE)
 
 ## Load processed data from last deliverable
 ```{r}
-load(paste0(filepath,"/Taxi5000_del2.RData"))
-#load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
+#load(paste0(filepath,"/Taxi5000_del2.RData"))
+load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
 summary(df)
 ```
 
@@ -593,29 +593,17 @@ par(mfrow=c(1,1))
 
 We see we haven’t won too much. So we stick to model_5.
 
-
-##### 2020.12.04 min 00:41:00
-
 ----------------------------------------------------------------------------------------
 
 ## Using factors as explanatory variables
 ### Try to change numerical each regressor by its discretized factor
 
 ```{r}
-model_8<-lm(
-  log(target.total_amount)~
-    q.extra + 
-    q.tip_amount + 
-    q.tolls_amount + 
-    f.improvement_surcharge + 
-    q.espeed  + 
-    log(q.tlenkm)
-  , data=df
-)
+model_8<-lm(log(target.total_amount)~ q.extra + q.tip_amount +  q.tolls_amount + f.improvement_surcharge + q.espeed  + log(q.tlenkm), data=df)
 summary(model_8)
 ``` 
 
-We see that the explainability is now 87.77%
+We see that the explainability is now 87.77%. The more influent effects in this models are the length in km of the trip and the tip amount given.
 
 ```{r}
 Anova(model_8)
@@ -627,33 +615,51 @@ residualPlots(model_8)
 # vars_enum<-c("q.extra","q.tip_amount","q.tolls_amount","f.improvement_surcharge","tlenkm")
 # vars_edis<-c("VendorID","RateCodeID","Payment_type","period")
 # 
-# df$f.extra <- factor(df$Extra)
-# 
-# m31<-lm(log(Total_amount) ~ f.extra + Tip_amount + Tolls_amount + improvement_surcharge + espeed + log(tlenkm)  ,data=df)
-# 
-# anova(m30, m31)  # NOT POSSIBLE
-# BIC(m30,m31)
-# 
-# m32<-lm(log(Total_amount) ~ f.extra + Tip_amount + f.tolls+ improvement_surcharge + espeed + log(tlenkm)  ,data=df)
-# BIC(m30,m31,m32)
-# 
-# m33<-lm(log(Total_amount) ~ f.extra + Tip_amount + f.tolls+ f.scharge + espeed + log(tlenkm)  ,data=df)
-# BIC(m30,m31,m32,m33)
-# 
-# m34<-lm(log(Total_amount) ~ f.extra + Tip_amount + f.tolls+ f.scharge + f.speed + log(tlenkm)  ,data=df)
-# BIC(m30,m31,m32,m33,m34)
-# 
-# m35 <- .....
-# 
-# Anova(m35)
-# summary(m35)
-# model.matrix(m35)[1:12,]
-# 
-# par(mfrow=c(2,2))
-# plot( m35, id.n=0 )
-# par(mfrow=c(1,1))
-# 
-# influencePlot( m35, id=c(list="noteworthy",n=5))
+df$f.extra <- factor(df$q.extra)
+
+model_9<-lm(log(target.total_amount) ~ f.extra + q.tip_amount + q.tolls_amount + f.improvement_surcharge + q.espeed + log(q.tlenkm)  ,data=df)
+
+BIC(model_8,model_9)
+```
+We can see from the BIC that the model_9 is better than the model_8, so it is correct to consider extra as factor. Next, we will do the same with the tolls_amount and use the factor we had already created (paid_tolls).
+```{r}
+model_10<-lm(log(target.total_amount) ~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + q.espeed + log(q.tlenkm)  ,data=df)
+BIC(model_8,model_9,model_10)
+```
+We see can see that it is correct to use the paid_tolls factor to improve our model. We will try it now with the effective speed.
+```{r}
+df$f.espeed <- factor(df$q.espeed)
+model_11<-lm(log(target.total_amount) ~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + f.espeed + log(q.tlenkm)  ,data=df)
+BIC(model_8,model_9,model_10,model_11)
+```
+We can see that the best approach is the model_10, so we are going to stick to it for now.
+
+```{r}
+model_12 <- model_10
+
+Anova(model_12)
+summary(model_12)
+```
+We can see from the Anova test that f.extra has 2 freedom degrees and globally it does have a significant net effect once the other variables are in the model.
+
+We are going to take a look at the residues.
+```{r}
+par(mfrow=c(2,2))
+plot( model_12, id.n=0 )
+par(mfrow=c(1,1))
+```
+Looking at the results, we can say that:
+
+* There is no normality
+* And, in terms of the Residual vs Leverage graph, our variables are within the R model, but it's not very reliable, so it doesn't help us much.
+
+
+!!!!!!!04/12 1:17:00
+
+We proceed to take a look at the influence plot to check our influent residuals for model_12.
+```{r}
+
+influencePlot( model_12, id=c(list="noteworthy",n=5))
 # residualPlots( m35 )
 # marginalModelPlots( m35 )
 # 
