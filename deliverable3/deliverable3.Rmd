@@ -804,8 +804,6 @@ vif(model_14)
 
 We see that the coefficient of determination has increased a bit and it seems that we have no collinearity problems.
 
-!!!!!!!!!!!!!!!!! Until 2020.12.04, 01:35:00
-
 ### Adding factors: main effects
 
 ```{r}
@@ -826,24 +824,34 @@ model_15<-lm(
 )
 summary(model_15)
 Anova(model_15)
-
-m41<-lm(log(Total_amount) ~ Tip_amount + log(tlenkm)+ f.tolls + f.speed + f.extra + RateCodeID + Payment_type+period ,data=df)
-
-anova(m41, m40)
 ```
+
+Veiem que, de totes les variables explicatives introduides noves, les que podem salvar són: 
+
+* f.espeed: 19.85
+* f.payment_type: 12.67
+
+Creem un nou model amb aquestes:
 
 ```{r}
-# names(df)
-# m40<-lm(log(Total_amount) ~ Tip_amount + log(tlenkm)+ f.tolls+ f.scharge + f.speed + f.extra + RateCodeID + VendorID + Payment_type+period ,data=df)
-# 
-# summary(m40)
-# Anova( m40 )
-# 
-# m41<-lm(log(Total_amount) ~ Tip_amount + log(tlenkm)+ f.tolls + f.speed + f.extra + RateCodeID + Payment_type+period ,data=df)
-# 
-# anova(m41, m40)
+model_16<-lm(
+  log(target.total_amount) ~ 
+    q.tip_amount + 
+    q.tlenkm+ 
+    f.paid_tolls+ 
+    f.espeed + 
+    f.extra + 
+    f.code_rate_id + 
+    f.payment_type+
+    f.period 
+  ,data=df
+)
+
+anova(model_15, model_16)
 ```
 
+!!!!!!!!!!!!!!!!! Until 2020.12.04, 01:38:00
+/// falta comentaris
 
 ```{r}
 # Interactions
