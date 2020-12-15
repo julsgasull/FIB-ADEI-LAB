@@ -850,41 +850,61 @@ model_16<-lm(
 anova(model_15, model_16)
 ```
 
-!!!!!!!!!!!!!!!!! Until 2020.12.04, 01:38:00
-/// falta comentaris
+Veiem que no ens hem perdut res.
+
+#### Interactions
 
 ```{r}
-# Interactions
-# 
-# m50<-lm(log(Total_amount) ~ (Tip_amount + log(tlenkm))*(f.tolls + f.speed + f.extra + RateCodeID + Payment_type+period) ,data=df)
-# 
-# m51<-step( m50, k=log(nrow(df)))
-# Anova(m51)
-# summary( m51 )
-# 
-# 
-# m55<- ....
-# 
-# ll1<-Boxplot(rstudent(m55));ll1
-# sel2<-which(hatvalues(m55)>5*length(m55$coefficients)/nrow(df));sel2;length(sel2)
-# ll2<-which(row.names(df) %in% names(hatvalues(m25)[sel2]));ll2
-# sel3<-which(cooks.distance(m55)> 0.5 );sel3;length(sel3)
-# ll3<-which(row.names(df) %in% names(cooks.distance(m55)[sel3]));ll3
+model_17<-lm(
+  log(target.total_amount) ~ 
+    (q.tip_amount + q.tlenkm)*(f.paid_tolls + f.espeed + f.extra + f.code_rate_id + f.payment_type + f.period)
+  ,data=df
+)
 
+model_17<-step( model_17, k=log(nrow(df)))
+```
 
+Aquest mètode ens diu que:
+
+* log(target.total_amount) depends on:
+  + q.tip_amount 
+  + q.tlenkm 
+  + f.paid_tolls
+  + f.espeed 
+  + f.extra 
+  + f.code_rate_id 
+  + f.payment_type 
+  + f.period
+* and there are interactionsa between:
+  + q.tip_amount:f.paid_tolls 
+  + q.tip_amount:f.espeed 
+  + q.tip_amount:f.extra 
+  + q.tip_amount:f.code_rate_id 
+  + q.tip_amount:f.period 
+  + q.tlenkm:f.paid_tolls 
+  + q.tlenkm:f.espeed 
+  + q.tlenkm:f.extra 
+  + q.tlenkm:f.code_rate_id 
+  + q.tlenkm:f.payment_type 
+  + q.tlenkm:f.period
+
+```{r}
+Anova(model_17)
+summary(model_17)
 ```
 
 
+!!!! FALTA DIAGNOSI EXHAUSTIVA !!!
+````{r}
+ll1<-Boxplot(rstudent(model_17));ll1
+sel2<-which(hatvalues(model_17)>5*length(model_17$coefficients)/nrow(df));sel2;length(sel2)
+ll2<-which(row.names(model_17) %in% names(hatvalues(model_17)[sel2]));ll2
+sel3<-which(cooks.distance(model_17)> 0.5 );sel3;length(sel3)
+ll3<-which(row.names(df) %in% names(cooks.distance(model_17)[sel3]));ll3
+```
 
 
-
-
-
-
-
-
-
-
+!!!!!!!!!!!!!!!!! Until 2020.12.04 - ALL VIDEO
 
 
 
