@@ -34,8 +34,8 @@ rm(list=ls())                       # Clean workspace
 ## Load Required Packages for this deliverable
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
-#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
 #setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
 #filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
@@ -50,8 +50,8 @@ lapply(requiredPackages, require, character.only = TRUE)
 
 ## Load processed data from last deliverable
 ```{r}
-#load(paste0(filepath,"/Taxi5000_del2.RData"))
-load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
+load(paste0(filepath,"/Taxi5000_del2.RData"))
+#load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
 summary(df)
 ```
 
@@ -205,7 +205,7 @@ After seeing the correlation, to make an initial model, we should select the one
 * q.espeed
 * q.tolls_amount
 
-## Method 2:take the entire dataset with a condes
+## Method 2: take the entire dataset with a condes
 ```{r}
 res.con <- condes(df,num.var=which(names(df)=="target.total_amount"))
 ```
@@ -530,26 +530,6 @@ We see that the residues are not completely optimal.
 
 
 ```{r}
-
-##### ?? no trobo on ho explica
-# summary(resid(model_5))
-# sel1<-Boxplot(rstudent(model_5));sel1 # sel1 already contains row numbers
-# ll1<-which(row.names(df) %in% names(rstudent(model_5)[sel1]));ll1
-# 
-# sel2<-which(hatvalues(model_5)>6*length(model_5$coefficients)/nrow(df));sel2;length(sel2) # sel2 contains row names
-# ll2<-which(row.names(df) %in% names(hatvalues(model_5)[sel2]));ll2
-# 
-# sel3<-which(abs(cooks.distance(model_5))>4/(nrow(df)-length(model_5$coefficients)));sel3;length(sel3)
-# ll3<-which(row.names(df) %in% names(cooks.distance(model_5)[sel3]));ll3
-# 
-# sel4<-Boxplot(cooks.distance(model_5));sel4  # sel4 already contains row numbers
-# 
-# sel3<-which((cooks.distance(model_5))>0.1);sel3;length(sel3)# sel3 contains row names
-# ll3<-which(row.names(df) %in% names(cooks.distance(model_5)[sel3]));ll3
-# 
-# influencePlot(model_5,id=list(method="noteworthy", n=5, cex=0.5))
-# with(df,tapply(Total_amount,RateCodeID,summary))
-
 library(MASS)
 boxcox(
     target.total_amount~ 
@@ -617,21 +597,51 @@ residualPlots(model_8)
 # 
 df$f.extra <- factor(df$q.extra)
 
-model_9<-lm(log(target.total_amount) ~ f.extra + q.tip_amount + q.tolls_amount + f.improvement_surcharge + q.espeed + log(q.tlenkm)  ,data=df)
-
+model_9<-lm(
+  log(target.total_amount)~ 
+    f.extra + 
+    q.tip_amount + 
+    q.tolls_amount + 
+    f.improvement_surcharge + 
+    q.espeed + 
+    log(q.tlenkm)  
+  ,data=df
+)
 BIC(model_8,model_9)
 ```
+
 We can see from the BIC that the model_9 is better than the model_8, so it is correct to consider extra as factor. Next, we will do the same with the tolls_amount and use the factor we had already created (paid_tolls).
+
 ```{r}
-model_10<-lm(log(target.total_amount) ~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + q.espeed + log(q.tlenkm)  ,data=df)
+model_10<-lm(
+  log(target.total_amount)~ 
+    f.extra + 
+    q.tip_amount + 
+    f.paid_tolls + 
+    f.improvement_surcharge + 
+    q.espeed + 
+    log(q.tlenkm)  
+  ,data=df
+)
 BIC(model_8,model_9,model_10)
 ```
+
 We see can see that it is correct to use the paid_tolls factor to improve our model. We will try it now with the effective speed.
+
 ```{r}
 df$f.espeed <- factor(df$q.espeed)
-model_11<-lm(log(target.total_amount) ~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + f.espeed + log(q.tlenkm)  ,data=df)
+model_11<-lm(
+  log(target.total_amount)~ 
+    f.extra + 
+    q.tip_amount + 
+    f.paid_tolls + 
+    f.improvement_surcharge + 
+    f.espeed + 
+    log(q.tlenkm)  
+  ,data=df
+)
 BIC(model_8,model_9,model_10,model_11)
-```
+``` 
 We can see that the best approach is the model_10, so we are going to stick to it for now.
 
 ```{r}
@@ -654,30 +664,137 @@ Looking at the results, we can say that:
 * And, in terms of the Residual vs Leverage graph, our variables are within the R model, but it's not very reliable, so it doesn't help us much.
 
 
-!!!!!!!04/12 1:17:00
-
 We proceed to take a look at the influence plot to check our influent residuals for model_12.
 ```{r}
-
 influencePlot( model_12, id=c(list="noteworthy",n=5))
-# residualPlots( m35 )
-# marginalModelPlots( m35 )
-# 
-# ll1<-Boxplot(rstudent(m35));ll1
-# # ll1<-which(row.names(df) %in% names(rstudent(m25)[sel1]));ll1
-# df[ll1,]
-# ll4 <- Boxplot( cooks.distance( m35 ));ll4
-# ll4<-c(649, 4088)
-# dfred<-df[-ll4,]
-# 
-# # Outliers dels residus - Verticals - Cal suprimir-los: el model no pot explicar-los
-# 
-# m36<-lm(log(Total_amount) ~ f.extra + Tip_amount + f.tolls+ f.scharge + f.speed + log(tlenkm)  ,data=dfred)
-# summary(m36)
-# Anova(m36)
-# vif(m36)
-
 ```
+
+We see this model as a disaster. That is, we have a student waste of the order of 35. We can confirm that this is too much. We have to compare student waste with a normal standard. Therefore, we would say that the model we have so far is a model that has a serious waste problem.
+
+In order for this not to happen to us, we need to work on the variable q.tlenkm.
+
+So let's create a new model that does not give so many problems:
+
+```{r}
+model_13<-lm(
+  log(target.total_amount)~ 
+    f.extra + 
+    q.tip_amount + 
+    f.paid_tolls + 
+    f.improvement_surcharge + 
+    q.espeed + 
+    q.tlenkm
+  ,data=df
+)
+
+BIC(model_12,model_13)
+
+summary(model_13)
+vif(model_13)
+
+influencePlot( model_13, id=c(list="noteworthy",n=5))
+```
+
+After doing certain tests, taking into account the influences, the coefficients of explicability and the vifs, we decided that the best we can get is a model where q.tlenkm does not apply any operation.
+
+So let's analyze it:
+
+```{r}
+residualPlots(model_13)
+```
+
+In the residualPlots, what we find is, for each factor, a boxplot of its categories and, for each quantitative variable, a pearson graph.
+
+The observations at the bottom right of the q.tlenkm variable are giving us problems, as they have too low a student residue.
+
+Let's use another tool to fully understand our model:
+
+```{r}
+marginalModelPlots(model_13)
+```
+
+In relation to the variable q.tip_amount, we see that there is a bit of mismatch, but not much, since tips given in cash are always declared as 0. Therefore, the data are not entirely real.
+
+As for the variable q.tlenkm, we see that some observations do not follow the required pattern, and we have to modify them in some way.
+
+How do we do that?
+
+```{r}
+ll1<-Boxplot(rstudent(model_13));ll1
+ll1<-c(1908, 1564, 1057)
+df[ll1,]
+```
+
+Let's see the strangest:
+
+* 1908
+  + target.total_amount: 108.41
+  + q.tip_amount: 17
+  + q.espeed: 55
+  + q.tlenkm: 48.28
+* 1564
+  + target.total_amount: 128.76
+  + q.tip_amount: 17
+  + q.espeed: 55
+  + q.tlenkm: 48.28
+* 1057
+  + target.total_amount: 3.8
+  + q.tip_amount: 0
+  + q.espeed: 33.4844
+  + q.tlenkm: 21.56521
+  
+We see that the first two have exactly the same distance and speed, but no price. And, as for the last one, we see that they cover almost 22km and only pay $ 4.
+
+We do the same for the cook distance:
+
+```{r}
+ll4 <- Boxplot(cooks.distance(model_13));ll4
+ll4<-c(1908, 1564, 674)
+df[ll4,]
+```
+
+* 1908
+  + target.total_amount: 108.41
+  + q.tip_amount: 17
+  + q.espeed: 55
+  + q.tlenkm: 48.28
+* 1564
+  + target.total_amount: 128.76
+  + q.tip_amount: 17
+  + q.espeed: 55
+  + q.tlenkm: 48.28
+* 674
+  + target.total_amount: 86.15
+  + q.tip_amount: 14.35 
+  + q.espeed: 55
+  + q.tlenkm: 43.45229
+
+We see that they are all very similar.
+
+It is necessary to eliminate these observations that do not have the same tendency as our model:
+
+```{r}
+dfred<-df[-ll4,]
+
+model_14<-lm(
+  log(target.total_amount)~ 
+    f.extra + 
+    q.tip_amount + 
+    f.paid_tolls + 
+    f.improvement_surcharge + 
+    q.espeed + 
+    q.tlenkm
+  ,data=dfred
+)
+
+summary(model_14)
+Anova(model_14)
+vif(model_14)
+```
+
+We see that the coefficient of determination has increased a bit and it seems that we have no collinearity problems.
+
+!!!!!!!!!!!!!!!!! Until 2020.12.04, 01:35:00
 
 ### Adding factors: main effects
 
