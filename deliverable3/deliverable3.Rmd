@@ -131,6 +131,17 @@ df$f.hour[(df$q.hour>=23)] = "other"
 df$f.hour<-factor(df$f.hour)
 ```
 
+## f.espeed
+```{r}
+df$f.espeed[(df$q.espeed>=3) & (df$q.espeed<10)]  = "[03,10)"
+df$f.espeed[(df$q.espeed>=10) & (df$q.espeed<20)] = "[10,20)"
+df$f.espeed[(df$q.espeed>=20) & (df$q.espeed<30)] = "[20,30)"
+df$f.espeed[(df$q.espeed>=30) & (df$q.espeed<40)] = "[30,40)"
+df$f.espeed[(df$q.espeed>=40) & (df$q.espeed<50)] = "[40,50)"
+df$f.espeed[(df$q.espeed>=50) & (df$q.espeed<=55)] = "[50,55]"
+df$f.espeed<-factor(df$f.espeed)
+```
+
 # Listing out variables
 ```{r}
 vars_con<-names(df)[c(3:10,12:13,15,18,20:22)];
@@ -629,7 +640,6 @@ BIC(model_8,model_9,model_10)
 We see can see that it is correct to use the paid_tolls factor to improve our model. We will try it now with the effective speed.
 
 ```{r}
-df$f.espeed <- factor(df$q.espeed)
 model_11<-lm(
   log(target.total_amount)~ 
     f.extra + 
@@ -797,6 +807,30 @@ We see that the coefficient of determination has increased a bit and it seems th
 !!!!!!!!!!!!!!!!! Until 2020.12.04, 01:35:00
 
 ### Adding factors: main effects
+
+```{r}
+names(df)
+model_15<-lm(
+  log(target.total_amount) ~ 
+    q.tip_amount + 
+    q.tlenkm+ 
+    f.paid_tolls+ 
+    f.improvement_surcharge + 
+    f.espeed + 
+    f.extra + 
+    f.code_rate_id + 
+    f.vendor_id + 
+    f.payment_type+
+    f.period 
+  ,data=df
+)
+summary(model_15)
+Anova(model_15)
+
+m41<-lm(log(Total_amount) ~ Tip_amount + log(tlenkm)+ f.tolls + f.speed + f.extra + RateCodeID + Payment_type+period ,data=df)
+
+anova(m41, m40)
+```
 
 ```{r}
 # names(df)
