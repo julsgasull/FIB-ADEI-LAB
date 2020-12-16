@@ -681,6 +681,35 @@ influencePlot( model_12, id=c(list="noteworthy",n=5))
 
 We see this model as a disaster. That is, we have a student waste of the order of 35. We can confirm that this is too much. We have to compare student waste with a normal standard. Therefore, we would say that the model we have so far is a model that has a serious waste problem.
 
+--------------------------------------------------------------------------------
+
+
+Intento treure outliers multivariants de total_amount i tlenkm:
+
+```{r}
+library(mvoutlier)
+library(chemometrics)
+multivariant_outliers <- Moutlier(df[, c(15,20)], quantile = 0.995)
+multivariant_outliers$cutoff
+par(mfrow=c(1,1))
+plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
+text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(15,20)]), cex=0.5) 
+
+ll_mvoutliers<-c('1237379', '1208612', '1171898', '488540', '211894', '638666', '329000', '1175981', '604912')
+
+df <- df[!(row.names(df) %in% ll_mvoutliers),]
+
+multivariant_outliers <- Moutlier(df[, c(15,20)], quantile = 0.995)
+multivariant_outliers$cutoff
+par(mfrow=c(1,1))
+plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
+text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(15,20)]), cex=0.75) 
+
+```
+
+--------------------------------------------------------------------------------
+
+
 In order for this not to happen to us, we need to work on the variable q.tlenkm.
 
 So let's create a new model that does not give so many problems:
@@ -693,11 +722,9 @@ model_13<-lm(
     f.paid_tolls + 
     f.improvement_surcharge + 
     q.espeed + 
-    q.tlenkm
+    log(q.tlenkm)
   ,data=df
 )
-
-BIC(model_12,model_13)
 
 summary(model_13)
 vif(model_13)
@@ -715,8 +742,6 @@ residualPlots(model_13)
 
 In the residualPlots, what we find is, for each factor, a boxplot of its categories and, for each quantitative variable, a pearson graph.
 
-The observations at the bottom right of the q.tlenkm variable are giving us problems, as they have too low a student residue.
-
 Let's use another tool to fully understand our model:
 
 ```{r}
@@ -731,55 +756,55 @@ How do we do that?
 
 ```{r}
 ll1<-Boxplot(rstudent(model_13));ll1
-ll1<-c(1908, 1564, 1057)
+ll1<-c(4269, 80, 2621)
 df[ll1,]
 ```
 
 Let's see the strangest:
 
-* 1908
-  + target.total_amount: 108.41
-  + q.tip_amount: 17
-  + q.espeed: 55
-  + q.tlenkm: 48.28
-* 1564
-  + target.total_amount: 128.76
-  + q.tip_amount: 17
-  + q.espeed: 55
-  + q.tlenkm: 48.28
-* 1057
+* 4269
+  + target.total_amount: 5.0
+  + q.tip_amount: 0
+  + q.espeed: 11.06889
+  + q.tlenkm: 16.769364
+* 80
+  + target.total_amount: 3.8 
+  + q.tip_amount: 0
+  + q.espeed: 23.16672 
+  + q.tlenkm: 9.012326
+* 2621
   + target.total_amount: 3.8
   + q.tip_amount: 0
-  + q.espeed: 33.4844
-  + q.tlenkm: 21.56521
-  
-We see that the first two have exactly the same distance and speed, but no price. And, as for the last one, we see that they cover almost 22km and only pay $ 4.
+  + q.espeed: 23.05353
+  + q.tlenkm: 8.851392
+
+Veiem que són observacionsa vastant normals. Tot i això, per exemple, podem destacar que la observació 4269, a la qual ja se li aplica una tarifa de 5$, per molts km és que hagi fet, el preu no ha pujat.
 
 We do the same for the cook distance:
 
 ```{r}
 ll4 <- Boxplot(cooks.distance(model_13));ll4
-ll4<-c(1908, 1564, 674)
+ll4<-c(4269, 2005, 2434)
 df[ll4,]
 ```
 
-* 1908
-  + target.total_amount: 108.41
-  + q.tip_amount: 17
-  + q.espeed: 55
-  + q.tlenkm: 48.28
-* 1564
-  + target.total_amount: 128.76
-  + q.tip_amount: 17
-  + q.espeed: 55
-  + q.tlenkm: 48.28
-* 674
-  + target.total_amount: 86.15
-  + q.tip_amount: 14.35 
-  + q.espeed: 55
-  + q.tlenkm: 43.45229
+* 4269
+  + target.total_amount: 5.0
+  + q.tip_amount: 0
+  + q.espeed: 11.06889
+  + q.tlenkm: 16.769364
+* 2005
+  + target.total_amount: 50.00 
+  + q.tip_amount: 0
+  + q.espeed: 27.33968 
+  + q.tlenkm: 1.00000
+* 2434
+  + target.total_amount: 49.99 
+  + q.tip_amount: 0
+  + q.espeed: 23.79045 
+  + q.tlenkm: 1.00000
 
-We see that they are all very similar.
+We see that, apart from the first, explained above, the other two observations have a trip length of 1km, but instead has been paid about $ 50. We see that this is not possible.
 
 It is necessary to eliminate these observations that do not have the same tendency as our model:
 
@@ -793,7 +818,7 @@ model_14<-lm(
     f.paid_tolls + 
     f.improvement_surcharge + 
     q.espeed + 
-    q.tlenkm
+    log(q.tlenkm)
   ,data=dfred
 )
 
@@ -811,7 +836,7 @@ names(df)
 model_15<-lm(
   log(target.total_amount) ~ 
     q.tip_amount + 
-    q.tlenkm+ 
+    log(q.tlenkm)+ 
     f.paid_tolls+ 
     f.improvement_surcharge + 
     f.espeed + 
@@ -828,8 +853,9 @@ Anova(model_15)
 
 Veiem que, de totes les variables explicatives introduides noves, les que podem salvar són: 
 
-* f.espeed: 19.85
-* f.payment_type: 12.67
+* f.espeed: 22.49
+* f.code_rate_id: 11.06
+* f.payment_type: 4.19
 
 Creem un nou model amb aquestes:
 
@@ -837,7 +863,7 @@ Creem un nou model amb aquestes:
 model_16<-lm(
   log(target.total_amount) ~ 
     q.tip_amount + 
-    q.tlenkm+ 
+    log(q.tlenkm)+ 
     f.paid_tolls+ 
     f.espeed + 
     f.extra + 
@@ -857,7 +883,7 @@ Veiem que no ens hem perdut res.
 ```{r}
 model_17<-lm(
   log(target.total_amount) ~ 
-    (q.tip_amount + q.tlenkm)*(f.paid_tolls + f.espeed + f.extra + f.code_rate_id + f.payment_type + f.period)
+    (q.tip_amount + log(q.tlenkm))*(f.paid_tolls + f.espeed + f.extra + f.code_rate_id + f.payment_type + f.period)
   ,data=df
 )
 
@@ -868,25 +894,19 @@ Aquest mètode ens diu que:
 
 * log(target.total_amount) depends on:
   + q.tip_amount 
-  + q.tlenkm 
-  + f.paid_tolls
+  + log(q.tlenkm) 
+  + f.paid_tolls 
   + f.espeed 
   + f.extra 
   + f.code_rate_id 
   + f.payment_type 
-  + f.period
 * and there are interactionsa between:
-  + q.tip_amount:f.paid_tolls 
   + q.tip_amount:f.espeed 
-  + q.tip_amount:f.extra 
   + q.tip_amount:f.code_rate_id 
-  + q.tip_amount:f.period 
-  + q.tlenkm:f.paid_tolls 
-  + q.tlenkm:f.espeed 
-  + q.tlenkm:f.extra 
-  + q.tlenkm:f.code_rate_id 
-  + q.tlenkm:f.payment_type 
-  + q.tlenkm:f.period
+  + log(q.tlenkm):f.espeed 
+  + log(q.tlenkm):f.extra 
+  + log(q.tlenkm):f.code_rate_id 
+  + log(q.tlenkm):f.payment_type
 
 ```{r}
 Anova(model_17)
