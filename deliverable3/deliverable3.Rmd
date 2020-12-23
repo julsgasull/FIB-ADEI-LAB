@@ -34,10 +34,10 @@ rm(list=ls())                       # Clean workspace
 ## Load Required Packages for this deliverable
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
-setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
-filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
+#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -50,8 +50,8 @@ lapply(requiredPackages, require, character.only = TRUE)
 
 ## Load processed data from last deliverable
 ```{r}
-load(paste0(filepath,"/Taxi5000_del2.RData"))
-#load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
+#load(paste0(filepath,"/Taxi5000_del2.RData"))
+load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
 summary(df)
 ```
 
@@ -924,9 +924,45 @@ ll3<-which(row.names(df) %in% names(cooks.distance(model_17)[sel3]));ll3
 ```
 
 
-!!!!!!!!!!!!!!!!! Until 2020.12.04 - ALL VIDEO
+# Binary Logistics Regression
 
+```{r}
+vars_cexp <- vars_cexp[c(1:4,6:10)]; vars_cexp
 
+table(df$target.tip_is_given, df$f.payment_type)
+```
+
+We can see from the table that it is no credible the fact that any of the people that paid in cash did not leave any tip.
+
+```{r}
+res.cat <- catdes(df, num.var = which(names(df)=="target.tip_is_given"))
+res.cat$quanti.var
+res.cat$test.chi2
+```
+
+From the quanti.var we can see that tip_is_given depends on tip_amount which seems obvious, due to the fact that they are the same variable treated in different ways.
+
+From the test.chi2 we can see that payment_type has something really clear with the tip_is_given, as we have p-value of 0. Which means that we cannot use payment_type as a predictor.
+
+*Target binary factor tip_is_given*
+
+```{r}
+ll<-which(df$f.payment_type=="Cash"); length(ll)
+dff<-df[-ll,]
+set.seed(12345)
+llwork<-sample(1:nrow(dff),0.70*nrow(dff),replace=FALSE)
+llwork<-sort(llwork);length(llwork)
+dffwork<-dff[llwork,]
+dfftest<-dff[-llwork,]
+```
+
+--------------MIN 28:00
+
+# Use explanatory numeric variables
+
+```{r}
+
+```
 
 
 ## Multivariant Analysis conducted in previous deliverables has to be used to select the initial model. Students have some degrees in freedom in model building, but the following conditions are requested:
