@@ -34,10 +34,10 @@ rm(list=ls())                       # Clean workspace
 ## Load Required Packages for this deliverable
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
-#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -50,8 +50,8 @@ lapply(requiredPackages, require, character.only = TRUE)
 
 ## Load processed data from last deliverable
 ```{r}
-#load(paste0(filepath,"/Taxi5000_del2.RData"))
-load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
+load(paste0(filepath,"/Taxi5000_del2.RData"))
+#load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
 summary(df)
 ```
 
@@ -155,7 +155,20 @@ vars_cexp<-vars_con[c(5:10,12:15)];
 
 This variable will be the target for linear model building (connected to blocks Statistical Modeling I and II).
 
-# Explanatory variables numeric only
+
+--------------------------------------------------------------------------------
+
+
+# Quantitative Logistics Regression (explanatory variables numeric only)
+
+Steps to follow:
+
+1. Enter all relevant numerical variables in the model
+2. See if you need to replace a number with its equivalent factor
+3. Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
+4. Add interactions: between factor-factor and between factor-numeric (doubles).
+5. Diagnosis of waste and observations. Lack of adjustment and / or influential.
+
 
 Before we begin to see correlations with our target, we should consider the normality of this.
 
@@ -270,10 +283,9 @@ To give an example, we see that the two distances we have, trip_distance and tle
 ### Model 1
 ```{r}
 model_1 <- lm(
-  target.total_amount~, 
-  data=df[,c("target.total_amount",vars_cexp)]
-)
-summary(model_1)
+  target.total_amount~.
+  ,data=df[,c("target.total_amount",vars_cexp)]
+);summary(model_1)
 ```
 
 Model_1 explains 93.4% of the variability of the target. We also see, according to the F-statistic, that it should be rejected.
@@ -333,8 +345,7 @@ model_2 <- lm(
     q.espeed 
   ,
   data=df[,c("target.total_amount",vars_cexp)]
-) 
-summary(model_2)
+);summary(model_2)
 ```
 
 We see that the explainability is now 93.39%.
@@ -362,8 +373,7 @@ model_3 <- lm(
     q.espeed 
   ,
   data=df[,c("target.total_amount",vars_cexp)]
-) 
-summary(model_3)
+);summary(model_3)
 ```
 
 We see that the explainability is now 92.99%.
@@ -390,8 +400,7 @@ model_4 <- lm(
     q.espeed 
   ,
   data=df[,c("target.total_amount",vars_cexp)]
-)
-summary(model_4)
+);summary(model_4)
 ```
 
 We see that the explainability is now 86.17%.
@@ -422,8 +431,7 @@ model_5 <- lm(
     q.traveltime
   ,
   data=df
-) 
-summary(model_5)
+);summary(model_5)
 ```
 
 We see that the explainability is now 86.09%
@@ -467,8 +475,7 @@ model_6 <- lm(
     q.traveltime
   ,
   data=df
-) 
-summary(model_6)
+);summary(model_6)
 ```
 
 We see that when doing the logarithm, the coefficient of determination is getting lower and lower, now it is 79.51%. We have seen that it has gotten worse than the previous model. Therefore, we discard it. We will work with model_5.
@@ -537,8 +544,6 @@ par(mfrow=c(1,1))
 
 We see that the residues are not completely optimal.
 
---------------------------------------------------------------------------------
-
 
 ```{r}
 library(MASS)
@@ -570,8 +575,7 @@ model_7 <- lm(
     q.traveltime
   ,
   data=df
-) 
-summary(model_7)
+);summary(model_7)
 ```
 
 We see that the coefficient has improved, from 85.09% (model_5) to 86.41% (model_7). But ... is it worth it from a residual point of view?
@@ -583,8 +587,6 @@ par(mfrow=c(1,1))
 ```
 
 We see we haven’t won too much. So we stick to model_5.
-
-----------------------------------------------------------------------------------------
 
 ## Using factors as explanatory variables
 ### Try to change numerical each regressor by its discretized factor
@@ -681,9 +683,6 @@ influencePlot( model_12, id=c(list="noteworthy",n=5))
 
 We see this model as a disaster. That is, we have a student waste of the order of 35. We can confirm that this is too much. We have to compare student waste with a normal standard. Therefore, we would say that the model we have so far is a model that has a serious waste problem.
 
---------------------------------------------------------------------------------
-
-
 Intento treure outliers multivariants de total_amount i tlenkm:
 
 ```{r}
@@ -707,7 +706,6 @@ text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(
 
 ```
 
---------------------------------------------------------------------------------
 
 
 In order for this not to happen to us, we need to work on the variable q.tlenkm.
@@ -851,13 +849,13 @@ summary(model_15)
 Anova(model_15)
 ```
 
-Veiem que, de totes les variables explicatives introduides noves, les que podem salvar són: 
+We see that, of all the new explanatory variables introduced, the ones we can save are:
 
 * f.espeed: 22.49
 * f.code_rate_id: 11.06
 * f.payment_type: 4.19
 
-Creem un nou model amb aquestes:
+We create a new model with them:
 
 ```{r}
 model_16<-lm(
@@ -876,7 +874,7 @@ model_16<-lm(
 anova(model_15, model_16)
 ```
 
-Veiem que no ens hem perdut res.
+We see that we haven't lost anything.
 
 #### Interactions
 
@@ -890,7 +888,7 @@ model_17<-lm(
 model_17<-step( model_17, k=log(nrow(df)))
 ```
 
-Aquest mètode ens diu que:
+This method tells us that:
 
 * log(target.total_amount) depends on:
   + q.tip_amount 
@@ -914,7 +912,9 @@ summary(model_17)
 ```
 
 
-!!!! FALTA DIAGNOSI EXHAUSTIVA !!!
+# !!!! FALTA DIAGNOSI EXHAUSTIVA !!!
+
+
 ````{r}
 ll1<-Boxplot(rstudent(model_17));ll1
 sel2<-which(hatvalues(model_17)>5*length(model_17$coefficients)/nrow(df));sel2;length(sel2)
@@ -923,6 +923,8 @@ sel3<-which(cooks.distance(model_17)> 0.5 );sel3;length(sel3)
 ll3<-which(row.names(df) %in% names(cooks.distance(model_17)[sel3]));ll3
 ```
 
+
+--------------------------------------------------------------------------------
 
 # Binary Logistics Regression
 
@@ -944,7 +946,7 @@ From the quanti.var we can see that tip_is_given depends on tip_amount which see
 
 From the test.chi2 we can see that payment_type has something really clear with the tip_is_given, as we have p-value of 0. Which means that we cannot use payment_type as a predictor.
 
-*Target binary factor tip_is_given*
+## Target binary factor tip_is_given
 
 ```{r}
 ll<-which(df$f.payment_type=="Cash"); length(ll)
@@ -956,14 +958,111 @@ dffwork<-dff[llwork,]
 dfftest<-dff[-llwork,]
 ```
 
---------------MIN 28:00
+Steps to follow:
 
-# Use explanatory numeric variables
+1. Enter all relevant numerical variables in the model
+2. See if you need to replace a number with its equivalent factor
+3. Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
+4. Add interactions: between factor-factor and between factor-numeric (doubles).
+5. Diagnosis of waste and observations. Lack of adjustment and / or influential.
+
+
+### Model 20
 
 ```{r}
-
+model_20 <- glm(
+  target.tip_is_given~.
+  ,family = "binomial"
+  ,data=dffwork[,c("target.tip_is_given",vars_cexp)]
+);summary(model_20)
+Anova(model_20, test="Wald") #binary target
 ```
 
+```{r}
+# Explicació output del summary: --> s'haurà d'esborrar!!!!
+# 
+# * Deviance Residuals: diferència entre prediccions i observacions.
+# * Coeficients: com abans
+# * (Dispersion parameter for binomial family taken to be 1): ni cas
+# * Residual deviance: suma de quadrats residuals
+```
+
+Comments: 
+
+* Veiem que les variables més influents, en el nostre cas, és q.hour.
+* Veiem que la "residual deviance! ésde 1386.6  on 1472  degrees of freedom.
+
+```{r}
+vif(model_20)
+```
+
+Veiem que tenim algunes variavles amb vifs molt alts:
+
+* q.trip_distance (66.67)
+* q.tlenkm (63.09) --> correlated with the preious
+* q.fare_amount (9.48)
+* q.traveltime (5.16)
+
+### Model 21
+
+Sabem que no hi ha colinearitat. Fem un nou model:
+
+```{r}
+model_21 <- glm(
+  target.tip_is_given~
+    f.mta_tax+
+    q.passenger_count+
+    q.extra+
+    q.tolls_amount+
+    q.hour+
+    q.espeed+
+    q.tlenkm+
+    q.traveltime 
+  ,family = "binomial"
+  ,data=dffwork
+);summary(model_21)
+vif(model_21)
+
+Anova(model_21, test="Wald") #binary target
+
+anova(model_21, model_20, test="Chisq") # only for nested models
+```
+
+Podem transformar tlenkm per tal de tenir els vifs més baixos:
+
+### Model 22
+
+```{r}
+model_22 <- glm(
+  target.tip_is_given~
+    f.mta_tax+
+    q.passenger_count+
+    q.extra+
+    q.tolls_amount+
+    q.hour+
+    q.espeed+
+    poly(q.tlenkm,2)+
+    q.traveltime 
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_22)
+vif(model_22)
+anova(model_21, model_22, test="Chisq") # only for nested models
+Anova(model_22, test="Wald") #binary target
+```
+
+Ara ja podem fer un step:
+
+### Model 23
+```{r}
+model_23 <- step(model_22, k=log(nrow(dffwork)))
+summary(model_23)
+
+plot(allEffects(model_23))
+```
+
+
+----- 01:09:36
 
 ## Multivariant Analysis conducted in previous deliverables has to be used to select the initial model. Students have some degrees in freedom in model building, but the following conditions are requested:
 
