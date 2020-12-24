@@ -270,7 +270,7 @@ To give an example, we see that the two distances we have, trip_distance and tle
 ### Model 1
 ```{r}
 model_1 <- lm(
-  target.total_amount~., 
+  target.total_amount~, 
   data=df[,c("target.total_amount",vars_cexp)]
 )
 summary(model_1)
