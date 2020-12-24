@@ -946,7 +946,7 @@ From the quanti.var we can see that tip_is_given depends on tip_amount which see
 
 From the test.chi2 we can see that payment_type has something really clear with the tip_is_given, as we have p-value of 0. Which means that we cannot use payment_type as a predictor.
 
-## Target binary factor tip_is_given
+## Filter
 
 ```{r}
 ll<-which(df$f.payment_type=="Cash"); length(ll)
@@ -966,7 +966,7 @@ Steps to follow:
 4. Add interactions: between factor-factor and between factor-numeric (doubles).
 5. Diagnosis of waste and observations. Lack of adjustment and / or influential.
 
-
+## Numerical variables // Enter all relevant numerical variables in the model
 ### Model 20
 
 ```{r}
@@ -1005,11 +1005,14 @@ Veiem que tenim algunes variavles amb vifs molt alts:
 
 ### Model 21
 
+*NOTA: som conscients que no hi hauria d'haver factors en aquest apartat, però hem decidit posar-los donat que les seves variables originals (e.g. mta_tax) les vam sobreescriure per fer els factors.*
+
 Sabem que no hi ha colinearitat. Fem un nou model:
 
 ```{r}
 model_21 <- glm(
   target.tip_is_given~
+    f.improvement_surcharge+
     f.mta_tax+
     q.passenger_count+
     q.extra+
@@ -1028,7 +1031,7 @@ Anova(model_21, test="Wald") #binary target
 anova(model_21, model_20, test="Chisq") # only for nested models
 ```
 
-Podem transformar tlenkm per tal de tenir els vifs més baixos:
+Podem transformar tlenkm i treure improvement_subcharge per tal de tenir els vifs més baixos:
 
 ### Model 22
 
@@ -1057,33 +1060,121 @@ Ara ja podem fer un step:
 ```{r}
 model_23 <- step(model_22, k=log(nrow(dffwork)))
 summary(model_23)
+```
 
+Donat que ens qeda un model bastant pobre, agafarem també la variable q.extra, per tal de poder extreure més informació, com per exemple, poder fer els marginal plots:
+
+```{r}
+model_23 <- glm(
+  target.tip_is_given~
+    f.mta_tax+
+    q.extra
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_23)
+```
+
+### Understanding the model
+
+```{r}
 plot(allEffects(model_23))
 ```
 
+* Per a f.mta_tax: veiem que, si f.mta_tax="Yes", és més probable que target.tip_is_given="Yes".
+* Per a q.extra: com hem dit, aquesta variable no afecta molt al target, però la incloem per poder fer més plots. Com a màxim es podria dir que és "inversament" proporcional al target.
 
------ 01:09:36
+```{r}
+marginalModelPlots(model_23)
+```
 
-## Multivariant Analysis conducted in previous deliverables has to be used to select the initial model. Students have some degrees in freedom in model building, but the following conditions are requested:
+Veiem que q.extra és candidata a ser factor.
 
-* At least two numerical variables have to be considered as explicative variables for initial steps in model building, called covariates. Non-linear models have to be checked for consistency.
-* Select the most significant factors found in Multivariant Data Analysis as initial model factors.  Put some reasonable limits to initial model complexity.
-* **You have to consider at least one interaction between a couple of factors and one interaction between factor and covariate.**
-* Diagnostics of the final model have to be undertaken. Lack of fit observations and influence data have to be selected and discussed (connections to multidimensional outliers in Multivariant Data Analysis is highly valuable)
+```{r}
+residualPlots(model_23)
+```
 
-## Outcome/Target : A binary response variable (Binary Target) will be the response variable for Binary Regression Models included in Statistical Modeling Part III.
+Veiem que els smoothers són relativament, plans, així que podem dir que, de moment, tot va bé.
 
-* Explicative Variables for modeling purposes are those available in dataset, exceptions will be indicated, if any.
 
-* Multivariant Analysis conducted in previous deliverables has to be used to select the initial model. Students have some degrees in freedom in model building, but the following conditions are requested:
-  + Split the sample in work and test samples (consisting on a 80-20 split). Working data frame has to be used for model building purposes.
-  + At least two numerical variables have to be considered as explicative variables for initial steps in model building.
-  + Select the most significant factors according to feature selection as initial model factors.  Put some reasonable limits to initial model complexity.
-  + **You have to consider at least one interaction between a couple of factors and one interaction between factor and covariate.**
-  + Diagnostics of the final model have to be undertaken. Lack of fit observations and influence data have to be selected and discussed (connections to multidimensional outliers in Multivariant Data Analysis is highly valuable).
-  + You have to predict Y (Binary Target)  in the Working Data Frame  vs the rest according to the best validated model that you can find and make a confusion matrix.
-  + Make a confusion matrix in the Testing Data Frame for **Y (Binary Target)** according to the best validated model found.
- 
+Anem, però, a proposar un model que ens doni més joc:
+
+### Model 24
+```{r}
+model_24 <- glm(
+  target.tip_is_given~
+    poly(q.tlenkm, 2)+
+    f.mta_tax+
+    q.extra+
+    q.espeed
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_24)
+
+residualPlots(model_24)
+```
+
+* q.tlenkm: 
+  + veiem que el smoother és pla, per tant, està bé
+  + les formes "rares" que apareixen són pel model de resposta binària
+* q.extra:
+  + veiem que el smoother és pla, per tant, està bé
+* q.espeed: 
+  + veiem que el smoother és pla, per tant, està bé
+  + les formes "rares" que apareixen són pel model de resposta binària
+* tot el model
+  + veiem que el smoother no està del tot recte, però, tal i com hem dit a classe, podem treballar amb desajust al model, donat que és un tema massa dens.
+
+
+```{r}
+Anova(model_24, test="Wald")
+```
+
+Ens hem d'assegurar que no tenim cap variable amb un efecte net que no sigui significatiu. Així doncs, anem a refer el model:
+
+```{r}
+model_24 <- glm(
+  target.tip_is_given~
+    poly(q.tlenkm, 2)+
+    f.mta_tax
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_24)
+
+residualPlots(model_24)
+Anova(model_24, test="Wald")
+```
+
+## Factors //See if you need to replace a number with its equivalent factor
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3. Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
+4. Add interactions: between factor-factor and between factor-numeric (doubles).
+5. Diagnosis of waste and observations. Lack of adjustment and / or influential.
+
 
 ## Confusion Matrix:
 When referring to the performance of a classification model, we are interested in the model’s ability to correctly predict or separate the classes. When looking at the errors made by a classification model, the confusion matrix gives the full picture. Consider e.g. a three class problem with the classes A, and B. The confusion matrix shows how the predictions are made by the model. The rows correspond to the known class of the data, i.e. the labels in the data. The columns correspond to the predictions made by the model. The value of each of element in the matrix is the number of predictions made with the class corresponding to the column for examples with the correct value as represented by the row. Thus, the diagonal elements show the number of correct classifications made for each class, and the off-diagonal elements show the errors made.
