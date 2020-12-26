@@ -3,13 +3,13 @@ title: "Deliverable 3"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
-  html_document:
-    toc: no
-    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
+  html_document:
+    toc: no
+    toc_depth: '4'
   word_document:
     toc: no
     toc_depth: '4'
@@ -34,10 +34,10 @@ rm(list=ls())                       # Clean workspace
 ## Load Required Packages for this deliverable
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
-setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
-filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
-#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
+#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
+setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -50,8 +50,8 @@ lapply(requiredPackages, require, character.only = TRUE)
 
 ## Load processed data from last deliverable
 ```{r}
-load(paste0(filepath,"/Taxi5000_del2.RData"))
-#load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
+#load(paste0(filepath,"/Taxi5000_del2.RData"))
+load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
 summary(df)
 ```
 
@@ -958,6 +958,7 @@ dffwork<-dff[llwork,]
 dfftest<-dff[-llwork,]
 ```
 
+# maybe no cal posar això de steps to follow????
 Steps to follow:
 
 1. Enter all relevant numerical variables in the model
@@ -989,25 +990,25 @@ Anova(model_20, test="Wald") #binary target
 
 Comments: 
 
-* Veiem que les variables més influents, en el nostre cas, és q.hour.
-* Veiem que la "residual deviance! ésde 1386.6  on 1472  degrees of freedom.
+* We can see that the most influent variable, in our case, is the q.hour.
+* We can see that the residual deviance is of 1386.6 on 1472  degrees of freedom.
 
 ```{r}
 vif(model_20)
 ```
 
-Veiem que tenim algunes variavles amb vifs molt alts:
+We can see that we have some variables with very high vifs:
 
 * q.trip_distance (66.67)
-* q.tlenkm (63.09) --> correlated with the preious
+* q.tlenkm (63.09) --> correlated with the previous
 * q.fare_amount (9.48)
 * q.traveltime (5.16)
 
 ### Model 21
 
-*NOTA: som conscients que no hi hauria d'haver factors en aquest apartat, però hem decidit posar-los donat que les seves variables originals (e.g. mta_tax) les vam sobreescriure per fer els factors.*
+*NOTE: we are aware that we should not have factors in this section, but we have decided to include them due to the fact that we overwrote their numeric values and created their factors in the previous deliverables.*
 
-Sabem que no hi ha colinearitat. Fem un nou model:
+We know there is not colinearity, so we create a new model:
 
 ```{r}
 model_21 <- glm(
@@ -1031,7 +1032,7 @@ Anova(model_21, test="Wald") #binary target
 anova(model_21, model_20, test="Chisq") # only for nested models
 ```
 
-Podem transformar tlenkm i treure improvement_subcharge per tal de tenir els vifs més baixos:
+We can transform tlenkm and remove improvement_surcharge in order to have lower vifs:
 
 ### Model 22
 
@@ -1054,7 +1055,7 @@ anova(model_21, model_22, test="Chisq") # only for nested models
 Anova(model_22, test="Wald") #binary target
 ```
 
-Ara ja podem fer un step:
+Now, we can do a step:
 
 ### Model 23
 ```{r}
@@ -1062,7 +1063,7 @@ model_23 <- step(model_22, k=log(nrow(dffwork)))
 summary(model_23)
 ```
 
-Donat que ens qeda un model bastant pobre, agafarem també la variable q.extra, per tal de poder extreure més informació, com per exemple, poder fer els marginal plots:
+Due to the fact that this model is really ppor, we will take also the q.extra variable in order to be able to extract more information. For instance, we could do the marginal plots:
 
 ```{r}
 model_23 <- glm(
@@ -1080,23 +1081,23 @@ model_23 <- glm(
 plot(allEffects(model_23))
 ```
 
-* Per a f.mta_tax: veiem que, si f.mta_tax="Yes", és més probable que target.tip_is_given="Yes".
-* Per a q.extra: com hem dit, aquesta variable no afecta molt al target, però la incloem per poder fer més plots. Com a màxim es podria dir que és "inversament" proporcional al target.
+* For the f.mta_tax: we that if the value of the variable is "Yes", it is more probable that the target.tip_is_given value will be "Yes" as well.
+* For the q.extra: as we have said before, this variable does not really affect to the target, but we will include it in order to be able to do more plots. At most, we could say that it is inversely proportional to the target.
 
 ```{r}
 marginalModelPlots(model_23)
 ```
 
-Veiem que q.extra és candidata a ser factor.
+We can observe that q.extra is a candidate to be a factor.
 
 ```{r}
 residualPlots(model_23)
 ```
 
-Veiem que els smoothers són relativament, plans, així que podem dir que, de moment, tot va bé.
+We see that the smoothers are relatively plain, so we could say that, for now, everything is ok.
 
 
-Anem, però, a proposar un model que ens doni més joc:
+We are going, though, to propose a model which brings us more chances:
 
 ### Model 24
 ```{r}
@@ -1114,24 +1115,24 @@ residualPlots(model_24)
 ```
 
 * q.tlenkm: 
-  + veiem que el smoother és pla, per tant, està bé
-  + les formes "rares" que apareixen són pel model de resposta binària
+  + we see that the smoothe is plain, so it is ok.
+  + the "weird" shapes that appear are because of the binery response model.
 * q.extra:
-  + veiem que el smoother és pla, per tant, està bé
+  + we observe that the smoother is plain, so it is ok.
 * q.espeed: 
-  + veiem que el smoother és pla, per tant, està bé
-  + les formes "rares" que apareixen són pel model de resposta binària
-* tot el model
-  + veiem que el smoother no està del tot recte, però, tal i com hem dit a classe, podem treballar amb desajust al model, donat que és un tema massa dens.
+  + we see that the smoother is plain, so it is ok.
+  + the "weird" shapes that appear are because of the binery response model.
+* the whole model:
+  + we see that the smoothe is not completely straight, but as it was said in class, we can work with unfitted values in the model, due to the fact that it is a really dense topic.
 
 
 ```{r}
 Anova(model_24, test="Wald")
 ```
 
-Ens hem d'assegurar que no tenim cap variable amb un efecte net que no sigui significatiu. 
+We have to ensure that we do not have any variable with a non significant net effect. 
 
-Així doncs, anem a refer el model:
+Thus, we are going to redp the model:
 
 ```{r}
 model_24 <- glm(
@@ -1147,16 +1148,17 @@ residualPlots(model_24)
 Anova(model_24, test="Wald")
 ```
 
-Amb Anova(model_24), veiem que es compleix.
+With Anova(model_24), we see that it is fulfilled.
 
 
 ## Factors //See if you need to replace a number with its equivalent factor
 
-Mirem si alguna de les variables numèriques la podem substituir per un factor.
+We look if any of the numeric variables can be substituted by a factor.
 
-El que primer fariem seria canviar "q.mta_tax" (en cas que existís) per "f.mta_tax. Com que ja està posat amb un factor, ens saltem aquest pas.
+The first thing we will do, it would be change the "q.mta_tax" (if it existed in our dataset) for a "f.mta_tax". Due to the fact that mta_tax is already a factor, we do not need to do this step.
 
-Donat que l'altra variable per posar com a factor depén d'un polinomi, la deixem com està. Tot i així, el codi que s'hauria de fer en cas d'un nou model amb un factor afegit seria el següent:
+Given that the other variable that could be a factor depends on a polynomial, we keep as it is. The code that should be done in case of a new model with an added factor, would be the following:
+
 
 ```{r}
 model_25 <- glm(
@@ -1170,18 +1172,18 @@ model_25 <- glm(
 BIC(model_24, model_25) # same model --> same bic
 ```
 
-Gràcies a BIC(model_24, model_25) podriem veure els canvis que ens generaria el nou model. Com menor sigui el BIC, millor model tindrem. Recordem també que, en cas d'haver fet un intercanvi de variable quantitativa a factor, no ho podriem fer amb anova, donat que hi ha un intercanvi i, per tant, cap model és major que l'altre.
+Thanks to the BIC(model_24, model_25) we could see te changes generated by the new model. The less the BIC is, the better the model will be. We need to remember that, in case of have done an exchange of a numeric variable to a factor, we could not have done it with an anova test, due to the fact that there is an exchange, which means that any model is bigger than the other.
 
 ## Decision //Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
 
-Decidim que ens quedem amb el model_25.
+We decide to keep with the model_25.
 
 
 ## Interactions //Add interactions: between factor-factor and between factor-numeric (doubles).
 
 ### factor-numeric
 
-Ara que ja tenim un model definit, anem a fer interaccions amb totes les variables factors que creiem importants:
+Now that we have a defined model, we are going to do some interactions with all of the factor variables we think are the relevant:
 
 ```{r}
 model_26 <- glm(
@@ -1203,15 +1205,14 @@ model_26 <- glm(
 Anova(model_26, test="Wald")
 ```
 
-
-Treiem les variables que no són significatives:
+We remove the non significant variables:
 ```{r}
 model_27 <- step(model_26, k=log(nrow(dffwork)))
 ```
 
-Pel que veiem, ens deixa només amb la taxa, però, per tenir-hi més joc, deixarem el que teniem abans.
+From what we can see, it only stays with the tax, but in order to have more freedom, we will keep what we had before.
 
-Per tant:
+Hence:
 ```{r}
 model_27 <- glm(
   target.tip_is_given~
@@ -1224,24 +1225,24 @@ model_27 <- glm(
 Anova(model_27, test="Wald")
 ```
 
-Fem una comparació:
+We do a comparison:
 ```{r}
 BIC(model_27, model_25)
 ```
 
-Ens quedem amb el 25.
+We keep with the 25.
 
-Podem veure ara els efectes d'aquest:
+We can see now the effects of it:
 ```{r}
 plot(allEffects(model_25))
 ```
 
-* Veiem que només es dona propina en un cert rang de km fets, donat que, per pocs km, no té sentit donar-ne i, per molts, és massa.
-* Com hem comentat abans, és més fàcil donar propina sú hi ha hagut taxa.
+* We can observe that only the tips is given in certain range of driven km, due to the fact that for few km, it makes no sense to give it, and for many km it is too much.
+* As we have previously commented, it is more likely to give some tips if a tax is present.
 
 ### factor-factor
 
-Donat que a la pràctica ens demanen fer interaccions entre factors, ho farem encara que els resuptats no siguin realistes:
+Although, for this deliverable it is asked to do some interactions between factors, we will do it even though the results could not be realistic:
 
 ```{r}
 # interaccions dobles entre factors:
@@ -1254,7 +1255,7 @@ model_factors_1 <- glm(
 model_factors_1_step <- step(model_factors_1, k=log(nrow(dffwork)))
 ```
 
-Ens quedem igual.
+We stick with what we had.
 
 
 ```{r}
@@ -1268,7 +1269,7 @@ model_factors_2 <- glm(
 model_factors_2_step <- step(model_factors_2, k=log(nrow(dffwork)))
 ```
 
-Ens quedem igual.
+We stick with what we had.
 
 
 ```{r}
@@ -1282,13 +1283,13 @@ model_factors_3 <- glm(
 model_factors_3_step <- step(model_factors_3, k=log(nrow(dffwork)))
 ```
 
-Ens quedem igual.
+We stick with what we had.
 
 
 
-Conclusió: seguim en que el millor model és el model_25.
+Conclusion: we stick with the idea that the best model is model_25.
 
-Ara, doncs, anem a fer-ne diagnosi:
+Now, we are going to do some diagnosis:
 
 # Diagnosis //Diagnosis of waste and observations. Lack of adjustment and / or influential.
 
@@ -1299,10 +1300,10 @@ llout <- which(row.names(dffwork) %in% names(rstudent(model_25)[sout])); llout
 table(dffwork[llout,]$f.mta_tax, dffwork[llout,]$target.tip_is_given)
 ```
 
-Veiem que són mostres que tenen mta_tax, però que en canvi, no tenen tip.
+We see that they are samples that contain mta_tax, but in the other hand they do not have tip.
 
 
-Anem ara, a determinar quines són les observacions potencialment influents:
+We are going to determine which are the potencially influent observations:
 
 ```{r}
 quantile(hatvalues(model_25), seq(0,1,0.1))
@@ -1322,10 +1323,10 @@ They tend to:
 * have extra=0
 * don't have mta_tax
 * be at night
-* be one passanger
+* be one passenger
 * be long (distance) but short (time)
                                                                                                       
-                                                                                                      Ara, per dcidir les influències, anem a mirar les distàncies de cook:             
+Now, to decide the influences, we are going to take a look at the cook distances:           
 
 ```{r}
 Boxplot(cooks.distance(model_25))
@@ -1346,7 +1347,7 @@ They tend to:
 * be long (distance) but short (time)
 
 
-Ara refem el model:
+We redo the model now:
 
 ```{r}
 llout<-row.names(llista)
@@ -1372,7 +1373,7 @@ tt <- table(fit.tip_is_given,dffwork$target.tip_is_given); tt
 100*sum(diag(tt)/sum(tt))
 ```
 
-Tenim una precisió del 83.05%
+We have a precision of 83.05%.
 
 ```{r}
 model_25_better <- glm(
@@ -1386,7 +1387,7 @@ tt0 <- table(fit.tip_is_given0, dffwork$target.tip_is_given); tt0
 100*sum(tt0[1,2]/sum(tt0))
 ```
 
-Tenim una precisió del 82.91%
+We have a precision of 82.91%.
 
 
 
