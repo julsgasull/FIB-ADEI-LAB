@@ -1129,7 +1129,9 @@ residualPlots(model_24)
 Anova(model_24, test="Wald")
 ```
 
-Ens hem d'assegurar que no tenim cap variable amb un efecte net que no sigui significatiu. Així doncs, anem a refer el model:
+Ens hem d'assegurar que no tenim cap variable amb un efecte net que no sigui significatiu. 
+
+Així doncs, anem a refer el model:
 
 ```{r}
 model_24 <- glm(
@@ -1140,42 +1142,252 @@ model_24 <- glm(
   ,data=dffwork
 ); summary(model_24)
 
+vif(model_24)
 residualPlots(model_24)
 Anova(model_24, test="Wald")
 ```
 
-## Factors //See if you need to replace a number with its equivalent factor
-```{r}
+Amb Anova(model_24), veiem que es compleix.
 
+
+## Factors //See if you need to replace a number with its equivalent factor
+
+Mirem si alguna de les variables numèriques la podem substituir per un factor.
+
+El que primer fariem seria canviar "q.mta_tax" (en cas que existís) per "f.mta_tax. Com que ja està posat amb un factor, ens saltem aquest pas.
+
+Donat que l'altra variable per posar com a factor depén d'un polinomi, la deixem com està. Tot i així, el codi que s'hauria de fer en cas d'un nou model amb un factor afegit seria el següent:
+
+```{r}
+model_25 <- glm(
+  target.tip_is_given~
+    poly(q.tlenkm, 2)+
+    f.mta_tax
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_25)
+
+BIC(model_24, model_25) # same model --> same bic
+```
+
+Gràcies a BIC(model_24, model_25) podriem veure els canvis que ens generaria el nou model. Com menor sigui el BIC, millor model tindrem. Recordem també que, en cas d'haver fet un intercanvi de variable quantitativa a factor, no ho podriem fer amb anova, donat que hi ha un intercanvi i, per tant, cap model és major que l'altre.
+
+## Decision //Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
+
+Decidim que ens quedem amb el model_25.
+
+
+## Interactions //Add interactions: between factor-factor and between factor-numeric (doubles).
+
+### factor-numeric
+
+Ara que ja tenim un model definit, anem a fer interaccions amb totes les variables factors que creiem importants:
+
+```{r}
+model_26 <- glm(
+  target.tip_is_given~
+    ( poly(q.tlenkm, 2) ) * 
+    (
+      f.mta_tax+
+      f.vendor_id+
+      f.period+
+      f.espeed+
+      f.paid_tolls+
+      f.tt+
+      f.extra
+    )
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_26)
+
+Anova(model_26, test="Wald")
 ```
 
 
+Treiem les variables que no són significatives:
+```{r}
+model_27 <- step(model_26, k=log(nrow(dffwork)))
+```
+
+Pel que veiem, ens deixa només amb la taxa, però, per tenir-hi més joc, deixarem el que teniem abans.
+
+Per tant:
+```{r}
+model_27 <- glm(
+  target.tip_is_given~
+    ( poly(q.tlenkm, 2) ) * 
+    ( f.mta_tax )
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_27)
+
+Anova(model_27, test="Wald")
+```
+
+Fem una comparació:
+```{r}
+BIC(model_27, model_25)
+```
+
+Ens quedem amb el 25.
+
+Podem veure ara els efectes d'aquest:
+```{r}
+plot(allEffects(model_25))
+```
+
+* Veiem que només es dona propina en un cert rang de km fets, donat que, per pocs km, no té sentit donar-ne i, per molts, és massa.
+* Com hem comentat abans, és més fàcil donar propina sú hi ha hagut taxa.
+
+### factor-factor
+
+Donat que a la pràctica ens demanen fer interaccions entre factors, ho farem encara que els resuptats no siguin realistes:
+
+```{r}
+# interaccions dobles entre factors:
+model_factors_1 <- glm(
+  target.tip_is_given~
+    ( poly(q.tlenkm, 2) + q.extra) + ( f.mta_tax + f.vendor_id + f.espeed)^2
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_factors_1)
+model_factors_1_step <- step(model_factors_1, k=log(nrow(dffwork)))
+```
+
+Ens quedem igual.
+
+
+```{r}
+# interaccions dobles entre factor-numèrica
+model_factors_2 <- glm(
+  target.tip_is_given~
+    ( poly(q.tlenkm, 2) + q.extra) * ( f.mta_tax + f.vendor_id + f.espeed)
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_factors_2)
+model_factors_2_step <- step(model_factors_2, k=log(nrow(dffwork)))
+```
+
+Ens quedem igual.
+
+
+```{r}
+# interaccions dobles entre factor-numèrica + dobles entre factors
+model_factors_3 <- glm(
+  target.tip_is_given~
+    ( poly(q.tlenkm, 2) + q.extra) * ( f.mta_tax + f.vendor_id + f.espeed)^2
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_factors_3)
+model_factors_3_step <- step(model_factors_3, k=log(nrow(dffwork)))
+```
+
+Ens quedem igual.
 
 
 
+Conclusió: seguim en que el millor model és el model_25.
+
+Ara, doncs, anem a fer-ne diagnosi:
+
+# Diagnosis //Diagnosis of waste and observations. Lack of adjustment and / or influential.
+
+```{r}
+Boxplot(rstudent(model_25), id.n=15)
+sout <- which(abs(rstudent(model_25))>2); length(sout) # posem 2 en comptes de 2.5 perquè no tenim observacions en aquell rang
+llout <- which(row.names(dffwork) %in% names(rstudent(model_25)[sout])); llout
+table(dffwork[llout,]$f.mta_tax, dffwork[llout,]$target.tip_is_given)
+```
+
+Veiem que són mostres que tenen mta_tax, però que en canvi, no tenen tip.
+
+
+Anem ara, a determinar quines són les observacions potencialment influents:
+
+```{r}
+quantile(hatvalues(model_25), seq(0,1,0.1))
+mean(hatvalues(model_25))
+
+hh <- 5*mean(hatvalues(model_25)); hh
+shat <- which(hatvalues(model_25)>hh); length(shat); shat
+
+summary(dffwork[shat,])
+
+```
+
+They tend to:
+
+* have rate=Rate-Other
+* be in the same location (they have very similar latitudes and longitudes)
+* have extra=0
+* don't have mta_tax
+* be at night
+* be one passanger
+* be long (distance) but short (time)
+                                                                                                      
+                                                                                                      Ara, per dcidir les influències, anem a mirar les distàncies de cook:             
+
+```{r}
+Boxplot(cooks.distance(model_25))
+scoo <- which(cooks.distance(model_25) > 0.02); length(scoo)
+llcoo <- which(row.names(dffwork) %in% names(cooks.distance(model_25)[scoo])); llcoo
+llista<-influencePlot(model_25, id=c(list="noteworthy", n=10))
+
+summary(dffwork[llcoo,])
+```
+
+They tend to:
+
+* have rate=Rate-1
+* be in the same location (they have very similar latitudes and longitudes)
+* be one passanger
+* be between 20 and 60 min long
+* have mta_tax
+* be long (distance) but short (time)
+
+
+Ara refem el model:
+
+```{r}
+llout<-row.names(llista)
+ll<-which(row.names(dffwork)%in%llout);
+dffwork<-dffwork[-ll,]
+
+model_25 <- glm(
+  target.tip_is_given~
+    poly(q.tlenkm, 2)+
+    f.mta_tax
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_25)
+influencePlot(model_25, id=c(list="noteworthy", n=10))
+```
+
+!!!!! falta recalcular interaccions --> si n'hi ha millors, fer el model
+
+# Confusion Table
+```{r}
+fit.tip_is_given <- factor(ifelse(predict(model_25, type="response")<0.5,0,1), labels=c("fit.no", "fit.yes"))
+tt <- table(fit.tip_is_given,dffwork$target.tip_is_given); tt
+100*sum(diag(tt)/sum(tt))
+```
+
+Tenim una precisió del 83.05%
+
+```{r}
+model_25_better <- glm(
+  target.tip_is_given~1
+  ,family = "binomial"
+  ,data=dffwork
+)
+fit0 <- predict(model_25_better, type="response")
+fit.tip_is_given0 <- factor(ifelse(fit0<0.5,0,1), labels=c("fit.yes"))
+tt0 <- table(fit.tip_is_given0, dffwork$target.tip_is_given); tt0
+100*sum(tt0[1,2]/sum(tt0))
+```
+
+Tenim una precisió del 82.91%
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3. Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
-4. Add interactions: between factor-factor and between factor-numeric (doubles).
-5. Diagnosis of waste and observations. Lack of adjustment and / or influential.
-
-
-## Confusion Matrix:
-When referring to the performance of a classification model, we are interested in the model’s ability to correctly predict or separate the classes. When looking at the errors made by a classification model, the confusion matrix gives the full picture. Consider e.g. a three class problem with the classes A, and B. The confusion matrix shows how the predictions are made by the model. The rows correspond to the known class of the data, i.e. the labels in the data. The columns correspond to the predictions made by the model. The value of each of element in the matrix is the number of predictions made with the class corresponding to the column for examples with the correct value as represented by the row. Thus, the diagonal elements show the number of correct classifications made for each class, and the off-diagonal elements show the errors made.
 
