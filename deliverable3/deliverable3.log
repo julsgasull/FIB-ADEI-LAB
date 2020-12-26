@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 20.6.29) (preloaded format=pdflatex 2020.8.2)  26 DEC 2020 17:07
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (MiKTeX 20.6.29) (preloaded format=pdflatex 2020.8.2)  26 DEC 2020 19:53
 entering extended mode
 **./deliverable3.tex
 (deliverable3.tex
@@ -513,7 +513,7 @@ File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 LaTeX Font Info:    Font shape `T1/lmtt/bx/n' in size <10> not available
 (Font)              Font shape `T1/lmtt/b/n' tried instead on input line 127.
 [2] [3] [4]
-<deliverable3_files/figure-latex/unnamed-chunk-10-1.pdf, id=129, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-10-1.pdf, id=131, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-10-1.pdf Graphic file (type
  pdf)
@@ -532,7 +532,7 @@ LaTeX Font Info:    Trying to load font information for TS1+lmtt on input line
 ("C:\Program Files\MiKTeX\tex/latex/lm\ts1lmtt.fd"
 File: ts1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ) [9] [10] [11] [12] [13] [14] [15]
-<deliverable3_files/figure-latex/unnamed-chunk-32-1.pdf, id=206, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-32-1.pdf, id=208, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-32-1.pdf Graphic file (type
  pdf)
@@ -540,7 +540,7 @@ File: deliverable3_files/figure-latex/unnamed-chunk-32-1.pdf Graphic file (type
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-32-1.pdf
   used on input line 1364.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<deliverable3_files/figure-latex/unnamed-chunk-33-1.pdf, id=207, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-33-1.pdf, id=209, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-33-1.pdf Graphic file (type
  pdf)
@@ -550,7 +550,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-33-1.pdf
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [16 <./deliverable3_files/figure-latex/unnamed-chunk-32-1.pdf>] [17 <./delivera
 ble3_files/figure-latex/unnamed-chunk-33-1.pdf>] [18]
-<deliverable3_files/figure-latex/unnamed-chunk-36-1.pdf, id=231, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-36-1.pdf, id=233, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-36-1.pdf Graphic file (type
  pdf)
@@ -558,7 +558,7 @@ File: deliverable3_files/figure-latex/unnamed-chunk-36-1.pdf Graphic file (type
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-36-1.pdf
   used on input line 1579.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<deliverable3_files/figure-latex/unnamed-chunk-37-1.pdf, id=232, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-37-1.pdf, id=234, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-37-1.pdf Graphic file (type
  pdf)
@@ -567,7 +567,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-37-1.pdf
   used on input line 1606.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [19 <./deliverable3_files/figure-latex/unnamed-chunk-36-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-38-1.pdf, id=247, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-38-1.pdf, id=249, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-38-1.pdf Graphic file (type
  pdf)
@@ -577,7 +577,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-38-1.pdf
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [20 <./deliverable3_files/figure-latex/unnamed-chunk-37-1.pdf>] [21 <./delivera
 ble3_files/figure-latex/unnamed-chunk-38-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-40-1.pdf, id=267, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-40-1.pdf, id=269, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-40-1.pdf Graphic file (type
  pdf)
@@ -586,7 +586,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-40-1.pdf
   used on input line 1713.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [22 <./deliverable3_files/figure-latex/unnamed-chunk-40-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-42-1.pdf, id=279, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-42-1.pdf, id=281, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-42-1.pdf Graphic file (type
  pdf)
@@ -595,7 +595,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-42-1.pdf
   used on input line 1811.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [23 <./deliverable3_files/figure-latex/unnamed-chunk-42-1.pdf>] [24]
-<deliverable3_files/figure-latex/unnamed-chunk-47-1.pdf, id=293, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-47-1.pdf, id=295, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-47-1.pdf Graphic file (type
  pdf)
@@ -604,7 +604,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-47-1.pdf
   used on input line 1983.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [25]
-<deliverable3_files/figure-latex/unnamed-chunk-48-1.pdf, id=299, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-48-1.pdf, id=301, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-48-1.pdf Graphic file (type
  pdf)
@@ -613,7 +613,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-48-1.pdf
   used on input line 2012.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [26 <./deliverable3_files/figure-latex/unnamed-chunk-47-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-49-1.pdf, id=309, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-49-1.pdf, id=311, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-49-1.pdf Graphic file (type
  pdf)
@@ -622,7 +622,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-49-1.pdf
   used on input line 2046.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [27 <./deliverable3_files/figure-latex/unnamed-chunk-48-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-49-2.pdf, id=319, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-49-2.pdf, id=321, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-49-2.pdf Graphic file (type
  pdf)
@@ -632,7 +632,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-49-2.pdf
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [28 <./deliverable3_files/figure-latex/unnamed-chunk-49-1.pdf> <./deliverable3_
 files/figure-latex/unnamed-chunk-49-2.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-49-3.pdf, id=334, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-49-3.pdf, id=336, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-49-3.pdf Graphic file (type
  pdf)
@@ -640,7 +640,7 @@ File: deliverable3_files/figure-latex/unnamed-chunk-49-3.pdf Graphic file (type
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-49-3.pdf
   used on input line 2078.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<deliverable3_files/figure-latex/unnamed-chunk-49-4.pdf, id=335, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-49-4.pdf, id=337, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-49-4.pdf Graphic file (type
  pdf)
@@ -650,7 +650,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-49-4.pdf
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [29 <./deliverable3_files/figure-latex/unnamed-chunk-49-3.pdf>] [30 <./delivera
 ble3_files/figure-latex/unnamed-chunk-49-4.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-50-1.pdf, id=354, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-50-1.pdf, id=356, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-50-1.pdf Graphic file (type
  pdf)
@@ -659,7 +659,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-50-1.pdf
   used on input line 2173.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [31 <./deliverable3_files/figure-latex/unnamed-chunk-50-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-51-1.pdf, id=365, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-51-1.pdf, id=367, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-51-1.pdf Graphic file (type
  pdf)
@@ -667,7 +667,7 @@ File: deliverable3_files/figure-latex/unnamed-chunk-51-1.pdf Graphic file (type
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-51-1.pdf
   used on input line 2204.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<deliverable3_files/figure-latex/unnamed-chunk-52-1.pdf, id=366, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-52-1.pdf, id=368, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-52-1.pdf Graphic file (type
  pdf)
@@ -676,7 +676,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-52-1.pdf
   used on input line 2234.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [32 <./deliverable3_files/figure-latex/unnamed-chunk-51-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-53-1.pdf, id=376, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-53-1.pdf, id=378, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-53-1.pdf Graphic file (type
  pdf)
@@ -686,7 +686,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-53-1.pdf
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [33 <./deliverable3_files/figure-latex/unnamed-chunk-52-1.pdf> <./deliverable3_
 files/figure-latex/unnamed-chunk-53-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-54-1.pdf, id=391, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-54-1.pdf, id=393, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-54-1.pdf Graphic file (type
  pdf)
@@ -696,7 +696,7 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-54-1.pdf
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [34] [35 <./deliverable3_files/figure-latex/unnamed-chunk-54-1.pdf>] [36] [37] 
 [38] [39] [40] [41] [42]
-<deliverable3_files/figure-latex/unnamed-chunk-60-1.pdf, id=436, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-60-1.pdf, id=438, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-60-1.pdf Graphic file (type
  pdf)
@@ -705,121 +705,115 @@ Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-60-1.pdf
   used on input line 3046.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [43] [44 <./deliverable3_files/figure-latex/unnamed-chunk-60-1.pdf>] [45] [46]
-Overfull \vbox (0.8853pt too high) detected at line 3428
+Overfull \vbox (0.8853pt too high) detected at line 3434
  []
 
 [47] [48] [49] [50] [51] [52]
-<deliverable3_files/figure-latex/unnamed-chunk-71-1.pdf, id=499, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-71-1.pdf, id=502, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-71-1.pdf Graphic file (type
  pdf)
 <use deliverable3_files/figure-latex/unnamed-chunk-71-1.pdf>
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-71-1.pdf
-  used on input line 3831.
+  used on input line 3837.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-<deliverable3_files/figure-latex/unnamed-chunk-72-1.pdf, id=500, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-72-1.pdf, id=503, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-72-1.pdf Graphic file (type
  pdf)
 <use deliverable3_files/figure-latex/unnamed-chunk-72-1.pdf>
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-72-1.pdf
-  used on input line 3854.
+  used on input line 3862.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [53 <./deliverable3_files/figure-latex/unnamed-chunk-71-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-73-1.pdf, id=514, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-73-1.pdf, id=517, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-73-1.pdf Graphic file (type
  pdf)
 <use deliverable3_files/figure-latex/unnamed-chunk-73-1.pdf>
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-73-1.pdf
-  used on input line 3864.
+  used on input line 3872.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [54 <./deliverable3_files/figure-latex/unnamed-chunk-72-1.pdf> <./deliverable3_
 files/figure-latex/unnamed-chunk-73-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-74-1.pdf, id=529, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-74-1.pdf, id=532, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-74-1.pdf Graphic file (type
  pdf)
 <use deliverable3_files/figure-latex/unnamed-chunk-74-1.pdf>
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-74-1.pdf
-  used on input line 3930.
+  used on input line 3938.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [55] [56 <./deliverable3_files/figure-latex/unnamed-chunk-74-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-76-1.pdf, id=545, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-76-1.pdf, id=548, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-76-1.pdf Graphic file (type
  pdf)
 <use deliverable3_files/figure-latex/unnamed-chunk-76-1.pdf>
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-76-1.pdf
-  used on input line 4068.
+  used on input line 4078.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [57] [58 <./deliverable3_files/figure-latex/unnamed-chunk-76-1.pdf>] [59] [60] 
 [61] [62] [63] [64] [65]
-<deliverable3_files/figure-latex/unnamed-chunk-82-1.pdf, id=592, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-82-1.pdf, id=595, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-82-1.pdf Graphic file (type
  pdf)
 <use deliverable3_files/figure-latex/unnamed-chunk-82-1.pdf>
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-82-1.pdf
-  used on input line 4749.
+  used on input line 4759.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [66] [67 <./deliverable3_files/figure-latex/unnamed-chunk-82-1.pdf>] [68] [69] 
 [70] [71] [72] [73] [74] [75] [76] [77] [78] [79] [80] [81] [82]
-<deliverable3_files/figure-latex/unnamed-chunk-86-1.pdf, id=674, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-86-1.pdf, id=677, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-86-1.pdf Graphic file (type
  pdf)
 <use deliverable3_files/figure-latex/unnamed-chunk-86-1.pdf>
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-86-1.pdf
-  used on input line 5935.
+  used on input line 5947.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [83] [84 <./deliverable3_files/figure-latex/unnamed-chunk-86-1.pdf>] [85]
-Overfull \hbox (401.85976pt too wide) in paragraph at lines 6131--6131
- []                                                                            
-                    \T1/lmtt/m/n/10 Ara, per dcidir les influències, anem a mir
-ar les distàncies de cook:[] 
- []
-
-<deliverable3_files/figure-latex/unnamed-chunk-88-1.pdf, id=694, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-88-1.pdf, id=697, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-88-1.pdf Graphic file (type
  pdf)
 <use deliverable3_files/figure-latex/unnamed-chunk-88-1.pdf>
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-88-1.pdf
-  used on input line 6140.
+  used on input line 6152.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[86 <./deliverable3_files/figure-latex/unnamed-chunk-88-1.pdf>]
-<deliverable3_files/figure-latex/unnamed-chunk-88-2.pdf, id=704, 469.755pt x 32
+<deliverable3_files/figure-latex/unnamed-chunk-88-2.pdf, id=698, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-88-2.pdf Graphic file (type
  pdf)
 <use deliverable3_files/figure-latex/unnamed-chunk-88-2.pdf>
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-88-2.pdf
-  used on input line 6172.
+  used on input line 6184.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[87 <./deliverable3_files/figure-latex/unnamed-chunk-88-2.pdf>] [88]
-<deliverable3_files/figure-latex/unnamed-chunk-89-1.pdf, id=718, 469.755pt x 32
+[86 <./deliverable3_files/figure-latex/unnamed-chunk-88-1.pdf>] [87 <./delivera
+ble3_files/figure-latex/unnamed-chunk-88-2.pdf>] [88]
+<deliverable3_files/figure-latex/unnamed-chunk-89-1.pdf, id=721, 469.755pt x 32
 5.215pt>
 File: deliverable3_files/figure-latex/unnamed-chunk-89-1.pdf Graphic file (type
  pdf)
 <use deliverable3_files/figure-latex/unnamed-chunk-89-1.pdf>
 Package pdftex.def Info: deliverable3_files/figure-latex/unnamed-chunk-89-1.pdf
-  used on input line 6318.
+  used on input line 6330.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [89 <./deliverable3_files/figure-latex/unnamed-chunk-89-1.pdf>]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 6411.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 6423.
 [90]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 6411.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 6423.
 (deliverable3.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 6411.
-Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 6411.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 6423.
+Package atveryend Info: Empty hook `AtEndAfterFileList' on input line 6423.
  ) 
 Here is how much of TeX's memory you used:
- 13946 strings out of 480790
- 211073 string characters out of 2907021
- 524399 words of memory out of 3000000
- 29430 multiletter control sequences out of 15000+200000
- 586672 words of font info for 102 fonts, out of 3000000 for 9000
+ 13956 strings out of 480790
+ 211245 string characters out of 2907021
+ 524462 words of memory out of 3000000
+ 29432 multiletter control sequences out of 15000+200000
+ 586968 words of font info for 105 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  44i,6n,42p,1410b,469s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Program Files/MiKTeX/fonts/enc/dvips/lm/lm-ec.enc}{C:/Program Files/MiKTe
@@ -830,9 +824,9 @@ ype1/public/lm/lmr12.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmr17.p
 fb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmri10.pfb><C:/Program Files/
 MiKTeX/fonts/type1/public/lm/lmtk10.pfb><C:/Program Files/MiKTeX/fonts/type1/pu
 blic/lm/lmtt10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/lm/lmtti10.pfb>
-Output written on deliverable3.pdf (90 pages, 11088359 bytes).
+Output written on deliverable3.pdf (90 pages, 11089065 bytes).
 PDF statistics:
- 950 PDF objects out of 1000 (max. 8388607)
- 194 named destinations out of 1000 (max. 500000)
- 12807 words of extra memory for PDF output out of 14400 (max. 10000000)
+ 956 PDF objects out of 1000 (max. 8388607)
+ 196 named destinations out of 1000 (max. 500000)
+ 12815 words of extra memory for PDF output out of 14400 (max. 10000000)
 

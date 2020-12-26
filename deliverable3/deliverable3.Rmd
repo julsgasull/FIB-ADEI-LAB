@@ -3,16 +3,16 @@ title: "Deliverable 3"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
+  word_document:
+    toc: no
+    toc_depth: '4'
+  html_document:
+    toc: no
+    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
-    toc: no
-    toc_depth: '4'
-  word_document:
-    toc: no
-    toc_depth: '4'
 geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
 fontsize: 18pt
 subtitle: Numeric and Binary targets Forecasting Models
@@ -1370,10 +1370,13 @@ influencePlot(model_25, id=c(list="noteworthy", n=10))
 ```{r}
 fit.tip_is_given <- factor(ifelse(predict(model_25, type="response")<0.5,0,1), labels=c("fit.no", "fit.yes"))
 tt <- table(fit.tip_is_given,dffwork$target.tip_is_given); tt
-100*sum(diag(tt)/sum(tt))
+100*sum(diag(tt)/sum(tt)) #accuracy
+100*(tt[2,2]/(tt[2,2] + tt[1,2])) # recall (sensitivity)
+100*(tt[1,1]/(tt[1,1] + tt[2,1])) # specificity
+100*(tt[2,2]/(tt[2,1]+ tt[2,2])) # precision
 ```
 
-We have a precision of 83.05%.
+We have an accuracy of 83.05%. We have a recall of 99.42% which means that the positive results of this confusion table is very accurate. We can see that we have 1201 + 7 positive observations, from which 1201 of them have been correctly classified. Now, we are going to do the same, but for the negative results (specificity). We can see that only a 3.61% of specificity, which is a very bad result. Only 9 of the 240 + 9 negative observations have been  classified as negative. To conclude, we see that the precision of this confusion table is 83.34%.
 
 ```{r}
 model_25_better <- glm(
@@ -1382,12 +1385,15 @@ model_25_better <- glm(
   ,data=dffwork
 )
 fit0 <- predict(model_25_better, type="response")
-fit.tip_is_given0 <- factor(ifelse(fit0<0.5,0,1), labels=c("fit.yes"))
+fit.tip_is_given0 <- factor(ifelse(fit0<0.5,0,1), labels=c("fit.no", "fit.yes"))
 tt0 <- table(fit.tip_is_given0, dffwork$target.tip_is_given); tt0
 100*sum(tt0[1,2]/sum(tt0))
+100*(tt0[2,2]/(tt0[2,2] + tt0[1,2])) # recall (sensitivity)
+100*(tt0[1,1]/(tt0[1,1] + tt0[2,1])) # specificity
+100*(tt0[2,2]/(tt0[2,1]+ tt0[2,2])) # precision
 ```
 
-We have a precision of 82.91%.
+We have an accuracy of 82.91%.
 
 
 
