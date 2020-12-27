@@ -3,16 +3,16 @@ title: "Deliverable 3"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
+  word_document:
+    toc: no
+    toc_depth: '4'
+  html_document:
+    toc: no
+    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  html_document:
-    toc: no
-    toc_depth: '4'
-  word_document:
-    toc: no
-    toc_depth: '4'
 geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
 fontsize: 18pt
 subtitle: Numeric and Binary targets Forecasting Models
@@ -34,10 +34,10 @@ rm(list=ls())                       # Clean workspace
 ## Load Required Packages for this deliverable
 We load the necessary packages and set working directory
 ```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
-#setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
-#filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
-setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
-filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable3")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable3"
+#setwd("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2")
+#filepath<-"C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable2"
 
 # Load Required Packages
 options(contrasts=c("contr.treatment","contr.treatment"))
@@ -50,8 +50,8 @@ lapply(requiredPackages, require, character.only = TRUE)
 
 ## Load processed data from last deliverable
 ```{r}
-#load(paste0(filepath,"/Taxi5000_del2.RData"))
-load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
+load(paste0(filepath,"/Taxi5000_del2.RData"))
+#load("C:/Users/Claudia Sánchez/Desktop/FIB/TARDOR 2020-2021/ADEI/DELIVERABLE1/FIB-ADEI-LAB/deliverable3/Taxi5000_del2.RData")
 summary(df)
 ```
 
@@ -87,8 +87,6 @@ names(df)[names(df) == "Trip_distance_range"] <- "f.trip_distance_range"
 names(df)[names(df) == "paidTolls"] <- "f.paid_tolls"
 names(df)[names(df) == "TipIsGiven"] <- "target.tip_is_given"
 names(df)[names(df) == "passenger_groups"] <- "f.passenger_groups"
-#names(df)[names(df) == "f.cost"] <- ""
-#names(df)[names(df) == "f.tt"] <- ""
 
 df$hcpck <- NULL
 df$claKM <- NULL
@@ -150,34 +148,18 @@ vars_res<-names(df)[c(15,27)];
 vars_cexp<-vars_con[c(5:10,12:15)];
 ```
 
-# Useful information
-## Y (Numeric Target).
-
-This variable will be the target for linear model building (connected to blocks Statistical Modeling I and II).
-
-
 --------------------------------------------------------------------------------
 
 
-# Quantitative Logistics Regression (explanatory variables numeric only)
-
-Steps to follow:
-
-1. Enter all relevant numerical variables in the model
-2. See if you need to replace a number with its equivalent factor
-3. Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
-4. Add interactions: between factor-factor and between factor-numeric (doubles).
-5. Diagnosis of waste and observations. Lack of adjustment and / or influential.
-
+# Quantitative Logistics Regression
 
 Before we begin to see correlations with our target, we should consider the normality of this.
 
-## Normality
+## (0) Normality
 ```{r}
 hist(df$target.total_amount,50,freq=F,col="darkslateblue",border = "darkslateblue")
 mm<-mean(df$target.total_amount);ss<-sd(df$target.total_amount)
 curve(dnorm(x,mean=mm,sd=ss),col="red",lwd=2,lty=3, add=T)
-
 shapiro.test(df$target.total_amount)
 ```
 
@@ -200,9 +182,24 @@ kurtosis(df$target.total_amount)
 
 Normal data should be 3. We have 21.1, so, in this case, our data is not normal.
 
-## Method 1: take the most correlated variables 
+
+## Start to find models
+
+Steps to follow:
+
+1. Enter all relevant numerical variables in the model
+2. See if you need to replace a number with its equivalent factor
+3. Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
+4. Add interactions: between factor-factor and between factor-numeric (doubles).
+5. Diagnosis of waste and observations. Lack of adjustment and / or influential.
+
+## (1) Numerical variables
+
+### Method 1: take the most correlated variables 
+
+We use spearman method since out target is not normally distributed
+
 ```{r}
-# we use spearman method since out target is not normally distributed
 round(cor(df[,c("target.total_amount",vars_cexp)], method="spearman"),dig=2)
 ```
 
@@ -229,7 +226,7 @@ After seeing the correlation, to make an initial model, we should select the one
 * q.espeed
 * q.tolls_amount
 
-## Method 2: take the entire dataset with a condes
+### Method 2: take the entire dataset with a condes
 ```{r}
 res.con <- condes(df,num.var=which(names(df)=="target.total_amount"))
 ```
@@ -238,7 +235,7 @@ res.con <- condes(df,num.var=which(names(df)=="target.total_amount"))
 res.con$quanti
 ```
 
-Com hem pogut veure abans, les variables més correlacionades són:
+As we have seen before, the most correlated variables are:
 
 * q.fare_amount: 0.94
   + it is normal for the rate to go up when the price goes up
@@ -272,7 +269,7 @@ To talk about factor variables, we need to visualize res.con$quali. So let's see
 * target.tip_is_given
   + just like before, but we can keep in mind that people tend to give a percentage of the total price
 
-## Method 3: if few explanatory variables are available -> take all of them
+### Method 3: if few explanatory variables are available -> take all of them
 ```{r}
 vars_cexp
 cor(df$q.trip_distance,df$q.tlenkm)
@@ -282,10 +279,7 @@ To give an example, we see that the two distances we have, trip_distance and tle
 
 ### Model 1
 ```{r}
-model_1 <- lm(
-  target.total_amount~.
-  ,data=df[,c("target.total_amount",vars_cexp)]
-);summary(model_1)
+model_1 <- lm(target.total_amount~.,data=df[,c("target.total_amount",vars_cexp)]);summary(model_1)
 ```
 
 Model_1 explains 93.4% of the variability of the target. We also see, according to the F-statistic, that it should be rejected.
@@ -294,7 +288,7 @@ We cannot use variables that are so correlated at the same time to act as explan
 
 But first, let's see which of them are that correlated:
 ```{r}
-vif(model_1)  # Check association between explanatory vars
+vif(model_1)
 ```
 
 When the variance inflation factor is greater than 5, we need to consider whether or not we keep a variable.
@@ -332,26 +326,13 @@ Therefore, we will try to make a model manually based on what model_1_bic has sh
 ### Model 2
 
 ```{r}
-model_2 <- lm(
-  target.total_amount~ 
-    q.passenger_count +
-    q.fare_amount +
-    q.extra + 
-    q.tip_amount +
-    q.tolls_amount +
-    q.hour + 
-    q.tlenkm +
-    q.traveltime +
-    q.espeed 
-  ,
-  data=df[,c("target.total_amount",vars_cexp)]
-);summary(model_2)
+model_2 <- lm(target.total_amount~q.passenger_count+q.fare_amount+q.extra+q.tip_amount+q.tolls_amount+q.hour+q.tlenkm+q.traveltime+q.espeed,data=df[,c("target.total_amount",vars_cexp)]);summary(model_2)
 ```
 
 We see that the explainability is now 93.39%.
 
 ```{r}
-vif(model_2)  # Check association between explanatory vars
+vif(model_2)
 ```
 
 Even so, owning one is still beyond the reach of the average person.
@@ -361,52 +342,27 @@ We try to make a new model without the distance:
 ### Model 3
 
 ```{r}
-model_3 <- lm(
-  target.total_amount~ 
-    q.passenger_count +
-    q.fare_amount +
-    q.extra + 
-    q.tip_amount +
-    q.tolls_amount +
-    q.hour + 
-    q.traveltime +
-    q.espeed 
-  ,
-  data=df[,c("target.total_amount",vars_cexp)]
-);summary(model_3)
+model_3 <- lm(target.total_amount~q.passenger_count+q.fare_amount+q.extra+q.tip_amount+q.tolls_amount+q.hour+q.traveltime+q.espeed,data=df[,c("target.total_amount",vars_cexp)]);summary(model_3)
 ```
 
 We see that the explainability is now 92.99%.
 
 ```{r}
-vif(model_3)  # Check association between explanatory vars
+vif(model_3)
 ```
 
 The live ones are fine now. Still, we’ve pulled the distance, which conceptually we can’t afford. Therefore, we will try to remove another variable with a high vif (q.fare_amount), instead of q.tlenkm:
 
-
 ### Model 4
 
 ```{r}
-model_4 <- lm(
-  target.total_amount~ 
-    q.passenger_count +
-    q.extra + 
-    q.tip_amount +
-    q.tolls_amount +
-    q.hour + 
-    q.tlenkm +
-    q.traveltime +
-    q.espeed 
-  ,
-  data=df[,c("target.total_amount",vars_cexp)]
-);summary(model_4)
+model_4 <- lm(target.total_amount~q.passenger_count+q.extra+q.tip_amount+q.tolls_amount+q.hour+q.tlenkm+q.traveltime+q.espeed,data=df[,c("target.total_amount",vars_cexp)]);summary(model_4)
 ```
 
 We see that the explainability is now 86.17%.
 
 ```{r}
-vif(model_4)  # Check association between explanatory vars
+vif(model_4)
 ```
 
 Despite having high vifs, we still have high explicability of the variability of our target and, given that the variable we have taken out we can remove with time and distance from the trip, we do not need it.
@@ -421,28 +377,19 @@ Following BIC, we have to eliminate variables until the vif's are less than 5. T
 ### Model 5
 
 ```{r}
-model_5 <- lm(
-  target.total_amount~ 
-    q.passenger_count +
-    q.extra +
-    q.tip_amount +
-    q.tolls_amount +
-    q.tlenkm +
-    q.traveltime
-  ,
-  data=df
-);summary(model_5)
+model_5 <- lm(target.total_amount~q.passenger_count+q.extra+q.tip_amount+q.tolls_amount+q.tlenkm+q.traveltime,data=df);summary(model_5)
 ```
 
 We see that the explainability is now 86.09%
 
 ```{r}
-vif(model_5)  # Check association between explanatory vars
+vif(model_5)
 ```
 
 There is no vif that exceeds 5.
 
 Let's now discriminate the variables independently:
+
 ```{r}
 marginalModelPlots(model_5)
 ```
@@ -465,17 +412,7 @@ Looking at the results, we can say that:
 All this is due to the fact that our target variable was no longer normally distributed. To solve this, we apply the logarithm:
 
 ```{r}
-model_6 <- lm(
-  log(target.total_amount)~ 
-    q.passenger_count +
-    q.extra +
-    q.tip_amount +
-    q.tolls_amount +
-    q.tlenkm +
-    q.traveltime
-  ,
-  data=df
-);summary(model_6)
+model_6 <- lm(log(target.total_amount)~q.passenger_count+q.extra+q.tip_amount+q.tolls_amount+q.tlenkm +q.traveltime,data=df);summary(model_6)
 ```
 
 We see that when doing the logarithm, the coefficient of determination is getting lower and lower, now it is 79.51%. We have seen that it has gotten worse than the previous model. Therefore, we discard it. We will work with model_5.
@@ -544,20 +481,15 @@ par(mfrow=c(1,1))
 
 We see that the residues are not completely optimal.
 
+### Exhaustive
+````{r}
+ll1<-Boxplot(rstudent(model_5));ll1
+sel2<-which(hatvalues(model_5)>5*length(model_5$coefficients)/nrow(df));sel2;length(sel2)
+```
 
 ```{r}
 library(MASS)
-boxcox(
-    target.total_amount~ 
-    q.passenger_count +
-    q.extra +
-    q.tip_amount +
-    q.tolls_amount +
-    q.tlenkm +
-    q.traveltime
-  ,
-  data=df
-)
+boxcox(target.total_amount~q.passenger_count+q.extra+q.tip_amount+q.tolls_amount+q.tlenkm+q.traveltime,data=df)
 ```
 
 We see the lambda parameter estimation method in the boxcox method. This gives us an idea of the power to which we need to raise the target variable in order to improve the properties of the linear model.
@@ -565,31 +497,18 @@ We see the lambda parameter estimation method in the boxcox method. This gives u
 It is worth trying a new model with a square root in the target variable:
 
 ```{r}
-model_7 <- lm(
-  sqrt(target.total_amount)~ 
-    q.passenger_count +
-    q.extra +
-    q.tip_amount +
-    q.tolls_amount +
-    q.tlenkm +
-    q.traveltime
-  ,
-  data=df
-);summary(model_7)
+model_7 <- lm(sqrt(target.total_amount)~q.passenger_count+q.extra+q.tip_amount+q.tolls_amount+q.tlenkm+q.traveltime,data=df);summary(model_7)
 ```
 
 We see that the coefficient has improved, from 85.09% (model_5) to 86.41% (model_7). But ... is it worth it from a residual point of view?
 
 ```{r}
-par(mfrow=c(2,2))
-plot( model_7, id.n=0 )
-par(mfrow=c(1,1))
+par(mfrow=c(2,2));plot( model_7, id.n=0 );par(mfrow=c(1,1))
 ```
 
 We see we haven’t won too much. So we stick to model_5.
 
-## Using factors as explanatory variables
-### Try to change numerical each regressor by its discretized factor
+## (2) Factors
 
 ```{r}
 model_8<-lm(log(target.total_amount)~ q.extra + q.tip_amount +  q.tolls_amount + f.improvement_surcharge + q.espeed  + log(q.tlenkm), data=df)
@@ -605,53 +524,23 @@ residualPlots(model_8)
 ```
 
 ```{r}
-# vars_enum<-c("q.extra","q.tip_amount","q.tolls_amount","f.improvement_surcharge","tlenkm")
-# vars_edis<-c("VendorID","RateCodeID","Payment_type","period")
-# 
 df$f.extra <- factor(df$q.extra)
 
-model_9<-lm(
-  log(target.total_amount)~ 
-    f.extra + 
-    q.tip_amount + 
-    q.tolls_amount + 
-    f.improvement_surcharge + 
-    q.espeed + 
-    log(q.tlenkm)  
-  ,data=df
-)
+model_9<-lm(log(target.total_amount)~f.extra + q.tip_amount + q.tolls_amount + f.improvement_surcharge + q.espeed + log(q.tlenkm),data=df)
 BIC(model_8,model_9)
 ```
 
 We can see from the BIC that the model_9 is better than the model_8, so it is correct to consider extra as factor. Next, we will do the same with the tolls_amount and use the factor we had already created (paid_tolls).
 
 ```{r}
-model_10<-lm(
-  log(target.total_amount)~ 
-    f.extra + 
-    q.tip_amount + 
-    f.paid_tolls + 
-    f.improvement_surcharge + 
-    q.espeed + 
-    log(q.tlenkm)  
-  ,data=df
-)
+model_10<-lm(log(target.total_amount)~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + q.espeed + log(q.tlenkm),data=df)
 BIC(model_8,model_9,model_10)
 ```
 
 We see can see that it is correct to use the paid_tolls factor to improve our model. We will try it now with the effective speed.
 
 ```{r}
-model_11<-lm(
-  log(target.total_amount)~ 
-    f.extra + 
-    q.tip_amount + 
-    f.paid_tolls + 
-    f.improvement_surcharge + 
-    f.espeed + 
-    log(q.tlenkm)  
-  ,data=df
-)
+model_11<-lm(log(target.total_amount)~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + f.espeed + log(q.tlenkm),data=df)
 BIC(model_8,model_9,model_10,model_11)
 ``` 
 We can see that the best approach is the model_10, so we are going to stick to it for now.
@@ -666,9 +555,7 @@ We can see from the Anova test that f.extra has 2 freedom degrees and globally i
 
 We are going to take a look at the residues.
 ```{r}
-par(mfrow=c(2,2))
-plot( model_12, id.n=0 )
-par(mfrow=c(1,1))
+par(mfrow=c(2,2));plot( model_12, id.n=0 );par(mfrow=c(1,1))
 ```
 Looking at the results, we can say that:
 
@@ -683,7 +570,11 @@ influencePlot( model_12, id=c(list="noteworthy",n=5))
 
 We see this model as a disaster. That is, we have a student waste of the order of 35. We can confirm that this is too much. We have to compare student waste with a normal standard. Therefore, we would say that the model we have so far is a model that has a serious waste problem.
 
-Intento treure outliers multivariants de total_amount i tlenkm:
+--------------------------------------------------------------------------------
+
+### Remove multivariant outliers to improve influence plot
+
+Since we’ve realized that this should have been removed from the start, what we’re going to do is put it at the beginning of the last deliverable in order to have a more consistent delivery. For now, however, we leave this section here so as not to have to change the entire delivery.
 
 ```{r}
 library(mvoutlier)
@@ -702,29 +593,18 @@ multivariant_outliers <- Moutlier(df[, c(15,20)], quantile = 0.995)
 multivariant_outliers$cutoff
 par(mfrow=c(1,1))
 plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
-text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(15,20)]), cex=0.75) 
+text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(15,20)]), cex=0.75)
 
 ```
 
-
+--------------------------------------------------------------------------------
 
 In order for this not to happen to us, we need to work on the variable q.tlenkm.
 
 So let's create a new model that does not give so many problems:
 
 ```{r}
-model_13<-lm(
-  log(target.total_amount)~ 
-    f.extra + 
-    q.tip_amount + 
-    f.paid_tolls + 
-    f.improvement_surcharge + 
-    q.espeed + 
-    log(q.tlenkm)
-  ,data=df
-)
-
-summary(model_13)
+model_13<-lm(log(target.total_amount)~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + q.espeed + log(q.tlenkm),data=df); summary(model_13)
 vif(model_13)
 
 influencePlot( model_13, id=c(list="noteworthy",n=5))
@@ -809,43 +689,18 @@ It is necessary to eliminate these observations that do not have the same tenden
 ```{r}
 dfred<-df[-ll4,]
 
-model_14<-lm(
-  log(target.total_amount)~ 
-    f.extra + 
-    q.tip_amount + 
-    f.paid_tolls + 
-    f.improvement_surcharge + 
-    q.espeed + 
-    log(q.tlenkm)
-  ,data=dfred
-)
-
-summary(model_14)
+model_14<-lm(log(target.total_amount)~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + q.espeed + log(q.tlenkm),data=dfred);summary(model_14)
 Anova(model_14)
 vif(model_14)
 ```
 
 We see that the coefficient of determination has increased a bit and it seems that we have no collinearity problems.
 
-### Adding factors: main effects
+## (3) Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
 
 ```{r}
 names(df)
-model_15<-lm(
-  log(target.total_amount) ~ 
-    q.tip_amount + 
-    log(q.tlenkm)+ 
-    f.paid_tolls+ 
-    f.improvement_surcharge + 
-    f.espeed + 
-    f.extra + 
-    f.code_rate_id + 
-    f.vendor_id + 
-    f.payment_type+
-    f.period 
-  ,data=df
-)
-summary(model_15)
+model_15<-lm(log(target.total_amount) ~ q.tip_amount + log(q.tlenkm)+ f.paid_tolls+ f.improvement_surcharge + f.espeed + f.extra + f.code_rate_id + f.vendor_id + f.payment_type+f.period ,data=df); summary(model_15)
 Anova(model_15)
 ```
 
@@ -858,33 +713,17 @@ We see that, of all the new explanatory variables introduced, the ones we can sa
 We create a new model with them:
 
 ```{r}
-model_16<-lm(
-  log(target.total_amount) ~ 
-    q.tip_amount + 
-    log(q.tlenkm)+ 
-    f.paid_tolls+ 
-    f.espeed + 
-    f.extra + 
-    f.code_rate_id + 
-    f.payment_type+
-    f.period 
-  ,data=df
-)
+model_16<-lm(log(target.total_amount) ~ q.tip_amount + log(q.tlenkm)+ f.paid_tolls+ f.espeed + f.extra + f.code_rate_id + f.payment_type+f.period ,data=df)
 
 anova(model_15, model_16)
 ```
 
 We see that we haven't lost anything.
 
-#### Interactions
+## (4) Interactions
 
 ```{r}
-model_17<-lm(
-  log(target.total_amount) ~ 
-    (q.tip_amount + log(q.tlenkm))*(f.paid_tolls + f.espeed + f.extra + f.code_rate_id + f.payment_type + f.period)
-  ,data=df
-)
-
+model_17<-lm( log(target.total_amount) ~ (q.tip_amount + log(q.tlenkm))*(f.paid_tolls + f.espeed + f.extra + f.code_rate_id + f.payment_type + f.period),data=df)
 model_17<-step( model_17, k=log(nrow(df)))
 ```
 
@@ -912,15 +751,10 @@ summary(model_17)
 ```
 
 
-# !!!! FALTA DIAGNOSI EXHAUSTIVA !!!
-
-
+### Exhaustive
 ````{r}
 ll1<-Boxplot(rstudent(model_17));ll1
 sel2<-which(hatvalues(model_17)>5*length(model_17$coefficients)/nrow(df));sel2;length(sel2)
-ll2<-which(row.names(model_17) %in% names(hatvalues(model_17)[sel2]));ll2
-sel3<-which(cooks.distance(model_17)> 0.5 );sel3;length(sel3)
-ll3<-which(row.names(df) %in% names(cooks.distance(model_17)[sel3]));ll3
 ```
 
 
@@ -958,7 +792,6 @@ dffwork<-dff[llwork,]
 dfftest<-dff[-llwork,]
 ```
 
-# maybe no cal posar això de steps to follow????
 Steps to follow:
 
 1. Enter all relevant numerical variables in the model
@@ -967,25 +800,12 @@ Steps to follow:
 4. Add interactions: between factor-factor and between factor-numeric (doubles).
 5. Diagnosis of waste and observations. Lack of adjustment and / or influential.
 
-## Numerical variables // Enter all relevant numerical variables in the model
+## (1) Numerical variables
 ### Model 20
 
 ```{r}
-model_20 <- glm(
-  target.tip_is_given~.
-  ,family = "binomial"
-  ,data=dffwork[,c("target.tip_is_given",vars_cexp)]
-);summary(model_20)
+model_20 <- glm(target.tip_is_given~.,family = "binomial",data=dffwork[,c("target.tip_is_given",vars_cexp)]);summary(model_20)
 Anova(model_20, test="Wald") #binary target
-```
-
-```{r}
-# Explicació output del summary: --> s'haurà d'esborrar!!!!
-# 
-# * Deviance Residuals: diferència entre prediccions i observacions.
-# * Coeficients: com abans
-# * (Dispersion parameter for binomial family taken to be 1): ni cas
-# * Residual deviance: suma de quadrats residuals
 ```
 
 Comments: 
@@ -1011,20 +831,7 @@ We can see that we have some variables with very high vifs:
 We know there is not colinearity, so we create a new model:
 
 ```{r}
-model_21 <- glm(
-  target.tip_is_given~
-    f.improvement_surcharge+
-    f.mta_tax+
-    q.passenger_count+
-    q.extra+
-    q.tolls_amount+
-    q.hour+
-    q.espeed+
-    q.tlenkm+
-    q.traveltime 
-  ,family = "binomial"
-  ,data=dffwork
-);summary(model_21)
+model_21 <- glm(target.tip_is_given~f.improvement_surcharge+f.mta_tax+q.passenger_count+q.extra+q.tolls_amount+q.hour+q.espeed+q.tlenkm+q.traveltime ,family = "binomial",data=dffwork);summary(model_21)
 vif(model_21)
 
 Anova(model_21, test="Wald") #binary target
@@ -1037,22 +844,10 @@ We can transform tlenkm and remove improvement_surcharge in order to have lower 
 ### Model 22
 
 ```{r}
-model_22 <- glm(
-  target.tip_is_given~
-    f.mta_tax+
-    q.passenger_count+
-    q.extra+
-    q.tolls_amount+
-    q.hour+
-    q.espeed+
-    poly(q.tlenkm,2)+
-    q.traveltime 
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_22)
+model_22 <- glm(target.tip_is_given~f.mta_tax+q.passenger_count+q.extra+q.tolls_amount+q.hour+q.espeed+poly(q.tlenkm,2)+q.traveltime,family = "binomial",data=dffwork); summary(model_22)
 vif(model_22)
 anova(model_21, model_22, test="Chisq") # only for nested models
-Anova(model_22, test="Wald") #binary target
+Anova(model_22, test="Wald") # binary target
 ```
 
 Now, we can do a step:
@@ -1066,13 +861,7 @@ summary(model_23)
 Due to the fact that this model is really ppor, we will take also the q.extra variable in order to be able to extract more information. For instance, we could do the marginal plots:
 
 ```{r}
-model_23 <- glm(
-  target.tip_is_given~
-    f.mta_tax+
-    q.extra
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_23)
+model_23 <- glm(target.tip_is_given~f.mta_tax+q.extra,family = "binomial",data=dffwork); summary(model_23)
 ```
 
 ### Understanding the model
@@ -1101,16 +890,7 @@ We are going, though, to propose a model which brings us more chances:
 
 ### Model 24
 ```{r}
-model_24 <- glm(
-  target.tip_is_given~
-    poly(q.tlenkm, 2)+
-    f.mta_tax+
-    q.extra+
-    q.espeed
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_24)
-
+model_24 <- glm(target.tip_is_given~poly(q.tlenkm, 2)+f.mta_tax+q.extra+q.espeed,family = "binomial",data=dffwork); summary(model_24)
 residualPlots(model_24)
 ```
 
@@ -1135,14 +915,7 @@ We have to ensure that we do not have any variable with a non significant net ef
 Thus, we are going to redp the model:
 
 ```{r}
-model_24 <- glm(
-  target.tip_is_given~
-    poly(q.tlenkm, 2)+
-    f.mta_tax
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_24)
-
+model_24 <- glm(target.tip_is_given~poly(q.tlenkm, 2)+f.mta_tax,family = "binomial",data=dffwork); summary(model_24)
 vif(model_24)
 residualPlots(model_24)
 Anova(model_24, test="Wald")
@@ -1151,7 +924,7 @@ Anova(model_24, test="Wald")
 With Anova(model_24), we see that it is fulfilled.
 
 
-## Factors //See if you need to replace a number with its equivalent factor
+## (2) Factors
 
 We look if any of the numeric variables can be substituted by a factor.
 
@@ -1174,34 +947,17 @@ BIC(model_24, model_25) # same model --> same bic
 
 Thanks to the BIC(model_24, model_25) we could see te changes generated by the new model. The less the BIC is, the better the model will be. We need to remember that, in case of have done an exchange of a numeric variable to a factor, we could not have done it with an anova test, due to the fact that there is an exchange, which means that any model is bigger than the other.
 
-## Decision //Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
+##  (3) Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
 
 We decide to keep with the model_25.
 
 
-## Interactions //Add interactions: between factor-factor and between factor-numeric (doubles).
-
-### factor-numeric
+## (4) Interactions
 
 Now that we have a defined model, we are going to do some interactions with all of the factor variables we think are the relevant:
 
 ```{r}
-model_26 <- glm(
-  target.tip_is_given~
-    ( poly(q.tlenkm, 2) ) * 
-    (
-      f.mta_tax+
-      f.vendor_id+
-      f.period+
-      f.espeed+
-      f.paid_tolls+
-      f.tt+
-      f.extra
-    )
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_26)
-
+model_26 <- glm(target.tip_is_given~(poly(q.tlenkm, 2))*(f.mta_tax+f.vendor_id+f.period+f.espeed+f.paid_tolls+f.tt+f.extra), family="binomial",data=dffwork); summary(model_26)
 Anova(model_26, test="Wald")
 ```
 
@@ -1214,14 +970,7 @@ From what we can see, it only stays with the tax, but in order to have more free
 
 Hence:
 ```{r}
-model_27 <- glm(
-  target.tip_is_given~
-    ( poly(q.tlenkm, 2) ) * 
-    ( f.mta_tax )
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_27)
-
+model_27 <- glm(target.tip_is_given~(poly(q.tlenkm,2))*(f.mta_tax),family = "binomial",data=dffwork); summary(model_27)
 Anova(model_27, test="Wald")
 ```
 
@@ -1240,18 +989,12 @@ plot(allEffects(model_25))
 * We can observe that only the tips is given in certain range of driven km, due to the fact that for few km, it makes no sense to give it, and for many km it is too much.
 * As we have previously commented, it is more likely to give some tips if a tax is present.
 
-### factor-factor
 
 Although, for this deliverable it is asked to do some interactions between factors, we will do it even though the results could not be realistic:
 
 ```{r}
 # interaccions dobles entre factors:
-model_factors_1 <- glm(
-  target.tip_is_given~
-    ( poly(q.tlenkm, 2) + q.extra) + ( f.mta_tax + f.vendor_id + f.espeed)^2
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_factors_1)
+model_factors_1 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)+(f.mta_tax+f.vendor_id+f.espeed)^2,family="binomial",data=dffwork); summary(model_factors_1)
 model_factors_1_step <- step(model_factors_1, k=log(nrow(dffwork)))
 ```
 
@@ -1260,12 +1003,7 @@ We stick with what we had.
 
 ```{r}
 # interaccions dobles entre factor-numèrica
-model_factors_2 <- glm(
-  target.tip_is_given~
-    ( poly(q.tlenkm, 2) + q.extra) * ( f.mta_tax + f.vendor_id + f.espeed)
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_factors_2)
+model_factors_2 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)*(f.mta_tax+f.vendor_id+f.espeed),family="binomial",data=dffwork); summary(model_factors_2)
 model_factors_2_step <- step(model_factors_2, k=log(nrow(dffwork)))
 ```
 
@@ -1274,24 +1012,18 @@ We stick with what we had.
 
 ```{r}
 # interaccions dobles entre factor-numèrica + dobles entre factors
-model_factors_3 <- glm(
-  target.tip_is_given~
-    ( poly(q.tlenkm, 2) + q.extra) * ( f.mta_tax + f.vendor_id + f.espeed)^2
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_factors_3)
+model_factors_3 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)*(f.mta_tax+f.vendor_id+f.espeed)^2,family="binomial",data=dffwork); summary(model_factors_3)
 model_factors_3_step <- step(model_factors_3, k=log(nrow(dffwork)))
 ```
 
 We stick with what we had.
 
 
-
 Conclusion: we stick with the idea that the best model is model_25.
 
 Now, we are going to do some diagnosis:
 
-# Diagnosis //Diagnosis of waste and observations. Lack of adjustment and / or influential.
+# (5) Diagnosis
 
 ```{r}
 Boxplot(rstudent(model_25), id.n=15)
@@ -1313,7 +1045,6 @@ hh <- 5*mean(hatvalues(model_25)); hh
 shat <- which(hatvalues(model_25)>hh); length(shat); shat
 
 summary(dffwork[shat,])
-
 ```
 
 They tend to:
@@ -1354,25 +1085,13 @@ llout<-row.names(llista)
 ll<-which(row.names(dffwork)%in%llout);
 dffwork<-dffwork[-ll,]
 
-model_25 <- glm(
-  target.tip_is_given~
-    poly(q.tlenkm, 2)+
-    f.mta_tax
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_25)
+model_25 <- glm(target.tip_is_given~poly(q.tlenkm, 2)+f.mta_tax,family = "binomial",data=dffwork); summary(model_25)
 influencePlot(model_25, id=c(list="noteworthy", n=10))
 ```
 
-
 ```{r}
 # interaccions dobles entre factors:
-model_factors_5 <- glm(
-  target.tip_is_given~
-    ( poly(q.tlenkm, 2) + q.extra) + ( f.mta_tax + f.vendor_id + f.espeed)^2
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_factors_5)
+model_factors_5 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)+(f.mta_tax+f.vendor_id+f.espeed)^2,family="binomial",data=dffwork); summary(model_factors_5)
 model_factors_5_step <- step(model_factors_5, k=log(nrow(dffwork)))
 ```
 
@@ -1380,12 +1099,7 @@ We stick with what we had.
 
 ```{r}
 # interaccions dobles entre factor-numèrica
-model_factors_6 <- glm(
-  target.tip_is_given~
-    ( poly(q.tlenkm, 2) + q.extra) * ( f.mta_tax + f.vendor_id + f.espeed)
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_factors_6)
+model_factors_6 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)*(f.mta_tax+f.vendor_id+f.espeed),family="binomial",data=dffwork); summary(model_factors_6)
 model_factors_6_step <- step(model_factors_6, k=log(nrow(dffwork)))
 ```
 
@@ -1393,18 +1107,11 @@ We stick with what we had.
 
 ```{r}
 # interaccions dobles entre factor-numèrica + dobles entre factors
-model_factors_7 <- glm(
-  target.tip_is_given~
-    ( poly(q.tlenkm, 2) + q.extra) * ( f.mta_tax + f.vendor_id + f.espeed)^2
-  ,family = "binomial"
-  ,data=dffwork
-); summary(model_factors_7)
+model_factors_7 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)*(f.mta_tax+f.vendor_id+f.espeed)^2,family="binomial",data=dffwork); summary(model_factors_7)
 model_factors_7_step <- step(model_factors_7, k=log(nrow(dffwork)))
 ```
 
 We stick with what we had.
-
-!!!!! falta recalcular interaccions --> si n'hi ha millors, fer el model
 
 # Confusion Table
 ```{r}
@@ -1416,8 +1123,12 @@ tt <- table(fit.tip_is_given,dffwork$target.tip_is_given); tt
 100*(tt[2,2]/(tt[2,1]+ tt[2,2])) # precision
 ```
 
-We have an accuracy of 83.05%. We have a recall of 99.42% which means that the positive results of this confusion table is very accurate. We can see that we have 1201 + 7 positive observations, from which 1201 of them have been correctly classified. Now, we are going to do the same, but for the negative results (specificity). We can see that only a 3.61% of specificity, which is a very bad result. Only 9 of the 240 + 9 negative observations have been  classified as negative. To conclude, we see that the precision of this confusion table is 83.34%.
+We have an accuracy of 83.05%. We have a recall of 99.42% which means that the positive results of this confusion table is very accurate. We can see that we have 1201 + 7 positive observations, from which 1201 of them have been correctly classified. Now, we are going to do the same, but for the negative results (specificity). We can see that only a 3.61% of specificity, which is a very bad result. Only 9 of the 240 + 9 negative observations have been classified as negative. To conclude, we see that the precision of this confusion table is 83.34%.
 
 
+--------------------------------------------------------------------------------
 
-
+# Finally, save the data
+```{r}
+save.image("Taxi5000_del3.RData")
+```
