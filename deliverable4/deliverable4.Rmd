@@ -1,0 +1,367 @@
+---
+title: "Deliverable 4"
+author: "Júlia Gasull i Claudia Sánchez"
+date: \today
+output:
+  word_document:
+    toc: no
+    toc_depth: '4'
+  html_document:
+    toc: no
+    toc_depth: '4'
+  pdf_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
+fontsize: 18pt
+subtitle: Final deliverable
+classoption: a4paper
+editor_options: 
+  chunk_output_type: console
+---
+
+# First setups
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = T, results = 'hide'}
+if(!is.null(dev.list())) dev.off()  # Clear plots
+rm(list=ls())                       # Clean workspace
+```
+
+## Some useful functions
+```{r}
+calcQ <- function(x) { # Function to calculate the different quartiles
+  s.x <- summary(x)
+  iqr<-s.x[5]-s.x[2]
+  list(souti=s.x[2]-3*iqr, mouti=s.x[2]-1.5*iqr, min=s.x[1], q1=s.x[2], q2=s.x[3], 
+       q3=s.x[5], max=s.x[6], mouts=s.x[5]+1.5*iqr, souts=s.x[5]+3*iqr ) 
+}
+
+countNA <- function(x) { # Function to count the NA values
+  mis_x <- NULL
+  for (j in 1:ncol(x)) {mis_x[j] <- sum(is.na(x[,j])) }
+  mis_x <- as.data.frame(mis_x)
+  rownames(mis_x) <- names(x)
+  mis_i <- rep(0,nrow(x))
+  for (j in 1:ncol(x)) {mis_i <- mis_i + as.numeric(is.na(x[,j])) }
+  list(mis_col=mis_x,mis_ind=mis_i) 
+}
+
+countX <- function(x,X) { # Function to count a specific number of appearences
+  n_x <- NULL
+  for (j in 1:ncol(x)) {n_x[j] <- sum(x[,j]==X) }
+  n_x <- as.data.frame(n_x)
+  rownames(n_x) <- names(x)
+  nx_i <- rep(0,nrow(x))
+  for (j in 1:ncol(x)) {nx_i <- nx_i + as.numeric(x[,j]==X) }
+  list(nx_col=n_x,nx_ind=nx_i) 
+}
+```
+
+# Data description
+* Description http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml
+* Data Dictionary - SHL Trip Records -This data dictionary describes SHL trip data in visit http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml
+
+## Variables
+* VendorID
+  * A code indicating the LPEP provider that provided the record.     
+  * Values: 
+    * 1= Creative Mobile Technologies, LLC
+    * 2= VeriFone Inc.   
+* lpep_pickup_datetime	
+  * The date and time when the meter was engaged.    
+* lpep_dropoff_datetime	
+  * The date and time when the meter was disengaged.     
+* Passenger_count	
+  * The number of passengers in the vehicle. 
+  * This is a driver-entered value.    
+* Trip_distance
+  * The elapsed trip distance in miles reported by the taximeter.   
+* Pickup_longitude
+  * Longitude where the meter was engaged.   
+* Pickup_latitude
+  * Latitude where the meter was engaged.   
+* RateCodeID
+  * The final rate code in effect at the end of the trip.
+  * Values: 
+      * 1=Standard rate  
+      * 2=JFK 
+      * 3=Newark 
+      * 4=Nassau or Westchester 
+      * 5=Negotiated fare 
+      * 6=Group ride   
+* Store_and_fwd_flag	
+  * This flag indicates whether the trip record was held in vehicle memory before sending to the vendor, aka "store and forward," because the vehicle did not have a connection to the server: 
+  * Values
+    * Y= store and forward trip  
+    * N= not a store and forward trip   
+* Dropoff_longitude	
+  * Longitude where the meter was timed off.   
+* Dropoff_latitude	
+  * Latitude where the meter was timed off.   
+* Payment_type
+  * A numeric code signifying how the passenger paid for the trip.
+  * Values:
+    * 1= Credit card 
+    * 2= Cash 
+    * 3= No charge 
+    * 4= Dispute 
+* Fare_amount	
+  * The time-and-distance fare calculated by the meter.   
+* Extra	 
+  * Miscellaneous extras and surcharges.  
+  * Currently, this only includes the $0.50 and $1 rush hour and overnight charges. 
+* MTA_tax	 
+  * $0.50 MTA tax that is automatically triggered based on the metered rate in use.   
+* Improvement_surcharge	
+  * $0.30 improvement surcharge assessed on hailed trips at the flag   drop. 
+  * The improvement surcharge began being levied in 2015.   
+* Tip_amount
+  * This field is automatically populated for credit card tips. 
+  * Cash tips are not included.   
+* Tolls_amount	
+  * Total amount of all tolls paid in trip.    
+* Total_amount	
+  * The total amount charged to passengers. 
+  * Does not include cash tips.   
+* Trip_type	
+  * A code indicating whether the trip was a street-hail or a dispatch that is automatically assigned based on the metered rate in use but can be altered by the driver. 
+  * Values:
+    * 1= Street-hail 
+    * 2= Dispatch  
+
+# Load Required Packages for this deliverable
+We load the necessary packages and set working directory
+```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable4")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable4"
+
+# Load Required Packages
+options(contrasts=c("contr.treatment","contr.treatment"))
+requiredPackages <- c("missMDA","chemometrics","mvoutlier","effects","FactoMineR","car","lmtest","ggplot2","moments","factoextra","RColorBrewer","dplyr","ggmap","ggthemes","knitr")
+missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
+if(length(missingPackages)) install.packages(missingPackages)
+lapply(requiredPackages, require, character.only = TRUE)
+```
+
+# Select a sample of 5000 records
+From the proposed database, we need to select a sample of 5000 records randomly so we can start analyzing our data.
+
+!!!!! PER DESCOMENTAR AL FINAL
+```{r echo = T, results = 'hide'}
+#df<-read.table(paste0(filepath,"/green_tripdata_2016-01.csv"),header=T, sep=",")
+#set.seed(180998)
+#sam<-as.vector(sort(sample(1:nrow(df),5000)))
+#df<-df[sam,]
+```
+
+!!! ESBORRAR AL DFINAL
+```{r}
+load(paste0(filepath,"/Taxi5000_raw.RData"))
+```
+
+
+# Rename variables and clean data
+```{r}
+summary(df)
+names(df)[names(df) == "VendorID"] <- "q.vendor_id"
+names(df)[names(df) == "lpep_pickup_datetime"] <- "qual.lpep_pickup_datetime"
+names(df)[names(df) == "Lpep_dropoff_datetime"] <- "qual.lpep_dropoff_datetime"
+names(df)[names(df) == "Store_and_fwd_flag"] <- "qual.store_and_fwd_flag"
+names(df)[names(df) == "RateCodeID"] <- "q.rate_code_id"
+names(df)[names(df) == "Pickup_longitude"] <- "q.pickup_longitude"
+names(df)[names(df) == "Pickup_latitude"] <- "q.pickup_latitude"
+names(df)[names(df) == "Dropoff_longitude"] <- "q.dropoff_longitude"
+names(df)[names(df) == "Dropoff_latitude"] <- "q.dropoff_latitude"
+names(df)[names(df) == "Passenger_count"] <- "q.passenger_count"
+names(df)[names(df) == "Trip_distance"] <- "q.trip_distance"
+names(df)[names(df) == "Fare_amount"] <- "q.fare_amount"
+names(df)[names(df) == "Extra"] <- "q.extra"
+names(df)[names(df) == "MTA_tax"] <- "q.mta_tax"
+names(df)[names(df) == "Tip_amount"] <- "q.tip_amount"
+names(df)[names(df) == "Tolls_amount"] <- "q.tolls_amount"
+df$Ehail_fee <- NULL # deleting it --> only NA's
+names(df)[names(df) == "improvement_surcharge"] <- "q.improvement_surcharge"
+names(df)[names(df) == "Total_amount"] <- "q.target.total_amount"
+names(df)[names(df) == "Payment_type"] <- "q.payment_type"
+names(df)[names(df) == "Trip_type"] <- "q.trip_type"
+summary(df); names(df)
+```
+
+# Initiating missings, outliers and errors 
+Initialization of counts for missings, outliers and errors. All numerical variables have to be checked before
+```{r}
+imis<-rep(0,nrow(df));  jmis<-rep(0,2*ncol(df))
+mis1<-countNA(df);      imis<-mis1$mis_ind 
+iouts<-rep(0,nrow(df)); jouts<-rep(0,2*ncol(df))
+ierrs<-rep(0,nrow(df)); jerrs<-rep(0,2*ncol(df))
+```
+
+# Creating factors
+
+## Vendor ID
+This variable expresses the Creative Mobile Technologies, LLC as 1 and Verifone Inc as 2, so we create a factor to make it more readable. With the initial summary we see that this variable does not have any missing value, so we proceed to factor it.
+```{r}
+df$f.vendor_id<-factor(df$q.vendor_id,labels=c("mobile","verifone"))
+levels(df$f.vendor_id)<-paste0("vendor_",levels(df$f.vendor_id))
+summary(df$f.vendor_id)
+```
+
+## Rate Code ID
+This variable expresses the different RateCodeIDs that we can have as numerical values, so we need to categorize them in order to be able to work with them.
+```{r}
+df$f.rate_code_id<-factor(df$q.rate_code_id)
+barplot(summary(df$f.rate_code_id),main="rate_code_id barplot",col="darkslateblue")
+```
+
+We see that most samples are in rate_code_id=1, which is what we are interested in. Therefore, we factorize and create only two groups, the one with rate_code_id=1 and the rest.
+```{r}
+df$f.rate_code_id[df$f.rate_code_id != 1] = 2
+summary(df$f.rate_code_id)
+df$f.rate_code_id <- factor(df$f.rate_code_id, labels=c("rate_code_id_1","rate_code_id_other"))
+barplot(summary(df$f.rate_code_id),main="new rate_code_id barplot",col="darkslateblue")
+```
+
+Now is more balanced.
+
+## Store and fwd flag
+This is a categorical variable with the values Y and N, so we need to factor it.
+```{r}
+summary(df$qual.store_and_fwd_flag)
+df$f.store_and_fwd_flag<-factor(df$qual.store_and_fwd_flag, labels=c("no","yes"))
+```
+
+## Payment type
+This variable is categorical but it is expressed as numerical, so we need to factor it in order to be able to work with it.
+```{r}
+df$f.payment_type<-factor(df$q.payment_type,labels=c("credit card","cash","no charge","dispute"))
+barplot(summary(df$f.payment_type),main="payment_type barplot",col="darkslateblue")
+```
+
+As we can see, there are few values with "No charge" or "Dispute" category, so we decided to categorize it into a new category ("No paid").
+```{r}
+levels(df$f.payment_type) <- c("credit card","cash","no paid","no paid")
+barplot(summary(df$f.payment_type),main="new payment_type barplot",col="darkslateblue")
+```
+
+Now is more balanced.
+
+## Trip_type
+This variable is categorical but it is expressed as numerical, so we need to factor it in order to be able to work with it.
+```{r}
+df$f.trip_type<-factor(df$q.trip_type,labels=c("street_hail","dispatch"))
+```
+
+
+
+
+
+# Clean some variables
+## lpep pickup datetime
+We just keep the hours
+```{r}
+df$qual.pickup<-substr(strptime(df$qual.lpep_pickup_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13)
+```
+
+## lpep dropoff datetime
+We just keep the hours
+```{r}
+df$qual.dropoff<-substr(strptime(df$qual.lpep_dropoff_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13)
+```
+
+# Creating new variables
+
+## Period (as factor)
+```{r}
+df$q.hour<-as.numeric(substr(strptime(df$qual.lpep_pickup_datetime, "%Y-%m-%d %H:%M:%S"),12,13))
+df$f.period<-1
+df$f.period[df$q.hour>19]<-1
+df$f.period[df$q.hour>7]<-2
+df$f.period[df$q.hour>10]<-3
+df$f.period[df$q.hour>16]<-4
+df$f.period<-factor(df$f.period,labels=paste("period",c("night","morning","valley","afternoon")))
+```
+
+## Trip length in km
+```{r}
+df$q.tlenkm<-df$q.trip_distance*1.609344 # Miles to km
+```
+
+## Travel time in min
+```{r}
+df$q.traveltime<-(as.numeric(as.POSIXct(df$qual.lpep_dropoff_datetime))-as.numeric(as.POSIXct(df$qual.lpep_pickup_datetime)))/60
+```
+
+## Effective speed in km/h
+```{r}
+df$q.espeed<-(df$q.tlenkm/(df$q.traveltime))*60
+```
+
+
+
+# Missing data
+## Effective speed
+```{r}
+sel<-which(is.na(df$q.espeed<=0)) #;length(sel)
+imis[sel]<-imis[sel]+1
+jmis[26]<-length(sel)
+```
+
+
+--------------------------------------------------------------------------------
+
+
+// TO DO : POSAR BÉ ELS NÚMEROS DEL JERRS[NUM] --> NO ES CORRESPONEN ALS NOUS
+
+
+# Error detection
+
+## Effective speed
+We detect as error those speeds smaller than 0 and bigger than 200
+```{r}
+summary(df$q.espeed)
+sel<-which((df$q.espeed<=0)|(df$q.espeed > 200))
+ierrs[sel]<-ierrs[sel]+1
+jerrs[26]<-length(sel)
+```
+Sel contains the rownames of the individuals with "0" as  value for longitude
+```{r}
+df[sel,"q.espeed"]<-NA 
+```
+
+
+## Passenger count
+```{r}
+summary(df$q.passenger_count)
+```
+We set the 0 as an error because it is not possible to have a trip without passengers
+```{r}
+sel<-which(df$q.passenger_count == 0)
+ierrs[sel]<-ierrs[sel]+1
+jerrs[10]<-length(sel)
+# sel
+```
+Sel contains the rownames of the individuals with "0" as value for passengers
+```{r}
+df[sel,"Passenger_count"]<-NA
+```
+
+# Outlier detection
+
+## Effective speed
+```{r}
+Boxplot(df$q.espeed)
+var_out<-calcQ(df$q.espeed)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+
+llout<-which((df$q.espeed<=3)|(df$q.espeed>80))
+iouts[llout]<-iouts[llout]+1
+jouts[26]<-length(llout)
+df[llout,"q.espeed"]<-NA 
+```
+
+
