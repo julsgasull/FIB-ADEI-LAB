@@ -1,0 +1,2305 @@
+# First setups
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r echo = T, results = 'hide'}
+if(!is.null(dev.list())) dev.off()  # Clear plots
+rm(list=ls())                       # Clean workspace
+```
+
+## Some useful functions
+```{r}
+calcQ <- function(x) { # Function to calculate the different quartiles
+  s.x <- summary(x)
+  iqr<-s.x[5]-s.x[2]
+  list(souti=s.x[2]-3*iqr, mouti=s.x[2]-1.5*iqr, min=s.x[1], q1=s.x[2], q2=s.x[3], 
+       q3=s.x[5], max=s.x[6], mouts=s.x[5]+1.5*iqr, souts=s.x[5]+3*iqr ) 
+}
+
+countNA <- function(x) { # Function to count the NA values
+  mis_x <- NULL
+  for (j in 1:ncol(x)) {mis_x[j] <- sum(is.na(x[,j])) }
+  mis_x <- as.data.frame(mis_x)
+  rownames(mis_x) <- names(x)
+  mis_i <- rep(0,nrow(x))
+  for (j in 1:ncol(x)) {mis_i <- mis_i + as.numeric(is.na(x[,j])) }
+  list(mis_col=mis_x,mis_ind=mis_i) 
+}
+
+countX <- function(x,X) { # Function to count a specific number of appearences
+  n_x <- NULL
+  for (j in 1:ncol(x)) {n_x[j] <- sum(x[,j]==X) }
+  n_x <- as.data.frame(n_x)
+  rownames(n_x) <- names(x)
+  nx_i <- rep(0,nrow(x))
+  for (j in 1:ncol(x)) {nx_i <- nx_i + as.numeric(x[,j]==X) }
+  list(nx_col=n_x,nx_ind=nx_i) 
+}
+```
+
+# Data description
+* Description http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml
+* Data Dictionary - SHL Trip Records -This data dictionary describes SHL trip data in visit http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml
+
+## Variables
+* VendorID
+  * A code indicating the LPEP provider that provided the record.     
+  * Values: 
+    * 1= Creative Mobile Technologies, LLC
+    * 2= VeriFone Inc.   
+* lpep_pickup_datetime	
+  * The date and time when the meter was engaged.    
+* lpep_dropoff_datetime	
+  * The date and time when the meter was disengaged.     
+* Passenger_count	
+  * The number of passengers in the vehicle. 
+  * This is a driver-entered value.    
+* Trip_distance
+  * The elapsed trip distance in miles reported by the taximeter.   
+* Pickup_longitude
+  * Longitude where the meter was engaged.   
+* Pickup_latitude
+  * Latitude where the meter was engaged.   
+* RateCodeID
+  * The final rate code in effect at the end of the trip.
+  * Values: 
+      * 1=Standard rate  
+      * 2=JFK 
+      * 3=Newark 
+      * 4=Nassau or Westchester 
+      * 5=Negotiated fare 
+      * 6=Group ride   
+* Store_and_fwd_flag	
+  * This flag indicates whether the trip record was held in vehicle memory before sending to the vendor, aka "store and forward," because the vehicle did not have a connection to the server: 
+  * Values
+    * Y= store and forward trip  
+    * N= not a store and forward trip   
+* Dropoff_longitude	
+  * Longitude where the meter was timed off.   
+* Dropoff_latitude	
+  * Latitude where the meter was timed off.   
+* Payment_type
+  * A numeric code signifying how the passenger paid for the trip.
+  * Values:
+    * 1= Credit card 
+    * 2= Cash 
+    * 3= No charge 
+    * 4= Dispute 
+* Fare_amount	
+  * The time-and-distance fare calculated by the meter.   
+* Extra	 
+  * Miscellaneous extras and surcharges.  
+  * Currently, this only includes the $0.50 and $1 rush hour and overnight charges. 
+* MTA_tax	 
+  * $0.50 MTA tax that is automatically triggered based on the metered rate in use.   
+* Improvement_surcharge	
+  * $0.30 improvement surcharge assessed on hailed trips at the flag   drop. 
+  * The improvement surcharge began being levied in 2015.   
+* Tip_amount
+  * This field is automatically populated for credit card tips. 
+  * Cash tips are not included.   
+* Tolls_amount	
+  * Total amount of all tolls paid in trip.    
+* Total_amount	
+  * The total amount charged to passengers. 
+  * Does not include cash tips.   
+* Trip_type	
+  * A code indicating whether the trip was a street-hail or a dispatch that is automatically assigned based on the metered rate in use but can be altered by the driver. 
+  * Values:
+    * 1= Street-hail 
+    * 2= Dispatch  
+
+# Load Required Packages for this deliverable
+We load the necessary packages and set working directory
+```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
+setwd("~/Documents/uni/FIB-ADEI-LAB/deliverable4")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/deliverable4"
+
+# Load Required Packages
+options(contrasts=c("contr.treatment","contr.treatment"))
+requiredPackages <- c("missMDA","chemometrics","mvoutlier","effects","FactoMineR","car","lmtest","ggplot2","moments","factoextra","RColorBrewer","dplyr","ggmap","ggthemes","knitr")
+missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
+if(length(missingPackages)) install.packages(missingPackages)
+lapply(requiredPackages, require, character.only = TRUE)
+```
+
+# Select a sample of 5000 records
+From the proposed database, we need to select a sample of 5000 records randomly so we can start analyzing our data.
+
+!!!!! PER DESCOMENTAR AL FINAL
+```{r echo = T, results = 'hide'}
+#df<-read.table(paste0(filepath,"/green_tripdata_2016-01.csv"),header=T, sep=",")
+#set.seed(180998)
+#sam<-as.vector(sort(sample(1:nrow(df),5000)))
+#df<-df[sam,]
+```
+
+!!! ESBORRAR AL DFINAL
+```{r}
+load(paste0(filepath,"/Taxi5000_raw.RData"))
+```
+
+
+# Rename variables and clean data
+```{r}
+summary(df)
+names(df)[names(df) == "VendorID"] <- "q.vendor_id"
+names(df)[names(df) == "lpep_pickup_datetime"] <- "qual.lpep_pickup_datetime"
+names(df)[names(df) == "Lpep_dropoff_datetime"] <- "qual.lpep_dropoff_datetime"
+names(df)[names(df) == "Store_and_fwd_flag"] <- "qual.store_and_fwd_flag"
+names(df)[names(df) == "RateCodeID"] <- "q.rate_code_id"
+names(df)[names(df) == "Pickup_longitude"] <- "q.pickup_longitude"
+names(df)[names(df) == "Pickup_latitude"] <- "q.pickup_latitude"
+names(df)[names(df) == "Dropoff_longitude"] <- "q.dropoff_longitude"
+names(df)[names(df) == "Dropoff_latitude"] <- "q.dropoff_latitude"
+names(df)[names(df) == "Passenger_count"] <- "q.passenger_count"
+names(df)[names(df) == "Trip_distance"] <- "q.trip_distance"
+names(df)[names(df) == "Fare_amount"] <- "q.fare_amount"
+names(df)[names(df) == "Extra"] <- "q.extra"
+names(df)[names(df) == "MTA_tax"] <- "q.mta_tax"
+names(df)[names(df) == "Tip_amount"] <- "q.tip_amount"
+names(df)[names(df) == "Tolls_amount"] <- "q.tolls_amount"
+df$Ehail_fee <- NULL # deleting it --> only NA's
+names(df)[names(df) == "improvement_surcharge"] <- "q.improvement_surcharge"
+names(df)[names(df) == "Total_amount"] <- "q.target.total_amount"
+names(df)[names(df) == "Payment_type"] <- "q.payment_type"
+names(df)[names(df) == "Trip_type"] <- "q.trip_type"
+summary(df); names(df)
+```
+
+
+# DELIVERABLE I
+## Initiating missings, outliers and errors 
+Initialization of counts for missings, outliers and errors. All numerical variables have to be checked before
+```{r}
+imis<-rep(0,nrow(df))  # rows - trips
+jmis<-rep(0,2*ncol(df))  # columns - variables
+
+mis1<-countNA(df)
+imis<-mis1$mis_ind 
+# mis1$mis_col # Number of missings for the current set of variables
+
+iouts<-rep(0,nrow(df))  # rows - trips
+jouts<-rep(0,2*ncol(df))  # columns - variables
+
+ierrs<-rep(0,nrow(df))  # rows - trips
+jerrs<-rep(0,2*ncol(df))  # columns - variables
+```
+
+## Univariate Descriptive Analysis
+```{r}
+summary(df)
+names(df)
+```
+
+### Qualitative Variables (Factors) / Categorical
+**Description**: Original numeric variables corresponding to qualitative concepts have to be converted to factors. New factors grouping original levels will be considered very positively.
+
+We need to do an analysis of all the variables to be able to identify missings, errors and outliers. We will also try to factorize each variable to make it easier to understand the sample.
+
+#### New variable: Period
+```{r}
+df$hour<-as.numeric(substr(strptime(df$lpep_pickup_datetime, "%Y-%m-%d %H:%M:%S"),12,13))
+df$period<-1
+df$period[df$hour>7]<-2
+df$period[df$hour>10]<-3
+df$period[df$hour>16]<-4
+df$period[df$hour>20]<-1
+df$period<-factor(df$period,labels=paste("Period",c("night","morning","valley","afternoon")))
+barplot(summary(df$period),main="period Barplot",col = "DarkSlateBlue")
+```
+
+
+#### 1. VendorID
+This variable expresses the Creative Mobile Technologies, LLC as 1 and Verifone Inc as 2, so we create a factor to make it more readable. With the initial summary we see that this variable does not have any missing value, so we proceed to factor it.
+```{r}
+df$VendorID<-factor(df$VendorID,labels=c("Mobile","VeriFone"))
+# nlevels(df$VendorID)
+levels(df$VendorID)<-paste0("f.Vendor-",levels(df$VendorID))
+# summary(df$VendorID)
+barplot(summary(df$VendorID),main="VendorID Barplot",col = "DarkSlateBlue")
+```
+
+#### 8. RateCodeID
+This variable expresses the different RateCodeIDs that we can have as numerical values, so we need to categorize them in order to be able to work with them.
+```{r}
+# summary(df$RateCodeID)
+df$RateCodeID<-factor(df$RateCodeID)
+barplot(summary(df$RateCodeID),main="RateCodeID Barplot",col = "DarkSlateBlue")
+```
+
+We see that most samples are in RateCodeID = 1, which is what we are interested in. Therefore, we factorize and create only two groups, the one with RateCodeID = 1 and the rest.
+```{r}
+df$RateCodeID[df$RateCodeID != 1] = 2
+df$RateCodeID <- factor(df$RateCodeID, labels =c("Rate-1","Rate-Other"))
+barplot(summary(df$RateCodeID),main="RateCodeID Barplot",col = "DarkSlateBlue")
+```
+Now is more balanced.
+
+#### 9. Store_and_fwd_flag
+This is a categorical variable with the values Y and N, so we need to factor it.
+```{r}
+# summary(df$Store_and_fwd_flag)
+df$Store_and_fwd_flag<-factor(df$Store_and_fwd_flag)
+barplot(summary(df$Store_and_fwd_flag),main="Store_and_fwd_flag Barplot",col = "DarkSlateBlue")
+```
+
+#### 12. Payment_type
+This variable is categorical but it is expressed as numerical, so we need to factor it in order to be able to work with it.
+```{r}
+df$Payment_type<-factor(df$Payment_type,labels=c("Credit card","Cash","No charge","Dispute"))
+# summary(df$Payment_type)
+barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkSlateBlue")
+```
+
+As we can see, there are few values with "No charge" or "Dispute" category, so we decided to categorize it into a new category ("No paid").
+```{r}
+levels(df$Payment_type) <- c("Credit card","Cash","No paid","No paid")
+# summary(df$Payment_type)
+barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkSlateBlue")
+```
+
+#### 21. Trip_type
+This variable is categorical but it is expressed as numerical, so we need to factor it in order to be able to work with it.
+```{r}
+df$Trip_type<-factor(df$Trip_type,labels=c("Street-Hail","Dispatch"))
+barplot(summary(df$Trip_type),main="Trip_type Barplot",col = "DarkSlateBlue")
+# summary(df$Trip_type)
+```
+
+### Quantitative Variables
+**Description**: Original numeric variables corresponding to real quantitative concepts are kept as numeric but additional factors should also be created as a discretization of each numeric variable.
+
+We only keep the hours (variables 2 and 3) to be able to work with time slots in the future.
+
+Create new variables derived from the original ones, as effective speed, travel time, hour of request, period of request, effective trip distance (in km) 
+
+#### New variables: Trip Length in km, Travel time un min and Effective speed
+##### Trip length in km
+```{r}
+df$tlenkm<-df$Trip_distance*1.609344 # Miles to km
+```
+##### Travel time in min
+```{r}
+df$traveltime<-(as.numeric(as.POSIXct(df$Lpep_dropoff_datetime)) - as.numeric(as.POSIXct(df$lpep_pickup_datetime)))/60
+```
+##### Effective speed in km/h
+```{r}
+df$espeed<-(df$tlenkm/(df$traveltime))*60
+```
+###### Missing data
+```{r}
+sel<-which(is.na(df$espeed<=0)) #;length(sel)
+imis[sel]<-imis[sel]+1
+jmis[26]<-length(sel)
+```
+###### Error detection
+We detect as error those speeds smaller than 0 and bigger than 200
+```{r}
+summary(df$espeed)
+sel<-which((df$espeed<=0)|(df$espeed > 200))
+ierrs[sel]<-ierrs[sel]+1
+jerrs[26]<-length(sel)
+# sel
+```
+Sel contains the rownames of the individuals with "0" as  value for longitude
+```{r}
+df[sel,"espeed"]<-NA 
+```
+###### Check outliers
+```{r}
+calcQ(df$espeed)
+```
+###### Outlier detection
+```{r}
+Boxplot(df$espeed)
+var_out<-calcQ(df$espeed)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+
+llout<-which((df$espeed<=3)|(df$espeed>80))
+iouts[llout]<-iouts[llout]+1
+jouts[26]<-length(llout)
+df[llout,"espeed"]<-NA 
+```
+
+
+
+#### 2. lpep_pickup_datetime
+We just keep the hours
+```{r}
+df$pickup<-substr(strptime(df$lpep_pickup_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13) # table(df$pickup)
+```
+
+#### 3. lpep_dropoff_datetime
+We just keep the hours
+```{r}
+df$dropoff<-substr(strptime(df$Lpep_dropoff_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13) # table(df$pickup)
+```
+
+#### 4. Passenger_count
+```{r}
+summary(df$Passenger_count)
+```
+We set the 0 as an error because it is not possible to have a trip without passengers
+```{r}
+sel<-which(df$Passenger_count == 0)
+ierrs[sel]<-ierrs[sel]+1
+# names(df)
+jerrs[10]<-length(sel)
+# sel
+```
+Sel contains the rownames of the individuals with "0" as value for passengers
+```{r}
+df[sel,"Passenger_count"]<-NA
+```
+
+#### 5. Trip_distance
+```{r}
+summary(df$Trip_distance)
+```
+
+We see on the summary that there are not NA values, so we proceed to the outlier and error detection.
+
+##### Outlier detection
+In order to evalute or data, we decide to set the maximum trip distance to 30, so we proceed to delete the outliers.
+```{r}
+Boxplot(df$Trip_distance)
+var_out<-calcQ(df$Trip_distance)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+abline(h=30,col="blue",lwd=2)
+
+llout<-which(df$Trip_distance>30)
+iouts[llout]<-iouts[llout]+1
+# names(df)
+jouts[11]<-length(llout)
+```
+
+##### Error detection
+We decide that an incorrect trip distance is the one with 0 miles or less. In order to be aware of this error we store it at ierrs, and jerrs. ierrs stores the number of errors in a row, and jerrs stores the total amount of errors in a variable.
+```{r}
+sel<-which(df$Trip_distance <= 0)
+ierrs[sel]<-ierrs[sel]+1
+# names(df)
+jerrs[11]<-length(sel)
+# sel 
+```
+
+##### Errors and outliers
+Now, we set NA values in order to remove errors and outliersfrom the dataset
+```{r}
+setNA<-which((df$Trip_distance<=0) | (df$Trip_distance > 30))
+df[setNA,"Trip_distance"]<-NA
+```
+
+##### Caterogial variable for Trip_distance
+We are going to set a categorical variable for the Trip_distancerange. 
+We decided to create 3 levels: "Short_dist", "Medium_dist" and"Long_dist".
+- Short_dist <= 2.5
+- Medium_dist 2.5 < Trip_distance <= 5
+- Long_dist > 5
+```{r}
+df$Trip_distance_range[df$Trip_distance <= 2.5] = "Short_dist"
+df$Trip_distance_range[(df$Trip_distance > 2.5) & (df$Trip_distance <= 5)] = "Medium_dist"
+df$Trip_distance_range[df$Trip_distance > 5] = "Long_dist"
+# summary(df$Trip_distance_range)
+```
+
+We see, though, that it is not a factor yet, so we factor it.
+```{r}
+df$Trip_distance_range <- factor(df$Trip_distance_range)
+```
+
+We see a barplot for the factor we created.
+```{r}
+barplot(table(df$Trip_distance_range),main="Trip_distance_range Barplot",col = "DarkSlateBlue")
+```
+
+
+#### 6. Pickup_longitude
+We know that New York's longitude is -73.9385, so values that differ a lot from this value is an error or an outlier.
+```{r}
+summary(df$Pickup_longitude)
+```
+0.00 looks to be an error
+Seeing the individuals with this "0" value: df[which(df[,"Pickup_longitude"]==0),] it is a quantitive variable. Non-possible values will be recoded as errors, so will be transformed to NA.
+```{r}
+sel<-which(df$Pickup_longitude == 0)
+ierrs[sel]<-ierrs[sel]+1
+# names(df)
+jerrs[6]<-length(sel)
+# sel  
+```
+Sel contains the rownames of the individuals with "0" as value for longitude.
+```{r}
+df[sel,"Pickup_longitude"]<-NA   
+```
+Non-possible values are replaced by NA, missing value symbol in R.
+
+##### Which trips are not running in New-York?
+Consider if, at least, one of the pick-up and drop-off points belong to New-York area. if not, this trip is an "out-of-scope" individual and has to be eliminated of the basis. Nevertheless, you have to justify thiselimination and count how many individuals were in this situation.
+Look at that!! possibly, starting from the outliers..."0" is missing value, outliers can help to detect trips running outside of New York...
+
+We are deleting trips from outside New York. This means we are not using longitudes bigger than -73.80 and smaller than -74.02.
+```{r}
+llout <-which((df$Pickup_longitude < -74.02) | (df$Pickup_longitude > -73.80))
+iouts[llout]<-iouts[llout]+1
+# names(df)
+jouts[6]<-length(llout)
+```
+Now that we have the outliers, we are setting them as NA
+```{r}
+df[llout,"Pickup_longitude"]<-NA
+```
+
+#### 7. Pickup_latitude
+We know that New York's latitude is 40.6643, so values that differ a lot from this value is an error or an outlier.
+```{r}
+summary(df$Pickup_latitude)
+```
+0.00 looks to be an error.
+Seeing the individuals with this "0" value: df[which(df[,"Pickup_latitude"]==0),] it is a quantitive variable. non-possible values will be recoded as errors, so will be transformed to NA.
+```{r}
+sel<-which(df$Pickup_latitude == 0)
+ierrs[sel]<-ierrs[sel]+1
+# names(df)
+jerrs[7]<-length(sel)
+# sel  
+```
+Sel contains the rownames of the individuals with "0" as value for longitude
+```{r}
+df[sel,"Pickup_longitude"]<-NA  
+```
+Non-possible values are replaced by NA, missing value symbol in R. 
+We are deleting trips from outside New York. This means we are not using latitudes bigger than 40.54 and smallerthan 40.86
+```{r}
+llout <-which((df$Pickup_latitude < 40.54) | (df$Pickup_latitude > 40.86))
+iouts[llout]<-iouts[llout]+1
+# names(df)
+jouts[7]<-length(llout)
+```
+Now that we have the outliers, we are setting them as NA
+```{r}
+df[llout,"Pickup_latitude"]<-NA
+```
+
+
+#### 10. Dropoff_longitude
+We know that New York's longitude is -73.9385, so values that differ a lot from this value is an error or an outlier.
+
+```{r}
+summary(df$Dropoff_longitude)
+```
+0.00 looks to be an error
+Seeing the individuals with this "0" value: df[which(df[,"Dropoff_longitude"]==0),] it is a quantitive variable.  
+Non-possible values will be recoded as errors, so will be transformed to NA.
+```{r}
+sel<-which(df$Dropoff_longitude == 0)
+ierrs[sel]<-ierrs[sel]+1
+# names(df)
+jerrs[8]<-length(sel)
+# sel  
+```
+Sel contains the rownames of the individuals with "0" as value for longitude
+```{r}
+df[sel,"Dropoff_longitude"]<-NA 
+```
+Non-possible values are replaced by NA, missing value symbol in R.
+We are deleting trips from outside New York. This means we are not using longitudes bigger than -73.80 and smaller than -74.02.
+```{r}
+llout <-which((df$Dropoff_longitude < -74.02) | (df$Dropoff_longitude > -73.80))
+iouts[llout]<-iouts[llout]+1
+# names(df)
+jouts[8]<-length(llout)
+# llout
+```
+Now that we have the outliers, we are setting them as NA
+```{r}
+df[llout,"Dropoff_longitude"]<-NA
+```
+
+#### 11. Dropoff_latitude
+We know that New York's latitude is 40.6643, so values that differ a lot from this value is an error or an outlier.
+
+```{r}
+summary(df$Dropoff_latitude)
+```
+0.00 looks to be an error
+Seeing the individuals with this "0" value: df[which(df[,"Dropoff_latitude"]==0),] it is a quantitive variable. Non-possible values will be recoded as errors, so will be transformed to NA.
+```{r}
+sel<-which(df$Dropoff_latitude == 0)
+ierrs[sel]<-ierrs[sel]+1
+# names(df)
+jerrs[8]<-length(sel)
+# sel                
+```
+Sel contains the rownames of the individuals with "0" as value for longitude
+```{r}
+df[sel,"Dropoff_latitude"]<-NA   
+```
+Non-possible values are replaced by NA, missing value symbol in R. We are deleting trips from outside New York. This means we are not using latitude bigger than 40.54 and smaller than 40.86
+```{r}
+llout <-which((df$Dropoff_latitude < 40.54) | (df$Dropoff_latitude > 40.86))
+iouts[llout]<-iouts[llout]+1
+#names(df)
+jouts[9]<-length(llout)
+# llout
+```
+Now that we have the outliers, we are setting them as NA
+```{r}
+df[llout,"Dropoff_latitude"]<-NA
+```
+
+#### 13. Fare_amount
+We know that the fare should be positive, as it is the price of the trip, so we'll treat as error those values. The next we'll do is decide the outliers.
+
+```{r}
+summary(df$Fare_amount)
+```
+```{r}
+sel<-which(df$Fare_amount <= 0)
+ierrs[sel]<-ierrs[sel]+1
+# names(df)
+jerrs[12]<-length(sel)
+# sel 
+```
+```{r}
+df[sel,"Fare_amount"]<-NA    
+```
+Non-possible values are replaced by NA, missing value symbol in R
+
+##### Outlier detection
+```{r}
+Boxplot(df$Fare_amount)
+var_out<-calcQ(df$Fare_amount)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+abline(h=60,col="blue",lwd=2)
+```
+
+We decide to set outliers for fare amounts bigger than 60, because the majority of the values are concentrated between 0 and 60.
+```{r}
+llout<-which(df$Fare_amount>60)
+iouts[llout]<-iouts[llout]+1
+jouts[12]<-length(llout)
+df[llout,"Fare_amount"]<-NA 
+# llout
+```
+
+#### 14. Extra
+As this variable is price related, it cannot have negative values, so this individuals will be treated as errors.
+```{r}
+summary(df$Extra)
+```
+We execute table in order to see every different value in the sample
+```{r}
+table(df$Extra)
+```
+As it is a price related variable, negative values should be treated as errors, and the other values are the ones defined for this variable, so there are not outliers.
+```{r}
+# df[which(df[, "Extra"] < 0),]
+sel<-which(df$Extra < 0)
+ierrs[sel]<-ierrs[sel]+1
+# names(df)
+jerrs[13]<-length(sel)
+df[sel,"Extra"]<-NA 
+# sel
+```
+
+#### 15. MTA_tax
+This variable corresponds to a tax that must be charged in every trip and its cost is $0.50, so values different from this are errors, and we don't have to take into account outliers because after the errors detection all values should be the MTA_tax.
+```{r}
+summary(df$MTA_tax)
+# df[which(df[, "MTA_tax"] != 0.50),]
+```
+
+**Important note:** We assume that when this tax is smaller than 0, it is an error. If tax is 0, we say that payment in these cases is equivalent to “no paid”.
+```{r}
+sel<-which(df$MTA_tax < 0)
+ierrs[sel]<-ierrs[sel]+1
+# names(df)
+jerrs[14]<-length(sel)
+df[sel,"MTA_tax"]<-NA 
+# sel
+```
+
+
+#### 16. Improvement_surcharge
+This variable corresponds to a charge that must be charged in every trip and its cost is $0.30, so values smaller than 0 are errors, and we don't have to take into account outliers because after the errors detection all values should be the Improvement surcharge.
+```{r}
+summary(df$improvement_surcharge)
+table(df$improvement_surcharge)
+```
+We know that this surcharge was leived in 2015, so we need to check if the 0 values correspond to trips before this year. That is what we are going to do.
+```{r}
+df$yearGt2015[(df$lpep_pickup_datetime >= "2015-01-01 00:00:00") & (df$improvement_surcharge == 0.3)] = 1
+df$yearGt2015[(df$lpep_pickup_datetime < "2015-01-01 00:00:00") | (df$improvement_surcharge != 0.3)] = 0
+
+table(df$yearGt2015)
+```
+We see that the 0 individuals are errors.
+```{r}
+sel<-which(df$improvement_surcharge < 0)
+ierrs[sel]<-ierrs[sel]+1
+# names(df)
+jerrs[18]<-length(sel)
+df[sel,"improvement_surcharge"]<-NA 
+# sel
+```
+
+#### 17. Ehail_fee
+We don’t take this into account because every value of our sample is NA.
+```{r}
+summary(df$Ehail_fee)
+```
+
+#### 18. Tip_amount
+As this is a price related variable, negative values should be considered as errors, and big tips should be considered as outliers. Also tip amounts bigger than 0 for individuals with payment_type = "Cash" should be considered as errors as well.
+```{r}
+summary(df$Tip_amount)
+```
+We proceed to check if the 0 values are related with payment_type = "Credit card" and the passenger did not tip.
+```{r}
+df$CashTips[(df$Tip_amount > 0) & (df$Payment_type == "Cash")] = 1
+df$CashTips[(df$Payment_type == "Credit card")] = 0
+table(df$CashTips)
+```
+
+Now, we proceed to the outlier detection.
+
+#### Outlier detection
+```{r}
+Boxplot(df$Tip_amount)
+var_out<-calcQ(df$Tip_amount)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+abline(h=40,col="blue",lwd=2)
+
+llout<-which(df$Tip_amount>40)
+iouts[llout]<-iouts[llout]+1
+# names(df)
+jouts[15]<-length(llout)
+df[llout,"Tip_amount"]<-NA 
+# llout
+```
+
+#### 19. Tolls_amount
+As this is a price related variable, negative values should be considered as errors.
+```{r}
+summary(df$Tolls_amount)
+```
+We see that there are not negative values, so we do not have errors. We proceed now to the outlier detection.
+```{r}
+Boxplot(df$Tolls_amount)
+var_out<-calcQ(df$Tolls_amount)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+
+table(df$Tolls_amount)
+```
+As we see in the boxplot and the table, the majority of the individuals are 0, so the values bigger than 5.54 will be outliers.
+```{r}
+llout<-which(df$Tolls_amount>5.54)
+iouts[llout]<-iouts[llout]+1
+# names(df)
+jouts[16]<-length(llout)
+df[llout,"Tolls_amount"]<-NA 
+# llout
+```
+
+#### 20. Total_amount
+This is a price related variable, so negative values should be treated as errors. Also, we need to sum the "Fare_amount", "Extra","MTA_tax", "Improvement_surcharge", "Tip_amount" and the "Tolls_amount" in order to see if the Total_amount matches with this sum.
+```{r}
+summary(df$Total_amount)
+```
+Negative values seem to be errors 
+- 0 Total_amount is possible when Payment_type =="No charge"
+
+We proceed to check if total amount is correctsumming the other variables and checking negatives values:
+```{r}
+df$Sum_total_amount = (df$Fare_amount + df$Extra + df$MTA_tax + df$improvement_surcharge + df$Tip_amount + df$Tolls_amount)
+
+sel<-which((df$Total_amount != df$Sum_total_amount) | (df$Total_amount<0))
+# names(df)
+if (length(sel)>0) {
+  ierrs[sel]<-ierrs[sel]+1
+  jerrs[19]<-length(sel)
+}
+# sel
+df[sel,"Total_amount"]<-NA
+```
+#### Outlier detection
+```{r}
+Boxplot(df$Total_amount)
+var_out<-calcQ(df$Total_amount)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+abline(h=150,col="blue",lwd=2)
+
+llout<-which(df$Total_amount>150)
+iouts[llout]<-iouts[llout]+1
+jouts[19]<-length(llout)
+df[llout,"Total_amount"]<-NA 
+```
+
+
+--------------------------------------------------------------------------------
+
+# Data Quality Report
+
+## Per variable
+Per each variable, we have to count the following:
+
+* number of missing values
+* number of errors (including inconsistencies)
+* number of outliers
+* rank variables according the sum of missing values (and errors).
+
+#### Number of missing values of each variable (with ranking)
+```{r}
+missings_ranking_sortlist <- sort.list(mis1$mis_col, decreasing = TRUE)
+for (j in missings_ranking_sortlist) {
+  print(paste(names(df)[j], " : ", mis1$mis_col$mis_x[j]))
+}
+```
+
+#### Number of errors per each variable (with ranking)
+```{r}
+errors_ranking_sortlist <- sort.list(jerrs, decreasing = TRUE)
+for (j in errors_ranking_sortlist) {
+  if(!is.na(names(df)[j])) { print(paste(names(df)[j], " : ", jerrs[j])) }
+}
+```
+
+#### Number of outliers per each variable (with ranking)
+```{r}
+errors_ranking_sortlist <- sort.list(jouts, decreasing = TRUE)
+for (j in errors_ranking_sortlist) {
+  if(!is.na(names(df)[j])) print(paste(names(df)[j], " : ", jouts[j]))
+}
+```
+
+### Per individual
+Per each individuals, we have to count the following:
+
+* number of missing values
+* number of errors
+* number of outliers
+
+#### Number of missing values
+```{r}
+# table(imis)
+barplot(table(imis),main="Missings per individual Barplot",col = "DarkSlateBlue")
+```
+
+
+The one is from from the variable "Ehail_fee" and the observations that have two missing values are because of the "espeed" variable (maybe because the traveltime was 0 and nothing can be divided by 0).
+
+
+#### Number of errors
+As we can see, most individuals have no mistakes. Those who do have errors, they tend to have more than one.
+```{r}
+# table(ierrs)
+barplot(table(ierrs),main="Errors per individual Barplot",col = "DarkSlateBlue")
+```
+
+#### Number of outliers
+```{r}
+# table(iouts)
+barplot(table(iouts),main="Outliers per individual Barplot",col = "DarkSlateBlue")
+```
+
+### Create variable adding the total number missing values, outliers and errors
+```{r}
+total_missings <- 0; total_outliers <- 0; total_errors <- 0;
+for (m in imis) {total_missings <- total_missings + m} 
+for (o in iouts) {total_outliers <- total_outliers + o}
+for (e in ierrs) {total_errors <- total_errors + e}
+```
+Now, let's print this variables:
+```{r}
+total_missings
+total_outliers
+total_errors
+```
+
+--------------------------------------------------------------------------------
+
+## Imputation
+```{r}
+library(missMDA)
+```
+
+What we do with imputation is be able to eliminate all those values that may be missings, outliers or errors to turn them into values that can be realistic within our sample.
+
+### Numeric variables
+We will now do the study by variables and try to impute the necessary observations.
+
+**Note**: we do not include MTA_tax (14) nor improvement_surcharge(18). We proceed to delete NA values from Total_amount because it is our target variable, so we do not impute it, but we need to have this variable without NAs.
+```{r}
+df <- df[!is.na(df$Total_amount),]
+vars_quantitatives<-names(df)[c(10:13,15,16,24:26)]
+```
+
+```{r}
+summary(df[,vars_quantitatives])
+res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
+summary(res.imputation$completeObs)
+```
+
+We proceed now to fix all the numeric variables that have errors or outliers:
+
+##### > Trip_distance
+```{r}
+ll<-which(res.imputation$completeObs[,"Trip_distance"] < 0)
+res.imputation$completeObs[ll,"Trip_distance"] <- 1
+ll<-which(res.imputation$completeObs[,"Trip_distance"] > 30)
+res.imputation$completeObs[ll,"Trip_distance"] <- 30
+```
+
+##### > Fare_amount
+```{r}
+ll<-which(res.imputation$completeObs[,"Fare_amount"] > 60)
+res.imputation$completeObs[ll,"Fare_amount"] <- 60
+```
+
+##### > Tip_amount
+```{r}
+ll<-which(res.imputation$completeObs[,"Tip_amount"] > 17)
+res.imputation$completeObs[ll,"Tip_amount"] <- 17
+```
+We see that we have correct data, so we proceed to create the binary factor TipIsGiven.
+```{r}
+df$TipIsGiven[(res.imputation$completeObs[,"Tip_amount"] > 0)] = "Yes"
+df$TipIsGiven[(res.imputation$completeObs[,"Tip_amount"] == 0)] = "No"
+df$TipIsGiven <- factor(df$TipIsGiven)
+summary(df$TipIsGiven)
+```
+
+##### > tlenkm
+```{r}
+ll<-which(res.imputation$completeObs[,"tlenkm"] <= 1)
+res.imputation$completeObs[ll,"tlenkm"] <- 1
+ll<-which(res.imputation$completeObs[,"tlenkm"] > 48.28)
+res.imputation$completeObs[ll,"tlenkm"] <- 48.28
+```
+
+##### > traveltime
+```{r}
+ll<-which(res.imputation$completeObs[,"traveltime"] > 60)
+res.imputation$completeObs[ll,"traveltime"] <- 60
+```
+
+##### > espeed
+```{r}
+ll<-which(res.imputation$completeObs[,"espeed"] < 3)
+res.imputation$completeObs[ll,"espeed"] <- 3
+ll<-which(res.imputation$completeObs[,"espeed"] > 55)
+res.imputation$completeObs[ll,"espeed"] <- 55
+```
+
+#### > Passenger_count
+We decided to create categorical for this variable so we categorize it for single passengers, couple and groups (3 or more)
+```{r}
+df$passenger_groups[res.imputation$completeObs[,"Passenger_count"]  == 1] = "Single"
+df$passenger_groups[res.imputation$completeObs[,"Passenger_count"] > 1 & res.imputation$completeObs[,"Passenger_count"] <= 2] = "Couple"
+df$passenger_groups[res.imputation$completeObs[,"Passenger_count"] >= 3] = "Group"
+df$passenger_groups <- factor(df$passenger_groups)
+```
+We see the barplot in order to see the distribution of passenger per trip
+```{r}
+barplot(table(df$passenger_groups),main="passenger_groups Barplot",col = "DarkSlateBlue")
+```
+
+#### > Extra
+If we execute a table, we'll see that we have 0, 0'5 and 1 values, so we proceed to categorize this variable to see if has extra or not.
+```{r}
+table(df$Extra)
+df$Extra[df$Extra == 0] = 0
+df$Extra[df$Extra > 0] = 1
+df$Extra <- factor(df$Extra, labels =c("No","Yes"))
+```
+We see the barplot in order to see the distribution.
+```{r}
+barplot(table(df$Extra),main="Extra Barplot",col = "DarkSlateBlue")
+```
+
+#### > MTA_tax
+If we execute a summary, we'll see that every value should be 0.5 or 0, so we proceed to categorize this variable in order to see if the tax has been paid or not.
+```{r}
+summary(df$MTA_tax)
+df$MTA_tax <- factor(df$MTA_tax, labels =c("No","Yes"))
+```
+We see the barplot in order to see the distribution.
+```{r}
+barplot(table(df$MTA_tax),main="MTA_tax Barplot",col = "DarkSlateBlue")
+```
+
+#### > Improvement_surcharge
+
+If we execute a table, we'll see that every value should be 0.3 or 0, so we proceed to categorize this variable in order to see if the surcharge has been paid or not.
+```{r}
+table(df$improvement_surcharge)
+
+df$improvement_surcharge <- factor(df$improvement_surcharge)
+df$improvement_surcharge <- factor(df$improvement_surcharge, labels =c("No","Yes"))
+```
+We see the barplot in order to see the distribution.
+```{r}
+barplot(table(df$improvement_surcharge),main="improvement_surcharge Barplot",col = "DarkSlateBlue")
+```
+
+#### > Tolls_amount
+As we checked before the imputation and detected as errors those individuals with negative amount, the negative values found now are going to be set as 0 because they result negative during the imputation. After treating this values, we proceed to categorize this variable to see if an individual has paid or not  for a toll.
+```{r}
+ll<-which(res.imputation$completeObs[,"Tolls_amount"] < 0)
+res.imputation$completeObs[ll,"Tolls_amount"] <- 0
+
+df$paidTolls[res.imputation$completeObs[,"Tolls_amount"] == 0] = "No"
+df$paidTolls[res.imputation$completeObs[,"Tolls_amount"] > 0] = "Yes"
+df$paidTolls <- factor(df$paidTolls)
+```
+
+
+
+We proceed to impute all NAs in our numerical variables that are stored in: `res.imputation$completeObs`
+```{r}
+#summary(res.imputation$completeObs)
+df[,vars_quantitatives] <- res.imputation$completeObs
+```
+
+
+### Categorical variables / Factors
+```{r}
+ vars_categorical<-names(df)[c(1,4,5,20:21,23,29,35)]
+ summary(df[,vars_categorical])
+ #nb <- estim_ncpMCA(df[, vars_categorical],ncp.max=25)
+ res.input<-imputeMCA(df[,vars_categorical],ncp=10)
+ summary(res.input$completeObs)
+```
+We proceed to impute all NAs in our numerical variables that are stored in: `res.input$completeObs`
+```{r}
+# summary(res.input$completeObs)
+df[,"VendorID"] <- res.input$completeObs[,"VendorID"]
+df[,"Store_and_fwd_flag"] <- res.input$completeObs[,"Store_and_fwd_flag"]
+df[,"RateCodeID"] <- res.input$completeObs[,"RateCodeID"]
+df[,"Payment_type"] <- res.input$completeObs[,"Payment_type"]
+df[,"Trip_type"] <- res.input$completeObs[,"Trip_type"]
+df[,"period"] <- res.input$completeObs[,"period"]
+df[,"Trip_distance_range"] <- res.input$completeObs[,"Trip_distance_range"]
+df[,"passenger_groups"] <- res.input$completeObs[,"passenger_groups"]
+```
+
+--------------------------------------------------------------------------------
+
+### Describe these variables, to which other variables exist higher associations
+#### Compute the correlation with all other variables. 
+```{r}
+library(mvoutlier)
+library(FactoMineR)
+res <- cor(df[,vars_quantitatives])
+round(res, 2)
+```
+
+#### Rank these variables according the correlation:
+```{r}
+library(corrplot)
+corrplot(res)
+```
+
+As we can see in this graph, we have the correlation between all quantitative variables. We must say, however, that there are two variables (espeed and traveltime) which we had to modify when making the imputation.
+
+In case of not having made the imputation of espeed and traveltime, we would have the following plot:
+
+[insert image], 
+
+which means that there is a negative correlation between these two variables, since the longer the time, the slower the trip. However, we think it is necessary to remove the outliers we have had from these variables because they are unrealistic.
+
+Now, let's describe each correlation we obtained in the first graph:
+
+* Diagonals:
+  + Being exactly the same variable, it is directly related to itself.
+* Fare_amount + Trip_distance:
+  + More distance, more time, therefore more price.
+* Tip_amount + Trip_distance:
+  + If the trip has been longer, there may be more reason to tip.
+* Total_amount + Trip_distance:
+  + As before, more distance, more time, therefore more price.
+* tlenkm + Trip_distance:
+  + They are exactly the same, only with a metric change.
+* traveltime + Trip_distance:
+  + The further away, the longer.
+* espeed + Trip_distance:
+  + The reason we think these variables are related to a direct and positive proportion is that since short trips have to be, logically cheaper, what taxi drivers do is slow down so that the trip take longer and thus charge more. Therefore, by increasing the distance of the journey, taxi drivers do not need to go so slow and therefore the speed increases.
+* Amount_type + Amount_mount:
+  + In the USA it is normal to give a tip proportional to the price of the service that has been offered.
+* Total_amount + Fare_amount:
+  + The variable Total_amount is equivalent to Fare_amount plus the fees, tips, among others, that have been applied to the trip.
+* tlenkm + Fare_amount:
+  + As before, more distance, more time, therefore more price.
+* traveltime + Fare_amount:
+  + More time, more price.
+* espeed + Fare_amount:
+  + As we said before, more speed means more distance, therefore more travel time, causing more price.
+* Total_amount + Type_amount:
+  + As before, in the USA it is normal to give a tip proportional to the price of the service that has been offered.
+* tlenkm + Mount_type:
+  + If the trip has been longer, there may be more reason to tip.
+* traveltime + Tip_amount:
+  + The longer it takes, the more price, and therefore the more tip given the proportionality.
+* espeed + Tip_amount:
+  + The more speed, as we said before, the more distance, and therefore the longer it takes. This causes more price and therefore more tip.
+* tlenkm + Total_amount:
+  + More distance, more time, therefore more price.
+* traveltime + Total_amount:
+  + More time, more price.
+* espeed + Total_amount:
+  + As we said before, more speed means more distance, therefore more travel time, causing more price.
+* traveltime + tlenkm:
+  + The more km to travel, the longer it takes.
+* speed + tlenkm:
+  + Same as for espeed + Trip_distance correlation.
+
+--------------------------------------------------------------------------------
+
+#### Identify individuals considered as multivariant outliers
+```{r}
+library(chemometrics)
+multivariant_outliers <- Moutlier(df[, c(11:12, 19, 26)], quantile = 0.995)
+multivariant_outliers$cutoff
+par(mfrow=c(1,1))
+plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
+text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(11:12, 19, 26)])) 
+abline(col="red",lwd=2, h=qchisq(0.995, ncol(df[, c(11:12, 19, 26)])))
+```
+
+
+As we can see, above the defined line we have all the possible observations that we call multivariate outliers. These mean that, viewed only from the point of view of a variable, it does not have to be an outlier, but that viewed with various dimensions (variables), it may be so.
+
+We want to look at two observations that have caught our attention. The first is 488540 and the second is 1180476. 
+
+As we can see, observation 488540 is the one at the boundary of the two axes. So that means it’s most likely a multivariate outlier. On the other hand, the 1180476 is not exactly very central on both axes. This may lead us to think that he is not as likely as the other observation to be a multivariate outlier.
+
+```{r}
+df[which(row.names(df)=="488540"), 1:35]
+df[which(row.names(df)=="1180476"), 1:35]
+```
+
+--------------------------------------------------------------------------------
+
+## Profiling
+### Numeric target: Total_amount
+Profiling is used to finish profiling our sample.
+
+We will now proceed to the profiling that asks us for our numeric target (Total_amount) and then we have to use the original variables and factors.
+
+In order to observe the relationship of our numerical target with the other variables we use the condes tool that provides us with information about the relationships between the indicated variables and the target.
+
+```{r}
+library(FactoMineR)
+summary(df$Total_amount)
+```
+
+```{r}
+vars_res<-names(df)[c(19,34)]
+res.condes <- condes(df[, c(vars_res,vars_quantitatives, vars_categorical)],1)
+```
+
+Let's now look at the correlations between our Total_amount target and the variables in the following groups. We will basically look at p.value, which we know that the smaller the correlation between the variables.
+
+##### > Numerical variables
+```{r}
+res.condes$quanti # Global association to numeric variables
+```
+
+* Fare_amount: 
+  + The variable Total_amount is equivalent to Fare_amount plus the fees, tips, among others, that have been applied to the trip.
+* Trip_distance:
+  + As before, more distance, more time, therefore more price.
+* tlenkm
+  + More distance, more time, therefore more price.
+* traveltime
+  + More time, more price.
+* Tip_amount
+  + The more you pay, since the tip is a proportion of the final price, the more it will increase.
+* espeed
+  + As we said before, more speed means more distance, therefore more travel time, causing more price.
+
+##### > Qualitative variables
+```{r}
+res.condes$quali # Global association to factors
+```
+
+* Trip_distance_range
+  + Obviously, the longer the journey, the longer it will take and the more price it will have.
+* TipIsGiven
+  + Like before, the more you pay, since the tip is a proportion of the final price, the more it will increase.
+* Payment_type
+  + This is the least related variable. However, we can predict that the more the trip is worth, the more likely it is to be paid by credit card.
+* RateCodeID
+  + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+
+##### > Categorical variables
+```{r}
+res.condes$category # Partial association to significative levels in factors
+```
+
+* Trip_distance_range
+   + We can see that, the further away, the more correlation, as it takes longer to travel.
+* TipIsGiven
+   + We see that it is more likely to tip if the price is high.
+* Payment_type
+   + We see that it is easier for the guy to be with CreditCard if the trip costs more.
+* RateCodeID
+   + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+* period
+   + We see that in the morning travel costs less.
+
+
+### Factor (Y.bin - TipIsGiven)
+And now, we are profiling the qualitative target:
+```{r}
+res.catdes <- catdes(df[, c(vars_res,vars_quantitatives, vars_categorical)],2)
+```
+
+Let's now look at the correlations between our TipIsGiven target and the variables in the following groups. We will basically look at p.value, which we know that the smaller the correlation between the variables.
+
+##### > Test.Chi2
+```{r}
+res.catdes$test.chi2
+```
+* Payment_type
+   + We see that it is very likely that there will be a tip if it is paid in a concise manner.
+* Trip_distance_range
+   + As we can see, there is tip as long as the trip is, or very short, or very long.
+* Trip_type
+   + We don't think the type of trip is important.
+* RateCodeID
+   + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+* period
+   + We see that in the morning people are not in a very good mood and are more inclined to tip the "valley".
+
+##### > Quantitative variables
+```{r}
+res.catdes$quanti.var
+```
+* Tip_amount
+   + If there is a tip, it must have value.
+* Total_amount
+   + We see that it is more likely to tip if the price is high.
+* Fare_amount
+   + We see that it is more likely to tip if the price is high.
+* tlenkm
+   + The more distance, the more time, therefore the more price. So, more chances of there being a tip.
+* Trip_distance
+   + Exactly the same as above.
+* traveltime
+   + The longer, therefore the more price. So, more chances of there being a tip.
+* espeed
+   + The faster you get to the site, the more satisfaction and therefore the likelihood of tipping.
+
+##### > Categorical variables
+```{r}
+res.catdes$category
+```
+
+* TipIsGiven
+  + Same variable.
+* Payment_type
+   + We see that it is very likely that there will be a tip if it is paid in a concise manner.
+* Trip_distance_range
+   + As we can see, there is tip as long as the trip is, or very short, or very long.
+* Trip_type
+   + We don't think the type of trip is important.
+* RateCodeID
+   + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+* period
+   + We see that in the morning people are not in a very good mood and are more inclined to tip the "valley".
+
+# DELIVERABLE II
+
+## Principal Component Analysis (PCA)
+```{r}
+names(df)
+vars_res<-names(df)[c(15,27)] 
+vars_quantitatives<-names(df)[c(3:10,12,20:22)] 
+vars_categorical<-names(df)[c(1,2,16:17,19,25,28)]
+```
+
+We have already seen profiling in the previous installment. So now, let’s proceed to look at the main components.
+```{r}
+library(FactoMineR)
+res.pca <- PCA(df[,c(1:10,12,13,15:17,19,21,22,25,27)],quanti.sup=c(3:6,13),quali.sup=c(1,2,14:16,19:20))
+
+#plot.PCA(res.pca,choix=c("var"), invisible=c("quanti.sup"))
+#plot.PCA(res.pca,choix=c("var"), invisible=c("var"))
+#plot.PCA(res.pca,choix=c("ind"), invisible=c("ind"))
+```
+
+As we know, those variables that have an angle of 90 degrees, are not related. Taking a first look at the PCA obtained, we see that, for example, Passenger_count and Trip_ distance are not at all related. On the other hand, also looking at Passenger_count, we see that it is very positively related to Extra. If there were a variable that went in the opposite direction, we would say that it is inversely related.
+
+### Multivariant outliers should be included as supplementary observations
+Since the data set we have is pretty good, we considered that we don't have multivariate outliers
+
+### Eigenvalues and dominant axes analysis
+Eigenvalues correspond to the amount of the variation explained by each principal component (PC). Eigenvalues are large for the first PC and small for the subsequent PCs.
+
+#### How many axes we have to interpret according to Kaiser?
+A PC with an eigenvalue > 1 indicates that the PC accounts for more variance than accounted by one of the original variables in standardized data. This is commonly used as a cutoff point to determine the number of PCs to retain, using the Kaiser criteria.
+```{r}
+eigenvalues <- res.pca$eig
+head(eigenvalues[, 1:3])
+```
+
+In this case, then, we will use up to dimension 3, and they will explain 65.73% of the total inertia.
+
+#### How many axes we have to interpret according to Elbow's rule?
+As a brief definition, we would say that the elbow rule is based on selecting dimensions until the difference in variance of that of the next factorial plane is almost the same as that of the current plane.
+
+So let's look at exactly where we have this minimal difference:
+```{r}
+fviz_screeplot(
+  res.pca, 
+  addlabels=TRUE, 
+  ylim=c(0,50), 
+  barfill="darkslateblue", 
+  barcolor="darkslateblue",
+  linecolor = "skyblue1"
+)
+```
+
+We could say, then, that there is little difference between dimension 3 and 4, or between 5 and 6. Therefore, we could be left with 3 dimensions (as with Kasier) or 5.
+
+### Individuals point of view
+#### Contribution
+```{r}
+## head(res.pca$ind$contrib) ## contribition of individuals to the princial components
+fviz_pca_ind(res.pca, col.ind="contrib", geom = "point") +
+scale_color_gradient2(low="darkslateblue", mid="white",
+                      high="red", midpoint=0.40)
+```
+
+We can see that there are some individuals that are too contributive. So now, let's try to understand them better with extreme individuals.
+
+#### Extreme individuals
+
+##### In dimension 1:
+```{r}
+rang<-order(res.pca$ind$coord[,1])
+contrib.extremes<-c(row.names(df)[rang[1]], row.names(df)[rang[length(rang)]])
+
+contrib.extremes<-c(row.names(df)[rang[1:10]], row.names(df)[rang[(length(rang)-10):length(rang)]])
+fviz_pca_ind(res.pca, select.ind = list(names=contrib.extremes))
+```
+
+We can now have a look at them:
+```{r}
+df[which(row.names(df) %in% row.names(df)[rang[length(rang)]]), 1:28]
+df[which(row.names(df) %in% row.names(df)[rang[1]]),1:28]
+```
+
+##### In dimension 2:
+```{r}
+rang<-order(res.pca$ind$coord[,2])
+contrib.extremes<-c(row.names(df)[rang[1]], row.names(df)[rang[length(rang)]])
+
+contrib.extremes<-c(row.names(df)[rang[1:10]], row.names(df)[rang[(length(rang)-10):length(rang)]])
+fviz_pca_ind(res.pca, select.ind = list(names=contrib.extremes))
+```
+
+We can now have a look at them:
+```{r}
+df[which(row.names(df) %in% row.names(df)[rang[length(rang)]]), 1:28]
+df[which(row.names(df) %in% row.names(df)[rang[1]]),1:28]
+```
+
+#### Detection of multivariant outliers and influent data.
+Since we’ve commented before that we don’t consider multivariate outliers, no action should be taken here.
+
+### Interpreting the axes: Variables point of view coordinates, quality of representation, contribution of the variables
+```{r}
+res.des <- dimdesc(res.pca)
+```
+
+#### First dimension
+```{r}
+fviz_contrib(  ## contributions of variables to PC1
+  res.pca, 
+  fill = "darkslateblue",
+  color = "darkslateblue",
+  choice = "var", 
+  axes = 1, 
+  top = 5)
+res.des$Dim.1
+```
+
+In the first dimension we see that for the **quantitative** variables the most positively related, from more to less, are:
+
+* Trip_distance (0.95)
+* Fare_amount (0.94)
+* Total_amount (0.93) 
+* traveltime (0.80)
+
+If we take look at the  **qualitatives** ones, we that the most related is 
+
+* Trip_distance_range (0.69)
+
+Finally, if we take a look at the **categories** we see that for the Trip_distance_range category long distance trips show a mean 2.23 units over the global mean and short distance ones show a mean -1.94 units under the global mean, so we can reject the H0 done in the t.Student test.
+
+#### Second dimension
+```{r}
+fviz_contrib(  ## contributions of variables to PC1
+  res.pca, 
+  fill = "darkslateblue",
+  color = "darkslateblue",
+  choice = "var", 
+  axes = 2, 
+  top = 5)
+res.des$Dim.2
+```
+
+For the second dimension we see that or the **quantitative** variables Extra and Passenger_count are the most positively related ones with 0.74 and 0.53 respectively.
+
+If we see the **qualitative** variables we notice that period is the most related with 0.18 even though it is not a very remarkable data. 
+
+And we see that for this **category**, period afternoon mean is 0.69 units over the global mean and period morning mean, on the contrary, is -0.61 units under the global mean, so we can reject the H0 done in the t.Student test.
+
+#### Third dimension
+```{r}
+fviz_contrib(  ## contributions of variables to PC1
+  res.pca, 
+  fill = "darkslateblue",
+  color = "darkslateblue",
+  choice = "var", 
+  axes = 3, 
+  top = 5)
+res.des$Dim.3
+```
+
+For the last dimension we took into account, the third one, we see that the most related **quantitative** variables are:
+
+* Passenger_count (0.53)
+* Tolls_amount (0.53)
+* espeed (0.51), 
+
+For the inversely related one, we also see that traveltime time (-0.40). 
+
+For the **quanlitatives**, we see that period is the category that is more related with 0.36, even though it is not a big relation.
+
+And we see that for this **category**, period afternoon mean is 0.28 units over the global mean and period valley mean, on the contrary, is -0.14 units under the global mean, hough it is not either a big relation.
+
+**We can conclude, then, that the first dimension is the one with the biggest correlations to the target**
+
+### Perform a PCA taking into account also supplementary variables the supplementary variables can be quantitative and/or categorical 
+
+We want to take analyze the supplementary factor **kind of rate**, so we want to add lines that join the categories of this factor for the first factorial plane. With the following plot we can see it.
+
+```{r}
+plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],pch=19,col="grey30") ## draw all the individuals in grey
+points(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],pch=15,col="cadetblue1") ## points associated with the categories gravitatorial centers
+lines(res.pca$quali.sup$coord[3:4,1],res.pca$quali.sup$coord[3:4,2],lwd=2,lty=2,col="coral") ## draw a line that joins the categories that we want to take a look at
+text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pca$quali.sup$coord[,1]),col="cadetblue1",cex=0.5) #add the names of the different categories
+```
+
+!!!!!! On queda AnyTip?
+
+--------------------------------------------------------------------------------
+
+## Hierarchical Clustering
+
+```{r}
+res.hcpc <- HCPC(res.pca,nb.clust = 5, order = TRUE)
+```
+
+*Note*: If we chose the default number of cluster it would be 3, as we can guess from the inertia reduction plot, that follows the Elbow's rule (number of black lines plus 1). In our case, due to the amount of data we have, the reason why we chose 5 as the number of clusters is because, after trying different numbers, we thought it was the best way to distribute the data.
+
+### Description of clusters
+Number of observations in each cluster:
+```{r}
+table(res.hcpc$data.clust$clust)
+barplot(table(res.hcpc$data.clust$clust), col="darkslateblue", border="darkslateblue", main="[hierarchical] #observations/cluster")
+```
+
+### Interpret the results of the classification
+
+#### The description of the clusters by the variables 
+```{r}
+names(res.hcpc$desc.var)
+res.hcpc$desc.var$test.chi2   ## categorical variables which characterizes the clusters
+```
+We start wit the description of the categorical variables that characterize the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variables that affect more to the clustering are **period** and **Trip_distance_range** because are the one with the smallest p.value. The variables associated to the clusters are the ones that appear on the output.
+
+Next, we want to see for each cluster which are the categories that characterize them.The clusters that contain more individuals are the first, the second and the fourth one. Cluster number 4 has less individuals. We proceed to analyze them.
+```{r}
+res.hcpc$desc.var$category    ## description of each cluster by the categories
+```
+
+* Cluster 1
+  + The first thing we can notice from this cluster is that **Trip_type=Street-Hail** that intervents in the 97.58% from the sample, in this cluster is the 100% of the observations, which means that all the observations in this cluster have this type of trip. We have 42.78% from the Trip_type=Street-Hail observations in this cluster. As we can see and expect, from the other trip_type that we have in this cluster is that **Trip_type=Dispatch** that intervents in the 2.42% from the sample, in this cluster is not represented, we get 0% of the observations. Then, we can notice is the kind of rate. We can see that **RateCodeID=Rate-1**, the one that represents the standard rate, and means the 97.25% of our sample, in this cluster is the 99.95% of the observations, almost every observation from this cluster is a standard rate trip. In this cluster we have 42.90% of the observations from this category. In the other hand, we have the kind of rate, that contains the other options, represents the 2.75% of our sample, in this cluster is the 0.05% of the observations. In this cluster, we have the 0.79% of the observations from this category.
+  
+!!!!!! Per què useu la variable RateCodeID original? En comptes del factor amb nivells agrupats que segur que heu creat?
+  
+* Cluster 2
+  + The first thing we can notice from this cluster is that **RateCodeID=Rate-1** (standard rate) and **Trip_type=Street-Hail** are the most represented in the cluster. We have 94.98% of the observations in the cluster that represent street-hail trips, and we also have 94.86% of the observations in the cluster that represent the standard rate trips. We have 74.72% of the morning period trips of the observations in the sample represented in this cluster, 73.21% of the dispatch type trips of the observations in the sample represented in this cluster, 66.59% of the valley period trips of the observations in the sample represented in this cluster, we also have the 66.14% of the other kind of rates f the observations in the sample represented in this cluster. In the other hand, we only have 3.16% of the long distance trips in the sample represented in this cluster and this category only means the 1.29% of the observations in the cluster of this category. We have 10.11% of the night period trips in the sample represented in this cluster and we have almost 19% of the afternoon period trips in the sample represented in this cluster.
+* Cluster 3
+  + The first thing we can notice from this cluster is that almost every observation is from standard rate kind. We can see that 99.24% of the observations in the cluster are **RateCodeID=Rate-1**, and the cluster contains the 5.78% of the observations in the sample of this kind. The rest of observations in the cluster are from **RateCodeID=Rate-Other** kind.The next thing we can notice from this cluster is that, also, almost every observation is from Verfione kind of vendor. We have the 94.27% of the observations in this cluster of **VendorID=f.Vendor-VeriFone** category. This categories represents the 78.95% from our sample, and the cluster contains the 6.77% of obervations of this kind. For the other kind of vendor, **VendorID=f.Vendor-Mobile**, that represents the 21.05% of our sample, we have that in this cluster, 5.73% of the observations are from this vendor, and the cluster contains 1.54% of observations of this kind. If we take a look at the period categories, we see that **period=Period night** represents 43.51% of the observations in the cluster, and we have the 6.94% of the observations of this kind from the sample. In this cluster the night period is over represented because this kind of period represents the 35.52% of observations from our sample. For the **period=Period valley**, we have 20.99% of the observations in the cluster of this kind of period. We have in this cluster 4.37% of the observations of this kind from our sample. The last kind of period that we have in this cluster is the moring one, that represents the 5.73% of the observations in the cluster and we have 2.77% of the observations from the sample of this kind in this cluster.
+* Cluster 4
+  + In this cluster, we can see that the category more represented is **Trip_type=Street-Hail** with 96.31% of the observations in the cluster. We get 16.18% of the observations of this kind from the sample in the cluster. Another category that is very represented is the standard rate, **RateCodeID=Rate-1**, with 95.25% of the observations in the cluster. From the sample, we get in this cluster, 16.06% of the observations of this kind. We can notice that we have 87.52% of long distance trip observations from the sample in this cluster. We can see that this category is over represented in this cluster because this category represents the 14.38% of the sample, and 76.78% of the observations in the cluster are of this category. In the other hand, we can see that short distance trips that represents 1.85% of the observations in the cluster and we only got 0.47% of the observations of this kind from the sample.
+* Cluster 5
+  + This cluster is the smallest one, we only have 39 observations from the sample. We can see in this cluster is that the **RateCodeID=Rate-1** represents the 89.75% of the observations in this cluster. In this cluster we only have 0.78% of the observations from the sample of this kind. The rest 10.25% are the **RateCodeID=Rate-Other** observtions in the cluster. In this case, we have a 3.15% of the observations from the sample of this kind in this cluster. Then we have that 82.05% of the observations in the cluster that paid credit card, and we got 1.53% of the observations from sample sample of this kind this cluster. The other 17.95% of the observations in the cluster paid in cash, and we got less representation from the sample in this cluster for this category, we only got 0.28% of the observations from the sample.
+
+!!!!!!!Finalment RateCode ID 1 no aporta res en particular
+
+We now proceed to see the quantitative variables that characterizes the clusters.
+```{r}
+res.hcpc$desc.var$quanti.var  ## quantitative variables which characterizes the clusters
+```
+
+We can see in the output that all the variables that appear are slightly over represented in the clusters. We can notice that the greatest represented is the Total_amount with 0.98 units over the global mean, we can also remark the Passenger_count with 0.78 units over the mean and the Extra variable with 0.63 units over the mean. The least over represented are the Pickup_longitude with 0.004 units over the mean, the Dropoff_longitude with 0.01 units over the mean, the Pickup_latitude with 0.016 units over the mean and the Dropoff_latitude with 0.02 units over the total mean.
+
+
+We want to know now which variables are associated with the quantitative variables.
+```{r}
+res.hcpc$desc.var$quanti      ## description of each cluster by the quantitative variables
+```
+
+* Cluster 1
+  + For this cluster, we can see that the **traveltime** is around 3 units under the overall mean, the **Fare_amount** as well and the **Total_amount** too. We can also see that the **Trip_distance** is 1 unit under the overall mean and the **espeed** as well. We see that the only variable that is over the overall mean is the variable **Extra** with less than 0.3 units over it.
+* Cluster 2
+  + For the second cluster, happens something similar as with the first one. We see that the **Total_amount** is around 3.7 units under the overall mean, **espeed** around 2 units under as well, **Tip_amount** around 0.5 under the overall mean too, **traveltime** and **Fare_amount** around 3 units under the overall mean as well, **Trip_distance** around 1 unit under the mean. In this clusters the only variables ver the overall mean are **Dropoff_latitude** and **Pickup_latitude** but they are not remarkable since the increase is super light.
+* Cluster 3
+  + In this cluster we can see that the most remarkable variable is **Passenger_count** with almost 4 units over the overall mean, then we also have **Total_amount** with 0.1 units over the meant. In the other hand, we have **Total_amount** and **Fare_amount** with around 1 unit under the overall mean. **Trip_distance** is around 0.5 units under the overall mean.
+* Cluster 4
+  + In this cluster we can see clearly the most remarkable vairables. We have 5 variables cleary over the overall mean. These are: **Total_amount** with 26 units over the mean, **Fare_amount** and **traveltime** with 14 units over the mean, **espeed** with 8 units over the mean and **Trip_distance** with 5 units over the overall mean.
+* Cluster 5
+  + In this cluster every variable is over the overall mean. Every variable except **Pickup_longitude** are remarkably over the overall mean. Firstly, we have the **Total_amount** around 30 units over, then we have **Fare_amount** 18 units over, **espeed** 14 units over, **traveltime** 12 units over, **Trip_distance** 6 units over, **Tolls_amount** 5 units over and **Tip_amount** 3.7 units over the overall mean.
+
+#### The description of the clusters by the individuals
+```{r}
+res.hcpc$desc.ind$para  ## representative individuals of each cluster
+```
+What we obtain are the more representative individuals,paragons, for each cluster. We get the rownames of each paragon in every single cluster.
+
+```{r}
+res.hcpc$desc.ind$dist  ## individuals distant from each cluster
+```
+What we obtain are those individuals of each cluster that that far away in the same cluster from the rest of the individuals. We also obtain the rownames of each individual with the bigger distance respect the other ones in the cluster.
+
+##### Examine the values of individuals that characterize classes
+
+We get the grpahical representation for the individuals that characterize classes (para and dist).
+```{r}
+## characteristic individuals
+para1<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[1]]))
+dist1<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[1]]))
+para2<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[2]]))
+dist2<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[2]]))
+para3<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[3]]))
+dist3<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[3]]))
+para4<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[4]]))
+dist4<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[4]]))
+para5<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$para[[5]]))
+dist5<-which(rownames(res.pca$ind$coord)%in%names(res.hcpc$desc.ind$dist[[5]]))
+
+plot(res.pca$ind$coord[,1],res.pca$ind$coord[,2],col="grey50",cex=0.5,pch=16)
+points(res.pca$ind$coord[para1,1],res.pca$ind$coord[para1,2],col="blue",cex=1,pch=16)
+points(res.pca$ind$coord[dist1,1],res.pca$ind$coord[dist1,2],col="chartreuse3",cex=1,pch=16)
+points(res.pca$ind$coord[para2,1],res.pca$ind$coord[para2,2],col="blue",cex=1,pch=16)
+points(res.pca$ind$coord[dist2,1],res.pca$ind$coord[dist2,2],col="darkorchid3",cex=1,pch=16)
+points(res.pca$ind$coord[para3,1],res.pca$ind$coord[para3,2],col="blue",cex=1,pch=16)
+points(res.pca$ind$coord[dist3,1],res.pca$ind$coord[dist3,2],col="firebrick3",cex=1,pch=16)
+points(res.pca$ind$coord[para4,1],res.pca$ind$coord[para4,2],col="blue",cex=1,pch=16)
+points(res.pca$ind$coord[dist4,1],res.pca$ind$coord[dist4,2],col="palevioletred3",cex=1,pch=16)
+points(res.pca$ind$coord[para5,1],res.pca$ind$coord[para5,2],col="blue",cex=1,pch=16)
+points(res.pca$ind$coord[dist5,1],res.pca$ind$coord[dist5,2],col="royalblue1",cex=1,pch=16)
+```
+
+!!!!!!! Podrieu indicar si tenen trets específics
+
+
+#### Partition quality
+We are going to evaluate the partition quality.
+
+##### Gain in inertia (in %)
+```{r}
+## ( between sum of squares / total sum of squares ) * 100
+((res.hcpc$call$t$within[1]-res.hcpc$call$t$within[5])/res.hcpc$call$t$within[1])*100
+```
+
+The quality of this reduction if of 57.49%.
+
+In case we wanted to achieve an 80% of the clustering representativity we would need 18 clusters.
+```{r}
+((res.hcpc$call$t$within[1]-res.hcpc$call$t$within[18])/res.hcpc$call$t$within[1])*100
+```
+
+#### Save the results into dataframe
+```{r}
+res.hcpc$call$t$inert.gain[1:5] 
+df$hcpck<-res.hcpc$data.clust$clust
+```
+
+--------------------------------------------------------------------------------
+
+## K-Means Classification
+
+### Description of clusters
+```{r}
+res.pca <- PCA(df[,c(1:10,12,13,15:17,19,21,22,25,27)],quanti.sup=c(3:6,13),quali.sup=c(1,2,14:16,19:20),ncp=5,graph=FALSE)
+ppcc<-res.pca$ind$coord[,1:3] ## 3 components principals (kaiser)
+dim(ppcc)
+```
+
+#### Optimal number of clusters
+```{r}
+library("factoextra")
+#fviz_nbclust(ppcc, kmeans, method = "gap_stat") ## !!!!Descomentar pel deliverable, triga molt.
+```
+
+According to the previous plot, the optimal number of clusters per k-means is 1, so we guess maybe something is wrong or missing.
+
+
+!!!!!El comportament 1->2 és bastant típic. Heu d'interpretar 4.
+
+### Classification
+
+```{r}
+dist<-dist(ppcc)  ## coordenates are real - Euclidean metric
+kc<-kmeans(dist, 5, iter.max=30, trace=TRUE) #caclulate the distances, it turns into a matrix
+```
+We see from the output that in 4 iterations it has converged.
+We now procceed to save in the data frame the number of clusters.
+```{r}
+df$claKM<-0
+df$claKM<-kc$cluster
+df$claKM<-factor(df$claKM)
+barplot(table(df$claKM),col="darkslateblue",border="darkslateblue",main="[k-means]#observations/cluster")
+```
+
+#### Gain in inertia (in %)
+The american school does the partition quality evaluation in 5 clusters is done very fast, and after executing the following chunk we get an explicability of the 77.99%
+```{r}
+100*(kc$betweenss/kc$totss)
+```
+
+#### k-means clusters characteristics
+If we want to know the characteristics of each cluster, as we did with the hierarchical, we need to execute a catdes to obtain these characteristics. In the following output we get them.
+```{r}
+dim(df)
+res.cat <-catdes(df,30)
+res.cat
+```
+We proceed to explain the data obtained.
+
+#### The description of the clusters by the variables 
+
+We start wit the description of the categorical variables that characterize the clusters, so in this output we do
+not have dimensions because it is the total association. We can see the intensity of the variables, in our case the
+variables that affect more to the clustering are **Trip_distance_range**, **paidTolls** and **hcpck**  because are the one with the smallest p.value.
+
+Next, we want to see for each cluster which are the categories that characterize them.
+
+!!!!!!!!No heu de deixar de veure la relació dels clusters amb els 2 targets que teniu Total_amount i AnyTip.
+
+* Cluster 1
+  + The first thing we can notice is that almost observation in the cluster is of the kind **paidTolls=No** (99.88%), we can also see that 87.61% of the observations in the cluster are **passenger_groups=Single** and we have the 18.74% of the observations of this kind from the sample present in this cluster. We can see that 70.88% of the observations in the cluster are **Trip_distance_range=Medium_dist** and we have the 59.74% of the observations of this kind from sample present in this cluster. We can also notice that 76.05% if the observations in the cluster are **VendorID=f.Vendor-VeriFone**. We can see that the cluster 4 from the hierarchical clustering (**hcpck=4**) is present in this cluster, we observe that 38.87% of the observations in the cluster are from that cluster 4 and we have the 42.61% of the observations from the sample present in this cluster.
+* Cluster 2
+  + We can see that 95.88% of the observations in the cluster are **improvement_surcharge=Yes** and **Trip_type=Street-Hail**. We can also see that 95.27% of the observations in the cluster are **MTA_tax=Yes**, 94.86% of the observations in the cluster are **RateCodeID=Rate-1**. We can also see that we have the 70.37% of the observations in the cluster are **Trip_distance_range=Long_dist** and we have 51.43% of the observations of this kind from the sample present in this cluster. We can see that the clusters 3 and 4 from the hierarchical clustering (**hacpck=3**, **hcpck=4**) are present in the cluster. We observe that 22.84% and 75.31% of the observations in the cluster are from those clusters respectively, and we have the 42.37% and 48.28% of the observations from the sample present in this cluster.
+* Cluster 3
+  + The first thing we can notice is that all observations in the cluster are **paidTolls=No**. Then, we see that we the 99.76% of the observations in the cluster are **RateCodeID=Rate-1**, **MTA_tax=Yes**, **improvement_surcharge=Yes** and **Trip_type=Street-Hail**. We can also see that the majority of the observations in the cluster (89.22%) are **Trip_distance_range=Short_dist** and we have 25.37% of the observations of this kind from the sample in this cluster. We can see that we have 54.34% of the observations of **dropoff=18**, 53.50% of **pickup=18**, 52.19% of **pickup=17**, 50.16% of **dropoff=19** and 50.13% of **passenger_groups=Group** kinds from the sample in this cluster. We can notice that 54.20% of the observations of **hcpck=3** (cluster 3 from hierarchical clustering) and 35.96% observations of **hcpck=1** (cluster 1 from hierarchical clustering) kinds from the sample are present in this cluster.
+* Cluster 4
+  + The first thing we can notice is that the 100% of the observations from the sample that represent the cluster 5 from hierarchical clustering (**hcpck=5**) are present in this cluster, we can also see that the 95% of the observations from the sample that are of the kind **paidTolls=yes** are present in this cluster. We can see that 89.91% of the observations in the cluster are **Trip_distance_range=Long_dist** and we have 14,74% of the observations of this kind from the sample present in this cluster. We can also notice that 69.72% of the observations in the cluster are **Payment_type=Credit card**, 92.25% of the observations in the cluster are **RateCodeID=Rate-1**, 63.30% of the observations in the cluster are from the cluster 4 from the hierarchical clustering (**hcpck=4**), 62.39% of the observations in the cluster left some tip (**TipIsGiven=Yes**).
+* Cluster 5
+  + The first thing we can notice is that every observation in the cluster had not paid any toll (**paidTolls=No**) and we have 51.42% of the observations of this kind from the sample are present in this cluster. We have the 97.11% of the observations in the cluster are **Trip_type=Street-Hail**, 96.94% are **MTA_tax=Yes** and 96.90% are **improvement_surcharge=Yes**, and we have around the 50% of the observations of these kinds from the sample present in this cluster. The majority of the observations in the cluster (94.94%) are **passenger_groups=Single** and we have the 57.08% of the observations of this kind from the sample present in this cluster. We also see that 89.42% of the observations from the sample are **Trip_distance_range=Short_dist** and we have 70.79% of the observations of this kind from the sample present in this cluster. From this cluster we can notice that is the one with biggest data representation from the sample, probably because it is a big cluster so we have a lot of data present here, that is why a lot of the categories present here are highly represented.
+
+
+We now proceed to see the quantitative variables that characterizes the clusters. We can see in the output that all the variables that appear are slightly over represented in the clusters. We can notice that the greatest represented is the **Fare_amount** with 0.70 units over the global mean, **Total_amount** with 0.69 units over the mean and **Trip_distance** with 0.68 units over the mean. The other variables are not remarkably over the mean.
+
+
+We want to know now which variables are associated with the quantitative variables.
+
+* Cluster 1
+  + We can see that almost every variable is over the overall mean. We can see that **Total_amount** and **traveltime** are around 6 units over the overall mean. **Fare_amount** is around 5 units over the overall mean, **espeed** is around 3 units over the overall mean and **Trip_distance** and **tlenkm** are around 2 units over the overall mean.
+* Cluster 2
+  + We can see almost every variable is over the overall mean. We can see that **Total_amount** and **traveltime** are around 13 units over the overall mean, **Fare_amount** is around 11 units over the overall mean, **espeed** is around 7 units over the overall mean, **tlenkm** is around 6 units over the overall mean and **Trip_distance** is around 4 units over the overall mean. **Tip_amount**, **Passenger_count** and **hour** are around 1 unis under the overall mean.
+* Cluster 3
+  + We can see that **hour** is around 2 units over the overall mean and **Passenger_count** is around 0.6 units over the overall mean, the rest of the variables in the cluster are under the mean. **traveltime**, **Fare_amount** and **espeed** are around 4 units under the overall mean. **Total_amount** is around 3 units under the overall mean, **tlenkm** is around 2 units under the overall mean and **Trip_distance** is around 1 unit under the overall mean. 
+* Cluster 4
+  + We can see that every variable except **Pickup_latitude** and **Dropoff_latitude** are over the mean. We can see that **Total_amount** is around 38 units over the overall mean, **Fare_amount** is around 28 units over the overall mean, **traveltime** is around 26 units over the overall mean, **tlenkm** is around 16 units over the overall mean, **espeed** is around 12 units over the overall mean, **Trip_distance** is around 10 units over the overall mean and **Tip_amount** is around 4 units over the overall mean.
+* Cluster 5
+  + We can see that almost every variable is under the overall mean. **traveltime** is around 5 units under the overall mean, **Fare_amount** and **Total_amount** are around 4 units under the overall mean, **tlenkm** and **espeed** are around 2 units under the overall mean, **hour** and **Trip_distance** are around 1 unit under the overall mean.
+
+
+#### Comparison of clusters (confusion table)
+We want to compare the hierarchical clustering, previously done, and the k-means clustering, so proceed to do the following.
+```{r}
+table(df$hcpck,df$claKM)
+
+## we must do a relabel
+df$hcpck<-factor(df$hcpck,labels=c("kHP-1","kHP-2","kHP-3","kHP-4","kHP-5"))
+df$claKM<-factor(df$claKM,levels=c(3,5,2,1,4),labels=c("kKM-3","kKM-5","kKM-2","kKM-1","kKM-4"))
+tt<-table(df$hcpck,df$claKM); tt
+100*sum(diag(tt)/sum(tt))
+```
+We have a concordance of the 54.73% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
+
+--------------------------------------------------------------------------------
+
+## CA analysis
+
+### Are there any row categories that can be combined/avoided to explain the discretization of the numeric target.
+
+#### CA analysis for your data should contain your factor version of the numeric target (previous) in K= 7 (maximum 10) levels and 2 factors.
+
+The first thing we need to do is factor our numeric target variable, Total_amount, and name it f.cost. We are going to set 6 different categories.
+
+```{r}
+df$f.cost[df$Total_amount<=8] = "[0,8]"
+df$f.cost[(df$Total_amount>8) & (df$Total_amount<=11)] = "(8,11]"
+df$f.cost[(df$Total_amount>11) & (df$Total_amount<=18)] = "(11,18]"
+df$f.cost[(df$Total_amount>18) & (df$Total_amount<= 30)] = "(18,30]"
+df$f.cost[(df$Total_amount>30) & (df$Total_amount<= 50)] = "(30,50]"
+df$f.cost[df$Total_amount>50] = "(50,129)"
+df$f.cost<-factor(df$f.cost)
+table(df$f.cost)
+
+```
+Once we have this factor, proceed to create a variable that associates the cost with the passenger groups, and we we a contingency table with 5 rows, one per kind of cost and 3 columns, one per each kind of group.
+
+```{r}
+tt<-table(df[,c("f.cost","passenger_groups")]);tt
+chisq.test(tt,  simulate.p.value = TRUE) #to see if the rows and columns are independents. H0: Rows and columns are independent
+```
+
+!!!!!!Ha quedat mal ordenat, això farà difícil que es vegui l'efecte Guttman
+
+We get a p-value greater than 0.05 so we can assume the H0. ( 0.5217 < 0.05 = FALSE).
+
+We are now going to take a look to the simple correspondences. 
+```{r}
+res.ca <- CA(tt)
+```
+
+Those observations far away from the gravity center will mean that represent less observations on the sample. If rows and columns are nearby, this will mean that there is a correspondence between them, which means that they occur simultaneously in the sample.
+
+```{r}
+summary(res.ca)
+```
+
+We conclude that we can not reject the H0 for these pair of factors, and now we are going to see if we can see if there is independence between the cost and the travel time, so the first thing we are going to do is factor the travel time.
+```{r}
+df$f.tt[df$traveltime<=5] = "[0,5]"
+df$f.tt[(df$traveltime>5) & (df$traveltime<=10)] = "(5,10]"
+df$f.tt[(df$traveltime>10) & (df$traveltime<=15)] = "(10,15]"
+df$f.tt[(df$traveltime>15) & (df$traveltime<= 20)] = "(15,20]"
+df$f.tt[(df$traveltime>20) & (df$traveltime<= 70)] = "(20,60]"
+df$f.tt<-factor(df$f.tt)
+table(df$f.tt)
+```
+
+Once we have this factor, proceed to create a variable that associates the cost with the traveltime.
+
+```{r}
+tt<-table(df[,c("f.cost","f.tt")]);tt
+chisq.test(tt) #to see if the rows and columns are independents. H0: Rows and columns are independent
+```
+
+We get a p-value smaller than 0.05 so we can reject the H0. ((< 2.2e-16) < 0.05). So there is dependence between the traveltime and the cost, as we suspected.
+
+We are now going to take a look to the simple correspondences. 
+```{r}
+res.ca <- CA(tt)
+
+plot(res.ca$row$coord[,1],res.ca$row$coord[,2],pch=19,col="blue",xlim=c(-1.5,1.5),ylim=c(-1.5,1.5),xlab="Axis 1",ylab="Axis 2", main="CA f.cost vs f.tt")
+points(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red")
+text(res.ca$row$coord[,1],res.ca$row$coord[,2],lwd=2,col="blue",labels=levels(df$f.cost))
+text(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red",labels=levels(df$f.tt))
+lines(res.ca$row$coord[,1],res.ca$row$coord[,2],lwd=2,col="blue")
+lines(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red")
+```
+
+We can see in the plot, clearly that there are some categories that occur simultaneously in the sample, for instant the trips up to 5 minutes with the cost up to 8, the trips between 5-10 minutes and the costs between 8-11, the same happen with the trips between 10-15 minutes and the costs between 11-18. There is a clear relation between the f.cost and f.tt categories, even though we can not see a Guttman's effect from manual the relation is there.
+
+```{r}
+summary(res.ca)
+```
+
+The first thing we can see from the summary is that we have a chi square statistic of 6099.333, great enough to reject the H0, which means the intensity of the relation is high. If we take a look at the variances from the different dimensions, we can see that all together sum more than 1. 
+
+### Eigenvalues and dominant axes analysis. How many axes we have to consider?
+
+```{r}
+mean(res.ca$eig[,1])
+```
+
+Following the kaiser kriteria and the value got in the output, we should retain dimensions with a variance greater than 0.3343199. In this case, the first dimension fulfills this because its variance is 0.751, but it is not enough to work with data so, we would choose 2 o 3 dimensions for this case.
+
+--------------------------------------------------------------------------------
+
+## MCA analysis
+The Multiple correspondence analysis (MCA) is an extension of the simple correspondence analysis for summarizing and visualizing a data table containing more than two categorical variables. 
+
+MCA is generally used to analyse a data set from survey. The goal is to identify:
+
+* A group of individuals with similar profile in their answers to the questions
+* The associations between variable categories
+
+First, we load the libraries we'll use:
+```{r}
+library(FactoMineR)
+library(factoextra)
+```
+
+Now, we can start computing the MCA for our categorical variables:
+
+!!!!!!Per què no useu les categòriques que heu creat de les numèriques
+
+```{r}
+names(df[,c(1:2,15:17,19,25,27:28,31)])
+res.mca <- MCA(
+  df[,c(1:2,15:17,19,25,27:28,31)], 
+  quanti.sup=c(3), 
+  quali.sup=c(8,10),
+  graph=FALSE
+)
+```
+
+Let’s look at the supplementary quantitative variable Total_amount. We can see that it is closer to the Dim2 than to the Dim1.
+```{r}
+fviz_mca_var(res.mca, choice="quanti.sup", repel=TRUE, ggtheme=theme_minimal())
+```
+
+Cloud of individuals:
+```{r}
+fviz_mca_ind(
+  res.mca,
+  geom=c("point"),
+  col.ind="darkslateblue"
+)
+```
+
+### Eigenvalues and dominant axes analysis
+
+**How many axes we have to consider for next Hierarchical Classification stage?**
+
+We consider, according to the generalized Kaiser theorem, all those dimensions such that their eigenvalue is greater than the mean. We see that the average gives us 0.1428571. Therefore, we will take up to dimension 6, which represents the 62.07% of the sample.
+```{r}
+mean(res.mca$eig[,1])
+head(get_eigenvalue(res.mca), 10)
+```
+
+We can also visualize the percentages of inertia explained by each MCA dimensions:
+```{r}
+fviz_screeplot(
+  res.mca, 
+  addlabels=TRUE, 
+  ylim=c(0,20), 
+  barfill="darkslateblue", 
+  barcolor="darkslateblue",
+  linecolor="skyblue1"
+)
+```
+
+### Individuals point of view
+Are they any individuals "too contributive"?
+```{r}
+fviz_mca_ind(
+  res.mca, 
+  geom=c("point"),
+  col.ind="contrib", 
+  gradient.cols=c("darkslateblue", "red")
+)
+```
+
+Are there any groups?
+```{r}
+fviz_mca_ind(res.mca, label="none", habillage="VendorID", palette=c("darkslateblue", "red"))
+fviz_mca_ind(res.mca, label="none", habillage="RateCodeID", palette=c("darkslateblue", "red"))
+fviz_mca_ind(res.mca, label="none", habillage="Trip_type", palette=c("darkslateblue", "red"))
+```
+
+We can see that individuals are more grouped according to some variables than others. For example, the f.VendorID-Mobile is along the entire dimension 1 but also in the center of gravity. In contrast, the Rate-Other is only in the first dimension and does not touch the second at all.
+
+### Interpreting map of categories: average profile versus extreme profiles (rare categories)
+
+Before looking at the categories, let's look at its variables:
+
+As we can see in the plot "Variables representation", the correlation between the Payment_type factor taking into account the eta2 and the second factorial axis is a value greater than 0.5. On the other hand, we can see that something similar happens with the Trip_type factor and RateCodeID in dimension 1.
+```{r}
+fviz_mca_var(res.mca, choice="mca.cor", repel=TRUE)
+```
+
+Now, let’s analyze the categories. 
+
+```{r}
+fviz_mca_var(res.mca, repel=TRUE)
+```
+
+As we can see, the “No paid” category ("Payment_type" variable) is the one farthest from the center of the plot (in dimension 2). The farther from the center of gravity, the more rarely this feature value appears in the sample represented by the dimension. In addition, we see that in dimension 1 we also have two extremes, the "Rate-Other" category ("RateCodeID" variable) and the "Dispatch" category ("Trip_type" variable). As we have said, this means that these categories are rarely represented in this dimension.
+
+Regardering the center of mass, we can say that we find the categories most represented by the dimensions.
+
+To give an example, let's suppose we look at the first dimension. An observation that we could find with high probability would be the following:
+
+* RateCodeID = Rate-1
+* Trip_type = Street-Hail
+
+On the other hand, an observation that we could rarely find there would be...
+
+* RateCodeID = Rate-Other
+* Trip_type = Street-Dispatch
+
+We would follow the same logic for dimension 2 considering the Payment_type variable.
+
+### Interpreting the axes association to factor map
+```{r}
+res.desc <- dimdesc(res.mca, axes = c(1,2))
+```
+#### Description of dimension 1
+```{r}
+res.desc[[1]]
+```
+
+There is no info for the **quantitative** variables here.
+
+In the first dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
+
+* RateCodeID (0.95)
+* Trip_type (0.94)
+
+If we look at the **categories**, we see that the most related are,
+
+* for Trip_type:
+  + Dispatch (1.68)
+  + Long_dist (0.24)
+* and for RateCodeID:
+  + Rate-Other (1.58)
+
+#### Description of dimension 2
+```{r}
+res.desc[[2]]
+```
+
+There is no info for the **quantitative** variables here.
+
+For the second dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
+
+* Payment_type (0.53)
+* VendorID (0.26)
+
+We see that they are not very large numbers, however.
+
+If we look at the **categories**, we see that the most related are,
+
+* for Payment_type:
+  + No paid (1.84)
+* and for VendorID:
+  + f.Vendor-Mobile (0.26)
+
+### Perform a MCA taking into account also supplementary variables (use all numeric variables) quantitative and/or categorical. How supplementary variables enhance the axis interpretation?
+```{r}
+res.mca_all <- MCA(
+  df[,c(1:32)], 
+  quanti.sup=c(3:10, 12:13, 15, 18, 20:22), 
+  quali.sup=c(27,31),
+  graph=FALSE
+)
+```
+
+#### Description of dimensions
+```{r}
+res.desc <- dimdesc(res.mca_all, axes = c(1,2))
+```
+##### Description of dimension 1
+```{r}
+res.desc[[1]]
+```
+
+In this dimension, since we have taken into account all the variables, we now have information for the **quantitative** variables. We see that, more or less, the most positively related are:
+
+* Fare_amount (0.35)
+* Trip_distance (0.31)
+* Total_amount (0.29)
+
+We also see that they do not contribute much given the numbers.
+
+However, there is a little more inverse relationship with Extra, with a -0.47.
+
+Regarding the **qualitative** variables, the new relationship is as follows:
+
+* RateCodeID (0.69)
+* MTA_tax (0.71)
+* improvement_surcharge (0.70)
+* Trip_type (0.71)
+
+If we look at the **categories**, we see that the most related are,
+
+* for Trip_type:
+  + Dispatch (1.43) -> same as before but less related
+* for improvement_surcharge:
+  + improvement_surcharge_No (1.38)
+* for MTA_tax:
+  + MTA_tax_No (1.39)
+* for Trip_distance_range:
+  + Long_dist (0.24)
+* and for RateCodeID:
+  + Rate-Other (1.33) -> same as before but less related
+  
+
+##### Description of dimension 2
+```{r}
+res.desc[[2]]
+```
+
+In this dimension, since we have taken into account all the variables, we now have information for the **quantitative** variables. We see that, more or less, the most positively related are:
+
+* Extra (0.59540871)
+* Passenger_count (0.18753711)
+
+For the second dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
+
+* period (0.72)
+* pickup (0.78)
+* dropoff (0.76)
+* hcpck (0.45)
+* MTA_tax (0.16)
+* ...
+* Payment_type (0.0013) -> we see that it has lowed down in front of the other variables
+* VendorID -> it does not even appear
+We see that they are not very large numbers, however.
+
+If we look at the **categories**, we see that the most related are,
+
+* for period:
+  + Period night (0.40)
+  + Period afternoon (0.46)
+* ...
+* for Payment_type:
+  + No paid (1.84) -> now it's inversed
+* and for VendorID:
+  + f.Vendor-Mobile  -> it does not even appear
+
+
+--------------------------------------------------------------------------------
+## Hierarchical Clustering (from MCA)
+
+
+```{r}
+res.hcpcMCA <- HCPC(res.mca,nb.clust = 5, order = TRUE)
+```
+
+*Note*: If we chose the default number of cluster it would be 5, as we can guess from the inertia reduction plot, that follows the Elbow's rule (number of black lines plus 1). In our case, after trying with bigger number of clusters, we decided that the default number of cluster was fine for our case and data.
+
+### Description of clusters
+Number of observations in each cluster:
+```{r}
+table(res.hcpcMCA$data.clust$clust)
+barplot(table(res.hcpcMCA$data.clust$clust), col="darkslateblue", border="darkslateblue", main="[hierarchical from mca] #observations/cluster")
+```
+
+### Interpret the results of the classification
+
+#### The description of the clusters by the variables 
+```{r}
+names(res.hcpcMCA$desc.var)
+res.hcpcMCA$desc.var$test.chi2   ## categorical variables which characterizes the clusters
+```
+We start wit the description of the categorical variables that characterize the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variables that affect more to the clustering are **RateCodeID**, **Payment_type**, **Trip_type** and **period** because are the one with the smallest p.value. The variables associated to the clusters are the ones that appear on the output.
+
+Next, we want to see for each cluster which are the categories that characterize them. The clusters that contain more individuals are the first, the second and the fourth one. Clusters number 1 and 5 are the ones that have less individuals. We proceed to analyze them.
+
+```{r}
+res.hcpcMCA$desc.var$category    ## description of each cluster by the categories
+```
+
+* Cluster 1
+  + The first thing we can notice from this cluster is that all observations are of **Payment_type=No paid**, even though this category only intervents in the sample 0.65% this cluster contains all the individuals of this payment type and all of the observations in the cluster are of **VendorID=f.Vendor-Mobile**, a category that intervents a 21.05% from the sample, but this cluster is that small that we only have a 3.08% of observations of this kind represented in the cluster. So, what is logical is that the other payment types represent a 0% in this cluster as well as the other vendor type. We can also see that all the observations in the did not left a tip, and again and because of the size of the cluster, even though the **TipIsGive=No** represents a 62.34% of the observations from sample, we only have a representation of the 1.04% of these individuals in this cluster. We can also notice that the majority of the trips are made by just one person (96.67%) and we have some morning trips (26.67%).
+* Cluster 2
+  + The first thing we can see from the cluster is that all of the observations present are of the category **Trip_type=Street-Hail** and we have in this cluster a representation of the 24.12% of the observations of this category from sample. Something similar happens to the category **RateCodeID=Rate-1**. We can also see that we have the 88.38% of the observations from sample of the category **period=Period afternoon** represented in this cluster and they represent the 95.77% of the observations of the cluster. We can also notice that around the 80% of the observations in this cluster are single passengers and we have 22.27% of the observations of this category from the sample represented here.
+* Cluster 3
+  + The first thing we can notice is that every observation in the cluster is of the kind of **passenger_groups=Single** and **Trip_type=Street-Hail** and we have represented the 36.89% and 31.77%, respectively, of the observations from the sample of these categories. We can also see that almost every observation in the cluster (99.86%) is of **RateCodeID=Rate-1** and we have represented in this cluster the 31.83% of the observations with this category from the sample. We can see that we have the 84.87% of the **period=Period morning** observations of the sample represented in this cluster, and the 77.22% of the **period=Period valley** observations as well. The 67.90% of the observations of the cluster are **period=Period morning**. The 69.29% of the observations in the cluster are short distance trips and the 65.60% observations in the cluster did not left any tips.
+* Cluster 4
+  + The first thing we can see is that every observation in the cluster is of the kind **Trip_type=Street-Hail** and we have the 43.27% of the observations from the sample of this kind are represented in this cluster. We can also notice that almost every observation in the cluster is of the kind **RateCodeID=Rate-1** and we have 43.35% of the observations  of this kind from the sample represented here. We can see that the 96.71% of the **period=Period night** observations from the sample are represented in the cluster, and the 81.35% of the observations in the cluster are of this kind too. We can see that we have represented the 74.43% of **passenger_groups=Group**, the 71.58% of **Trip_distance=Long_dist** and the 71.49% of **f.cost=(30,50]** observations of these kinds from the sample represented in this cluster.
+* Cluster 5
+  + The first thing we can notice from this cluster is that we have represented in this cluster all the observations of **Trip_type=Dispatch** from the sample here and they represent the 93.33% of the observations of this kind in the cluster, so the rest are **Trip_type=Street-Hail** and we only have a representation of 0.18% of the observations from the sample in this cluster. We can also see that the 80% of the observations in the cluster did not left any tip and the other 20% left some tips, we have a very small representation of observations from the sample of these two categories in this cluster. We can also see that almost every observation in the cluster (99.17%) is of **RateCodeID=Rate-Ohter** and we have the 93.70% of the observations from the sample of this category represented in this cluster. We can see that in this cluster we have represented the 15.87% of the observations from the sample of the category **f.cost=(50,129)**.
+
+
+We now proceed to see the quantitative variables that characterizes the clusters.
+```{r}
+res.hcpcMCA$desc.var$quanti.var  ## quantitative variables which characterizes the clusters
+```
+
+We can see in the output that the variable that appears is slightly over represented in the clusters. We can notice that **Total_amount** is over represented with 0.04 units over the global mean. So it is practically the same as the global mean.
+
+
+We want to know now which variables are associated with the quantitative variables.
+```{r}
+res.hcpcMCA$desc.var$quanti      ## description of each cluster by the quantitative variables
+```
+
+We can notice that every cluster has remarked the Total_amount variable except the first one, that does not have any variable to be described.
+
+
+* Cluster 2
+  + We can see that the **Total_amount** is around 2 units under the overall mean.
+* Cluster 3
+  + We can see that the **Total_amount** is around 1 unit under the overall mean.
+* Cluster 4
+  + We can see that the **Total_amount** is around 2 units over the overall mean.
+* Cluster 5
+  + We can see that the **Total_amount** is around 6 units over the overall mean.
+
+#### Partition quality
+We are going to evaluate the partition quality.
+
+##### Gain in inertia (in %)
+```{r}
+## ( between sum of squares / total sum of squares ) * 100
+((res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[5])/res.hcpcMCA$call$t$within[1])*100
+```
+
+The quality of this reduction if of 59.15%.
+
+
+In case we wanted to achieve an 80% of the clustering representativity we would need 13 clusters.
+```{r}
+((res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[13])/res.hcpcMCA$call$t$within[1])*100
+```
+
+
+### Parangons and class-specific individuals.
+
+#### The description of the clusters by the individuals
+```{r}
+res.hcpcMCA$desc.ind$para  ## representative individuals of each cluster
+```
+
+What we obtain are the more representative individuals, paragons, for each cluster. We get the rownames of each paragon in every single cluster.
+
+
+```{r}
+res.hcpcMCA$desc.ind$dist  ## individuals distant from each cluster
+```
+
+What we obtain are those individuals of each cluster that that far away in the same cluster from the rest of the individuals. We also obtain the rownames of each individual with the bigger distance respect the other ones in the cluster.
+
+##### Examine the values of individuals that characterize classes
+
+We get the grpahical representation for the individuals that characterize classes (para and dist).
+```{r}
+## characteristic individuals
+para1<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$para[[1]]))
+dist1<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$dist[[1]]))
+para2<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$para[[2]]))
+dist2<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$dist[[2]]))
+para3<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$para[[3]]))
+dist3<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$dist[[3]]))
+para4<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$para[[4]]))
+dist4<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$dist[[4]]))
+para5<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$para[[5]]))
+dist5<-which(rownames(res.mca$ind$coord)%in%names(res.hcpcMCA$desc.ind$dist[[5]]))
+
+plot(res.mca$ind$coord[,1],res.mca$ind$coord[,2],col="grey50",cex=0.5,pch=16)
+points(res.mca$ind$coord[para1,1],res.mca$ind$coord[para1,2],col="blue",cex=1,pch=16)
+points(res.mca$ind$coord[dist1,1],res.mca$ind$coord[dist1,2],col="chartreuse3",cex=1,pch=16)
+points(res.mca$ind$coord[para2,1],res.mca$ind$coord[para2,2],col="blue",cex=1,pch=16)
+points(res.mca$ind$coord[dist2,1],res.mca$ind$coord[dist2,2],col="darkorchid3",cex=1,pch=16)
+points(res.mca$ind$coord[para3,1],res.mca$ind$coord[para3,2],col="blue",cex=1,pch=16)
+points(res.mca$ind$coord[dist3,1],res.mca$ind$coord[dist3,2],col="firebrick3",cex=1,pch=16)
+points(res.mca$ind$coord[para4,1],res.mca$ind$coord[para4,2],col="blue",cex=1,pch=16)
+points(res.mca$ind$coord[dist4,1],res.mca$ind$coord[dist4,2],col="palevioletred3",cex=1,pch=16)
+points(res.mca$ind$coord[para5,1],res.mca$ind$coord[para5,2],col="blue",cex=1,pch=16)
+points(res.mca$ind$coord[dist5,1],res.mca$ind$coord[dist5,2],col="royalblue1",cex=1,pch=16)
+```
+
+### Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA)focusing on... 
+
+```{r}
+df$hcpckMCA<-res.hcpcMCA$data.clust$clust
+
+## With Hierarchical Clustering (PCA)
+table(df$hcpck,df$hcpckMCA)
+df$hcpckMCA_hcpck<-factor(
+  df$hcpckMCA,
+  levels=c(4,3,2,1,5),
+  labels=c("kHPmca-4","kHPmca-3","kHPmca-2","kHPmca-1","kHPmca-5")
+)
+tt1<-table(df$hcpck,df$hcpckMCA_hcpck); tt1
+100*sum(diag(tt1)/sum(tt1))
+```
+
+We have a concordance of the 48.58% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
+
+
+```{r}
+## With k-means (PCA)
+table(df$claKM, df$hcpckMCA)
+df$hcpckMCA_claKM<-factor(
+  df$hcpckMCA,
+  levels=c(2,3,1,4,5),
+  labels=c("kHPmca-2","kHPmca-3","kHPmca-1","kHPmca-4","kHPmca-5")
+)
+tt2<-table(df$claKM,df$hcpckMCA_claKM); tt
+100*sum(diag(tt2)/sum(tt2))
+```
+
+We have a concordance of the 39.69% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
+
+#### Quantitative target (Total_amount)
+
+* hcpc
+```{r}
+## res.hcpc$desc.var$quanti.var  ## quantitative variables which characterizes the clusters
+## ##                          Eta2       P-value
+## ## Total_amount      0.539522699  0.000000e+00
+```
+
+* kmeans
+```{r}
+## res.cat <-catdes(df,30)
+## res.cat
+## ## Link between the cluster variable and the quantitative variables
+## ## ================================================================
+## ##                          Eta2       P-value
+## ## Total_amount      0.688303660  0.000000e+00
+```
+
+* hcpc_mca
+```{r}
+## ## res.hcpcMCA$desc.var$quanti.var  ## quantitative variables which characterizes the clusters
+## ##                    Eta2      P-value
+## ## Total_amount 0.03950465 3.518655e-39
+```
+
+##### Comment
+To compare the variable Total_amount in the three different classifications, we will look at Eta2:
+
+* The closer to 1 is eta2 for a variable, the better the variance between groups is explained by this variable.
+* We can see that, in descending order, we have:
+  + k-means (0.69)
+  +  hcpc (0.54)
+  + hcpc_mca (0.04)
+* This means that in the last classification the variable to define the clusters is not taken into account so much.
+
+
+#### Binary target (TipIsGiven)
+##### hcpc
+```{r}
+## res.hcpc$desc.var$category    ## description of each cluster by the categories
+## ## $`1`
+## ##                                   Cla/Mod      Mod/Cla    Global  
+## ## TipIsGiven=No                  43.6502429  65.18134715 62.340472  
+## ## TipIsGiven=Yes                 38.5985066  34.81865285 37.659528 
+## #
+## ## $`2`
+## ##                                  Cla/Mod   Mod/Cla    Global 
+## ## TipIsGiven=No                  38.965996 68.727050 62.340472 
+## ## TipIsGiven=Yes                 29.350948 31.272950 37.659528 
+## ## 
+## ## $`3`
+## ##                             Cla/Mod    Mod/Cla    Global  
+## ## nothing to see here
+## ## 
+## ## $`4`
+## ##                                   Cla/Mod   Mod/Cla    Global 
+## ## TipIsGiven=Yes                 24.6984492 56.728232 37.659528 
+## ## TipIsGiven=No                  11.3809854 43.271768 62.340472
+## ## 
+## ## $`5`
+## ##                                   Cla/Mod   Mod/Cla    Global
+## ## TipIsGiven=Yes                 1.60827111 71.794872 37.659528 
+## ## TipIsGiven=No                  0.38167939 28.205128 62.340472
+```
+
+##### kmeans
+```{r}
+## res.cat <-catdes(df,30)
+## res.cat
+## ## 
+## ## Description of each cluster by the categories
+## ## =============================================
+## ## $`1`
+## ##                                   Cla/Mod    Mod/Cla    Global
+## ## TipIsGiven=Yes                  23.721999 49.6991576 37.659528
+## ## TipIsGiven=No                   14.503817 50.3008424 62.340472
+## ## 
+## ## $`2`
+## ##                                    Cla/Mod    Mod/Cla    Global 
+## ## TipIsGiven=Yes                  15.6232051 55.9670782 37.659528 
+## ## TipIsGiven=No                    7.4253990 44.0329218 62.340472
+## ## 
+## ## $`3`
+## ##                                    Cla/Mod     Mod/Cla     Global 
+## ## TipIsGiven=No                   19.5697432  66.8246445 62.3404716
+## ## TipIsGiven=Yes                  16.0827111  33.1753555 37.6595284 
+## ## 
+## ## $`4`
+## ##                                     Cla/Mod    Mod/Cla     Global
+## ## TipIsGiven=Yes                    3.9058013 62.3853211 37.6595284
+## ## TipIsGiven=No                     1.4226232 37.6146789 62.3404716
+## ## 
+## ## $`5`
+## ##                                   Cla/Mod     Mod/Cla     Global 
+## ## TipIsGiven=No                   57.078418  69.9107522 62.3404716
+## ## TipIsGiven=Yes                  40.666284  30.0892478 37.6595284
+```
+
+##### hcpc_mca
+```{r}
+## res.hcpcMCA$desc.var$category    ## description of each cluster by the categories
+## ## $`1`
+## ##                                Cla/Mod   Mod/Cla     Global 
+## ## TipIsGiven=No                1.0409438 100.00000 62.3404716
+## ## TipIsGiven=Yes               0.0000000   0.00000 37.6595284
+## ## 
+## ## $`2`
+## ##                                  Cla/Mod     Mod/Cla     Global 
+## ## nothing to see here
+## ## 
+## ## $`3`
+## ##                                  Cla/Mod     Mod/Cla     Global  
+## ## TipIsGiven=No                  32.616239  65.5966504 62.3404716 
+## ## TipIsGiven=Yes                 28.317059  34.4033496 37.6595284  
+## ## 
+## ## $`4`
+## ##                                  Cla/Mod     Mod/Cla     Global 
+## ## TipIsGiven=Yes                 46.984492  41.9057377 37.6595284 
+## ## TipIsGiven=No                  39.347675  58.0942623 62.3404716 
+## ## 
+## ## $`5`
+## ##                                     Cla/Mod    Mod/Cla    Global 
+## ## TipIsGiven=No                    3.33102012 80.0000000 62.340472 
+## ## TipIsGiven=Yes                   1.37851809 20.0000000 37.659528 
+```
+
+##### Comment
+To compare the variable TipIsGiven in the three different classifications, we will look at Cla / Mod, Mod / Cla and Global:
+
+* Cluster 1:
+   + hcpc: TipIsGiven = No is overrepresented
+   + kmeans: TipIsGiven = Yes is overrepresented
+   + hcpc_mca: TipIsGiven = No is overrepresented
+* Cluster 2:
+   + hcpc: TipIsGiven = No is overrepresented
+   + kmeans: TipIsGiven = Yes is overrepresented
+   + hcpc_mca: There is no data in the cluster of this variable
+* Cluster 3:
+   + hcpc: No data in the cluster of this variable
+   + kmeans: TipIsGiven = No is overrepresented
+   + hcpc_mca: TipIsGiven = No is overrepresented
+* Cluster 4:
+   + hcpc: TipIsGiven = Yes is overrepresented
+   + kmeans: TipIsGiven = Yes is overrepresented
+   + hcpc_mca: TipIsGiven = Yes is overrepresented
+* Cluster 5:
+   + hcpc: TipIsGiven = Yes is overrepresented
+   + kmeans: TipIsGiven = No is overrepresented
+   + hcpc_mca: TipIsGiven = No is overrepresented
+
+#### Final comment
+We think that at first glance, we do not find the relationship between the different clusters of the different types of analysis. As we can see in the data, they are not distributed in the same way with respect to the two variables we had to analyze.
+
+It makes sense to think this, since these variables have not been taken into account in the analyzes, as they had the role of supplementary variables, which means that they only served us as explanatory variables, and not to decide how to form clusters.
+

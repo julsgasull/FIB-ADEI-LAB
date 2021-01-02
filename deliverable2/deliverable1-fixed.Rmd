@@ -303,13 +303,13 @@ df$traveltime<-(as.numeric(as.POSIXct(df$Lpep_dropoff_datetime)) - as.numeric(as
 ```{r}
 df$espeed<-(df$tlenkm/(df$traveltime))*60
 ```
-#### Missing data
+##### Missing data
 ```{r}
 sel<-which(is.na(df$espeed<=0)) #;length(sel)
 imis[sel]<-imis[sel]+1
 jmis[26]<-length(sel)
 ```
-#### Error detection
+##### Error detection
 We detect as error those speeds smaller than 0 and bigger than 200
 ```{r}
 summary(df$espeed)
@@ -322,11 +322,11 @@ Sel contains the rownames of the individuals with "0" as  value for longitude
 ```{r}
 df[sel,"espeed"]<-NA 
 ```
-#### Check outliers
+##### Check outliers
 ```{r}
 calcQ(df$espeed)
 ```
-#### Outlier detection
+##### Outlier detection
 ```{r}
 Boxplot(df$espeed)
 var_out<-calcQ(df$espeed)
@@ -338,6 +338,8 @@ iouts[llout]<-iouts[llout]+1
 jouts[26]<-length(llout)
 df[llout,"espeed"]<-NA 
 ```
+
+
 
 ### 2. lpep_pickup_datetime
 We just keep the hours
@@ -920,7 +922,6 @@ df$passenger_groups[res.imputation$completeObs[,"Passenger_count"]  == 1] = "Sin
 df$passenger_groups[res.imputation$completeObs[,"Passenger_count"] > 1 & res.imputation$completeObs[,"Passenger_count"] <= 2] = "Couple"
 df$passenger_groups[res.imputation$completeObs[,"Passenger_count"] >= 3] = "Group"
 df$passenger_groups <- factor(df$passenger_groups)
-
 ```
 We see the barplot in order to see the distribution of passenger per trip
 ```{r}
