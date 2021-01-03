@@ -605,122 +605,103 @@ df[sel,"q.mta_tax"]<-NA
 ```
 
 
-### 16. Improvement_surcharge
+##### Improvement_surcharge
 This variable corresponds to a charge that must be charged in every trip and its cost is $0.30, so values smaller than 0 are errors, and we don't have to take into account outliers because after the errors detection all values should be the Improvement surcharge.
 ```{r}
-summary(df$improvement_surcharge)
-table(df$improvement_surcharge)
+summary(df$q.improvement_surcharge)
+table(df$q.improvement_surcharge)
 ```
-We know that this surcharge was leived in 2015, so we need to check if the 0 values correspond to trips before this year. That is what we are going to do.
-```{r}
-df$yearGt2015[(df$lpep_pickup_datetime >= "2015-01-01 00:00:00") & (df$improvement_surcharge == 0.3)] = 1
-df$yearGt2015[(df$lpep_pickup_datetime < "2015-01-01 00:00:00") | (df$improvement_surcharge != 0.3)] = 0
 
-table(df$yearGt2015)
-```
 We see that the 0 individuals are errors.
 ```{r}
-sel<-which(df$improvement_surcharge < 0)
+sel<-which(df$q.improvement_surcharge < 0)
 ierrs[sel]<-ierrs[sel]+1
-# names(df)
-jerrs[18]<-length(sel)
-df[sel,"improvement_surcharge"]<-NA 
-# sel
+jerrs[17]<-length(sel)
+df[sel,"q.improvement_surcharge"]<-NA 
 ```
 
-### 17. Ehail_fee
-We don’t take this into account because every value of our sample is NA.
-```{r}
-summary(df$Ehail_fee)
-```
 
-### 18. Tip_amount
-As this is a price related variable, negative values should be considered as errors, and big tips should be considered as outliers. Also tip amounts bigger than 0 for individuals with payment_type = "Cash" should be considered as errors as well.
+##### Tip_amount
+As this is a price related variable, negative values should be considered as errors, and big tips should be considered as outliers. Also tip amounts bigger than 0 for individuals with f.payment_type = "cash" should be considered as errors as well.
 ```{r}
-summary(df$Tip_amount)
+summary(df$q.tip_amount)
 ```
-We proceed to check if the 0 values are related with payment_type = "Credit card" and the passenger did not tip.
+We proceed to check if the 0 values are related with payment_type = "credit card" and the passenger did not tip.
 ```{r}
-df$CashTips[(df$Tip_amount > 0) & (df$Payment_type == "Cash")] = 1
-df$CashTips[(df$Payment_type == "Credit card")] = 0
-table(df$CashTips)
+table(df$q.tip_amount>0, df$f.payment_type)
 ```
+We see that the taxi driver only reports that there is a tip when he cannot keep the money (only when it is with a credit card).
 
 Now, we proceed to the outlier detection.
 
-#### Outlier detection
+###### Outlier detection
 ```{r}
-Boxplot(df$Tip_amount)
-var_out<-calcQ(df$Tip_amount)
+Boxplot(df$q.tip_amount)
+var_out<-calcQ(df$q.tip_amount)
 abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
 abline(h=40,col="blue",lwd=2)
 
-llout<-which(df$Tip_amount>40)
+llout<-which(df$q.tip_amount>40)
 iouts[llout]<-iouts[llout]+1
-# names(df)
 jouts[15]<-length(llout)
-df[llout,"Tip_amount"]<-NA 
-# llout
+df[llout,"q.tip_amount"]<-NA
 ```
 
-### 19. Tolls_amount
+##### Tolls_amount
 As this is a price related variable, negative values should be considered as errors.
 ```{r}
-summary(df$Tolls_amount)
+summary(df$q.tolls_amount)
 ```
 We see that there are not negative values, so we do not have errors. We proceed now to the outlier detection.
 ```{r}
-Boxplot(df$Tolls_amount)
-var_out<-calcQ(df$Tolls_amount)
+Boxplot(df$q.tolls_amount)
+var_out<-calcQ(df$q.tolls_amount)
 abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
-
-table(df$Tolls_amount)
+table(df$q.tolls_amount)
 ```
 As we see in the boxplot and the table, the majority of the individuals are 0, so the values bigger than 5.54 will be outliers.
 ```{r}
-llout<-which(df$Tolls_amount>5.54)
+llout<-which(df$q.tolls_amount>5.54)
 iouts[llout]<-iouts[llout]+1
-# names(df)
 jouts[16]<-length(llout)
-df[llout,"Tolls_amount"]<-NA 
-# llout
+df[llout,"q.tolls_amount"]<-NA 
 ```
 
-### 20. Total_amount
+##### Total_amount
 This is a price related variable, so negative values should be treated as errors. Also, we need to sum the "Fare_amount", "Extra","MTA_tax", "Improvement_surcharge", "Tip_amount" and the "Tolls_amount" in order to see if the Total_amount matches with this sum.
 ```{r}
-summary(df$Total_amount)
+summary(df$q.target.total_amount)
 ```
-Negative values seem to be errors 
-- 0 Total_amount is possible when Payment_type =="No charge"
+
+Negative values seem to be errors (0 Total_amount is possible when Payment_type =="No charge").
 
 We proceed to check if total amount is correctsumming the other variables and checking negatives values:
 ```{r}
-df$Sum_total_amount = (df$Fare_amount + df$Extra + df$MTA_tax + df$improvement_surcharge + df$Tip_amount + df$Tolls_amount)
+sum_total_amount = (df$q.fare_amount + df$q.extra + df$q.mta_tax + df$q.improvement_surcharge + df$q.tip_amount + df$q.tolls_amount)
 
-sel<-which((df$Total_amount != df$Sum_total_amount) | (df$Total_amount<0))
+sel<-which((df$q.target.total_amount != sum_total_amount) | (df$q.target.total_amount<0))
 # names(df)
 if (length(sel)>0) {
   ierrs[sel]<-ierrs[sel]+1
-  jerrs[19]<-length(sel)
+  jerrs[18]<-length(sel)
 }
 # sel
-df[sel,"Total_amount"]<-NA
+df[sel,"q.target.total_amount"]<-NA
 ```
 #### Outlier detection
 ```{r}
-Boxplot(df$Total_amount)
-var_out<-calcQ(df$Total_amount)
+Boxplot(df$q.target.total_amount)
+var_out<-calcQ(df$q.target.total_amount)
 abline(h=var_out$souts,col="red")
 abline(h=var_out$souti,col="red")
 abline(h=150,col="blue",lwd=2)
 
-llout<-which(df$Total_amount>150)
+llout<-which(df$q.target.total_amount>150)
 iouts[llout]<-iouts[llout]+1
-jouts[19]<-length(llout)
-df[llout,"Total_amount"]<-NA 
+jouts[18]<-length(llout)
+df[llout,"q.target.total_amount"]<-NA 
 ```
 
 

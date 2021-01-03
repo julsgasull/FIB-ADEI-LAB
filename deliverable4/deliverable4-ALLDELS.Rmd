@@ -959,76 +959,87 @@ df$f.espeed<-factor(df$f.espeed)
 
 ### Describe these variables, to which other variables exist higher associations
 #### Compute the correlation with all other variables. 
+We are skipping longitudes and latitudes.
 ```{r}
 library(mvoutlier)
 library(FactoMineR)
-res <- cor(df[,vars_quantitatives])
+vars_quantitatives_no_coords <- names(df)[c(8,9,10,11,12,13,14,15,16,21,22,23)]
+res <- cor(df[,vars_quantitatives_no_coords])
 round(res, 2)
 ```
 
 #### Rank these variables according the correlation:
 ```{r}
 library(corrplot)
-corrplot(res,type="lower",title="correlations between quantitative variables")
+corrplot(res,method="square",type="upper",tl.col="black",tl.cex=0.75,)
 ```
-
-
-# !! fins aquí !!
 
 As we can see in this graph, we have the correlation between all quantitative variables. We must say, however, that there are two variables (espeed and traveltime) which we had to modify when making the imputation.
 
-In case of not having made the imputation of espeed and traveltime, we would have the following plot:
-
-[insert image], 
-
-which means that there is a negative correlation between these two variables, since the longer the time, the slower the trip. However, we think it is necessary to remove the outliers we have had from these variables because they are unrealistic.
-
-Now, let's describe each correlation we obtained in the first graph:
-
-* Diagonals:
-  + Being exactly the same variable, it is directly related to itself.
-* Fare_amount + Trip_distance:
-  + More distance, more time, therefore more price.
-* Tip_amount + Trip_distance:
-  + If the trip has been longer, there may be more reason to tip.
-* Total_amount + Trip_distance:
-  + As before, more distance, more time, therefore more price.
-* tlenkm + Trip_distance:
-  + They are exactly the same, only with a metric change.
-* traveltime + Trip_distance:
-  + The further away, the longer.
-* espeed + Trip_distance:
-  + The reason we think these variables are related to a direct and positive proportion is that since short trips have to be, logically cheaper, what taxi drivers do is slow down so that the trip take longer and thus charge more. Therefore, by increasing the distance of the journey, taxi drivers do not need to go so slow and therefore the speed increases.
-* Amount_type + Amount_mount:
-  + In the USA it is normal to give a tip proportional to the price of the service that has been offered.
-* Total_amount + Fare_amount:
-  + The variable Total_amount is equivalent to Fare_amount plus the fees, tips, among others, that have been applied to the trip.
-* tlenkm + Fare_amount:
-  + As before, more distance, more time, therefore more price.
-* traveltime + Fare_amount:
-  + More time, more price.
-* espeed + Fare_amount:
-  + As we said before, more speed means more distance, therefore more travel time, causing more price.
-* Total_amount + Type_amount:
-  + As before, in the USA it is normal to give a tip proportional to the price of the service that has been offered.
-* tlenkm + Mount_type:
-  + If the trip has been longer, there may be more reason to tip.
-* traveltime + Tip_amount:
-  + The longer it takes, the more price, and therefore the more tip given the proportionality.
-* espeed + Tip_amount:
-  + The more speed, as we said before, the more distance, and therefore the longer it takes. This causes more price and therefore more tip.
-* tlenkm + Total_amount:
-  + More distance, more time, therefore more price.
-* traveltime + Total_amount:
-  + More time, more price.
-* espeed + Total_amount:
-  + As we said before, more speed means more distance, therefore more travel time, causing more price.
-* traveltime + tlenkm:
-  + The more km to travel, the longer it takes.
-* speed + tlenkm:
-  + Same as for espeed + Trip_distance correlation.
+Now, let's describe each correlation we obtained in the graph (we will only mention one relation once):
+* Diagonals: Being exactly the same variable, it is directly related to itself.
+* q.passanger_count: not too related to any other not seen before
+* q.trip_distance
+  + w/ q.fare_amount: More distance, more time, therefore more price.
+  + w/ q.tip_amount: If the trip has been longer, there may be more reason to tip.
+  + w/ q.target.total_amount: As before, more distance, more time, therefore more price.
+  + w/ q.tlenkm: They are exactly the same, only with a metric change.
+  + w/ q.travel_time: The further away, the longer.
+  + w/ q.espeed: The reason we think these variables are related to a direct and positive proportion is that since short trips have to be, logically cheaper, what taxi drivers do is slow down so that the trip take longer and thus charge more. Therefore, by increasing the distance of the journey, taxi drivers do not need to go so slow and therefore the speed increases.
+* q.fare_amount:
+  + w/ q.tip_amount: In the USA it is normal to give a tip proportional to the price of the service that has been offered.
+  + w/ q.target.total_amount: The variable q.target.total_amount is equivalent to q.fare_amount plus the fees, tips, among others, that have been applied to the trip.
+  + w/ q.tlenkm: As before, more distance, more time, therefore more price
+  + w/ q.travel_time: More time, more price.
+  + w/ q.espeed: As we said before, more speed means more distance, therefore more travel time, causing more price.
+* q.extra: not too related to any other not seen before
+* q.mta_tax:
+  + w/ q.improvement_subcharge: if there's a tax, the most probable thing to happen is that there's an improvement subcharge too
+* q.tip_amount:
+  + w/ q.target.total_amount: As before, in the USA it is normal to give a tip proportional to the price of the service that has been offered.
+  + w/ q.tlenkm: If the trip has been longer, there may be more reason to tip.
+  + w/ q.travel_time: The longer it takes, the more price, and therefore the more tip given the proportionality.
+  + w/ q.espeed: The more speed, as we said before, the more distance, and therefore the longer it takes. This causes more price and therefore more tip.
+* q.tolls_amount: not too related to any other not seen before
+* q.improvement_subcharge: not too related to any other not seen before
+* q.target.total_amount:
+  + w/ q.tlenkm: More distance, more time, therefore more price.
+  + w/ q.espeed: As we said before, more speed means more distance, therefore more travel time, causing more price.
+* q.tlenkm
+  + Same as for q.trip_distance + q.espeed correlation.
+* q.travel_time: not too related to any other not seen before
+* q.espeed: not too related to any other not seen before
 
 --------------------------------------------------------------------------------
+
+#### Identify individuals considered as multivariant outliers
+```{r}
+library(mvoutlier)
+library(chemometrics)
+
+#"Trip_distance" "Fare_amount"   "Total_amount"  "espeed"       
+
+multivariant_outliers <- Moutlier(df[, c(9,10,16,23)], quantile = 0.995)
+multivariant_outliers$cutoff
+par(mfrow=c(1,1))
+plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
+text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(9,10,16,23)]), cex=0.5) 
+
+ll_mvoutliers <- subset(df, (multivariant_outliers$md>10 | multivariant_outliers$rd>60)); summary(ll_mvoutliers)
+```
+
+// !!! FALTA COMENTAR OUTLIERS MULTIVARIANTS
+
+
+```{r}
+df <- subset(df, !(multivariant_outliers$md>10 | multivariant_outliers$rd>60))
+
+multivariant_outliers <- Moutlier(df[, c(9,10,16,23)], quantile = 0.995)
+par(mfrow=c(1,1))
+plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
+text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(9,10,16,23)]), cex=0.5) 
+```
+
 
 #### Identify individuals considered as multivariant outliers
 ```{r}
