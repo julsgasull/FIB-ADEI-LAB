@@ -1028,6 +1028,8 @@ text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(
 ll_mvoutliers <- subset(df, (multivariant_outliers$md>10 | multivariant_outliers$rd>60)); summary(ll_mvoutliers)
 ```
 
+As we can see, above the defined line we have all the possible observations that we call multivariate outliers. These mean that, viewed only from the point of view of a variable, it does not have to be an outlier, but that viewed with various dimensions (variables), it may be so.
+
 // !!! FALTA COMENTAR OUTLIERS MULTIVARIANTS
 
 
@@ -1040,34 +1042,12 @@ plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
 text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(9,10,16,23)]), cex=0.5) 
 ```
 
-
-#### Identify individuals considered as multivariant outliers
-```{r}
-library(chemometrics)
-multivariant_outliers <- Moutlier(df[, c(11:12, 19, 26)], quantile = 0.995)
-multivariant_outliers$cutoff
-par(mfrow=c(1,1))
-plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
-text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(11:12, 19, 26)])) 
-abline(col="red",lwd=2, h=qchisq(0.995, ncol(df[, c(11:12, 19, 26)])))
-```
-
-
-As we can see, above the defined line we have all the possible observations that we call multivariate outliers. These mean that, viewed only from the point of view of a variable, it does not have to be an outlier, but that viewed with various dimensions (variables), it may be so.
-
-We want to look at two observations that have caught our attention. The first is 488540 and the second is 1180476. 
-
-As we can see, observation 488540 is the one at the boundary of the two axes. So that means it’s most likely a multivariate outlier. On the other hand, the 1180476 is not exactly very central on both axes. This may lead us to think that he is not as likely as the other observation to be a multivariate outlier.
-
-```{r}
-df[which(row.names(df)=="488540"), 1:35]
-df[which(row.names(df)=="1180476"), 1:35]
-```
+We can see now that there are not multivariant outliers in our dataframe.
 
 --------------------------------------------------------------------------------
 
 ## Profiling
-### Numeric target: Total_amount
+### Numeric target: q.target.total_amount
 Profiling is used to finish profiling our sample.
 
 We will now proceed to the profiling that asks us for our numeric target (Total_amount) and then we have to use the original variables and factors.
@@ -1076,15 +1056,18 @@ In order to observe the relationship of our numerical target with the other vari
 
 ```{r}
 library(FactoMineR)
-summary(df$Total_amount)
+summary(df$q.target.total_amount)
 ```
 
 ```{r}
-vars_res<-names(df)[c(19,34)]
+vars_res<-names(df)[c(16,30)]
 res.condes <- condes(df[, c(vars_res,vars_quantitatives, vars_categorical)],1)
 ```
 
 Let's now look at the correlations between our Total_amount target and the variables in the following groups. We will basically look at p.value, which we know that the smaller the correlation between the variables.
+
+
+# !!!!! FINS AQUÍ !!!!!!
 
 ##### > Numerical variables
 ```{r}
