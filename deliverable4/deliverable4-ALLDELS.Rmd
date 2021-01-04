@@ -1024,14 +1024,23 @@ multivariant_outliers$cutoff
 par(mfrow=c(1,1))
 plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
 text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(9,10,16,23)]), cex=0.5) 
-
-ll_mvoutliers <- subset(df, (multivariant_outliers$md>10 | multivariant_outliers$rd>60)); summary(ll_mvoutliers)
 ```
 
 As we can see, above the defined line we have all the possible observations that we call multivariate outliers. These mean that, viewed only from the point of view of a variable, it does not have to be an outlier, but that viewed with various dimensions (variables), it may be so.
 
-// !!! FALTA COMENTAR OUTLIERS MULTIVARIANTS
+Anem a feer una mirada ràpida dels outliers multivariants més pronunciats per entendre com són:
+```{r}
+df[which(row.names(df)=="1208612"), 1:35]
+```
 
+* q.trip_distance = 7.828788 (1km)
+* q.fare_amount = $2.5
+* q.target.total_amount = $100.3
+* q.espeed = 28.72946
+
+We can see that, for only 1km, the whole trip cost $100, and that's not normal.
+
+We are removing them from our dataset:
 
 ```{r}
 df <- subset(df, !(multivariant_outliers$md>10 | multivariant_outliers$rd>60))
