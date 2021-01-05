@@ -556,7 +556,10 @@ table(df$f.tt)
 Once we have this factor, proceed to create a variable that associates the cost with the traveltime.
 
 ```{r}
-tt<-table(df[,c("f.cost","f.tt")]);tt
+new_f.cost <- ordered(df$f.cost, levels= c("[0,8]", "(8,11]", "(11,18]", "(18,30]", "(30,50]","(50,129)"))
+new_f.travel_time <- ordered(df$f.tt, levels= c("[0,5]", "(5,10]", "(10,15]", "(15,20]","(20,60]"))
+
+tt<-table(new_f.cost,new_f.travel_time);tt
 chisq.test(tt) #to see if the rows and columns are independents. H0: Rows and columns are independent
 ```
 

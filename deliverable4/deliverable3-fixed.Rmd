@@ -713,6 +713,11 @@ We create a new model with them:
 model_16<-lm(log(target.total_amount) ~ q.tip_amount + log(q.tlenkm)+ f.paid_tolls+ f.espeed + f.extra + f.code_rate_id + f.payment_type+f.period ,data=df)
 
 anova(model_15, model_16)
+
+
+influencePlot( model_16, id=c(list="noteworthy",n=5))
+residualPlots(model_16)
+marginalModelPlots(model_16)
 ```
 
 We see that we haven't lost anything.
