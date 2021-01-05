@@ -1180,7 +1180,7 @@ vars_categorical<-names(df)[c(1,2,16,17,19,25,30)]
 We have already seen profiling in the previous installment. So now, let’s proceed to look at the main components.
 ```{r}
 library(FactoMineR)
-res.pca <- PCA(df[,c(1,2,3,4,5,6,7,8,9,10,12,13,15,16,17,19,21,22,25,26)],quanti.sup=c(3:6,13),quali.sup=c(1,2,14:16,19:20))
+res.pca <- PCA(df[,c(1,2,3,4,5,6,7,8,9,10,12,13,15,16,17,19,21,22,25,26,29)],quanti.sup=c(3:6,13),quali.sup=c(1,2,14:16,19:21))
 ```
 
 As we know, those variables that have an angle of 90 degrees, are not related. Taking a first look at the PCA obtained, we see that, for example, q.extra and q.travel_time are not at all related. On the other hand, also looking at q.travel_time, we see that it is very positively related to q.extra. If there were a variable that went in the opposite direction, we would say that it is inversely related.
@@ -1331,7 +1331,7 @@ text(res.pca$quali.sup$coord[,1],res.pca$quali.sup$coord[,2],labels=names(res.pc
 ## Hierarchical Clustering
 
 ```{r}
-res.hcpc <- HCPC(res.pca,nb.clust = 5, order = TRUE)
+res.hcpc <- HCPC(res.pca,nb.clust=5, order=TRUE)
 ```
 
 *Note*: If we chose the default number of cluster it would be 3, as we can guess from the inertia reduction plot, that follows the Elbow's rule (number of black lines plus 1). In our case, due to the amount of data we have, the reason why we chose 5 as the number of clusters is because, after trying different numbers, we thought it was the best way to distribute the data.
@@ -1589,16 +1589,13 @@ lines(res.ca$row$coord[,1],res.ca$row$coord[,2],lwd=2,col="blue")
 lines(res.ca$col$coord[,1],res.ca$col$coord[,2],lwd=2,col="red")
 ```
 
-
-!!!!!!!fins aquiiii
-
-We can see in the plot, clearly that there are some categories that occur simultaneously in the sample, for instant the trips up to 5 minutes with the cost up to 8, the trips between 5-10 minutes and the costs between 8-11, the same happen with the trips between 10-15 minutes and the costs between 11-18. There is a clear relation between the f.cost and f.tt categories, even though we can not see a Guttman's effect from manual the relation is there.
+We can see in the plot, clearly that there are some categories that occur simultaneously in the sample, for instant the trips up to 5 minutes with the cost up to 8, the trips between 5-10 minutes and the costs between 8-11, the same happen with the trips between 10-15 minutes and the costs between 11-18. There is a clear relation between the f.cost and f.travel_time categories.
 
 ```{r}
 summary(res.ca)
 ```
 
-The first thing we can see from the summary is that we have a chi square statistic of 6099.333, great enough to reject the H0, which means the intensity of the relation is high. If we take a look at the variances from the different dimensions, we can see that all together sum more than 1.
+The first thing we can see from the summary is that we have a chi square statistic of 6210.782, great enough to reject the H0, which means the intensity of the relation is high. If we take a look at the variances from the different dimensions, we can see that all together sum more than 1.
 
 ### Eigenvalues and dominant axes analysis. How many axes we have to consider?
 
@@ -1606,7 +1603,7 @@ The first thing we can see from the summary is that we have a chi square statist
 mean(res.ca$eig[,1])
 ```
 
-Following the kaiser kriteria and the value got in the output, we should retain dimensions with a variance greater than 0.3343199. In this case, the first dimension fulfills this because its variance is 0.751, but it is not enough to work with data so, we would choose 2 o 3 dimensions for this case.
+Following the kaiser kriteria and the value got in the output, we should retain dimensions with a variance greater than 0.3399815. In this case, the first dimension fulfills this because its variance is 0.764, but it is not enough to work with data so, we would choose 2 o 3 dimensions for this case.
 
 --------------------------------------------------------------------------------
 
@@ -1626,37 +1623,26 @@ library(factoextra)
 
 Now, we can start computing the MCA for our categorical variables:
 
-!!!!!!Per què no useu les categòriques que heu creat de les numèriques
-
 ```{r}
-names(df[,c(1:2,15:17,19,25,27:28,31)])
-res.mca <- MCA(
-  df[,c(1:2,15:17,19,25,27:28,31)],
-  quanti.sup=c(3),
-  quali.sup=c(8,10),
-  graph=FALSE
-)
+names(df[,c(1,2,15,16,17,19,25,29,26,37)])
+res.mca <- MCA(df[,c(1,2,15,16,17,19,25,29,26,37)],quanti.sup=c(3),quali.sup=c(8,10),graph=FALSE)
 ```
 
-Let’s look at the supplementary quantitative variable Total_amount. We can see that it is closer to the Dim2 than to the Dim1.
+Let’s look at the supplementary quantitative variable q.target.total_amount. We can see that it is closer to the Dim2 than to the Dim1.
 ```{r}
 fviz_mca_var(res.mca, choice="quanti.sup", repel=TRUE, ggtheme=theme_minimal())
 ```
 
 Cloud of individuals:
 ```{r}
-fviz_mca_ind(
-  res.mca,
-  geom=c("point"),
-  col.ind="darkslateblue"
-)
+fviz_mca_ind(res.mca,geom=c("point"),col.ind="darkslateblue")
 ```
 
 ### Eigenvalues and dominant axes analysis
 
 **How many axes we have to consider for next Hierarchical Classification stage?**
 
-We consider, according to the generalized Kaiser theorem, all those dimensions such that their eigenvalue is greater than the mean. We see that the average gives us 0.1428571. Therefore, we will take up to dimension 6, which represents the 62.07% of the sample.
+We consider, according to the generalized Kaiser theorem, all those dimensions such that their eigenvalue is greater than the mean. We see that the average gives us 0.1428571. Therefore, we will take up to dimension 6, which represents the 62.02% of the sample.
 ```{r}
 mean(res.mca$eig[,1])
 head(get_eigenvalue(res.mca), 10)
@@ -1664,41 +1650,29 @@ head(get_eigenvalue(res.mca), 10)
 
 We can also visualize the percentages of inertia explained by each MCA dimensions:
 ```{r}
-fviz_screeplot(
-  res.mca,
-  addlabels=TRUE,
-  ylim=c(0,20),
-  barfill="darkslateblue",
-  barcolor="darkslateblue",
-  linecolor="skyblue1"
-)
+fviz_screeplot(res.mca,addlabels=TRUE,ylim=c(0,20),barfill="darkslateblue",barcolor="darkslateblue",linecolor="skyblue1")
 ```
 
 ### Individuals point of view
 Are they any individuals "too contributive"?
 ```{r}
-fviz_mca_ind(
-  res.mca,
-  geom=c("point"),
-  col.ind="contrib",
-  gradient.cols=c("darkslateblue", "red")
-)
+fviz_mca_ind(res.mca,geom=c("point"),col.ind="contrib",gradient.cols=c("darkslateblue", "red"))
 ```
 
 Are there any groups?
 ```{r}
-fviz_mca_ind(res.mca, label="none", habillage="VendorID", palette=c("darkslateblue", "red"))
-fviz_mca_ind(res.mca, label="none", habillage="RateCodeID", palette=c("darkslateblue", "red"))
-fviz_mca_ind(res.mca, label="none", habillage="Trip_type", palette=c("darkslateblue", "red"))
+fviz_mca_ind(res.mca, label="none", habillage="f.vendor_id", palette=c("darkslateblue", "red"))
+fviz_mca_ind(res.mca, label="none", habillage="f.rate_code_id", palette=c("darkslateblue", "red"))
+fviz_mca_ind(res.mca, label="none", habillage="f.trip_type", palette=c("darkslateblue", "red"))
 ```
 
-We can see that individuals are more grouped according to some variables than others. For example, the f.VendorID-Mobile is along the entire dimension 1 but also in the center of gravity. In contrast, the Rate-Other is only in the first dimension and does not touch the second at all.
+We can see that individuals are more grouped according to some variables than others. For example, the vendor_id_mobile is along the entire dimension 1 but also in the center of gravity. In contrast, the rate_code_id_other-Other is only in the first dimension and does not touch the second at all.
 
 ### Interpreting map of categories: average profile versus extreme profiles (rare categories)
 
 Before looking at the categories, let's look at its variables:
 
-As we can see in the plot "Variables representation", the correlation between the Payment_type factor taking into account the eta2 and the second factorial axis is a value greater than 0.5. On the other hand, we can see that something similar happens with the Trip_type factor and RateCodeID in dimension 1.
+As we can see in the plot "Variables representation", the correlation between the f.payment_type factor taking into account the eta2 and the second factorial axis is a value greater than 0.5. On the other hand, we can see that something similar happens with the f.trip_type factor and f.rate_code_id in dimension 1.
 ```{r}
 fviz_mca_var(res.mca, choice="mca.cor", repel=TRUE)
 ```
@@ -1709,21 +1683,21 @@ Now, let’s analyze the categories.
 fviz_mca_var(res.mca, repel=TRUE)
 ```
 
-As we can see, the “No paid” category ("Payment_type" variable) is the one farthest from the center of the plot (in dimension 2). The farther from the center of gravity, the more rarely this feature value appears in the sample represented by the dimension. In addition, we see that in dimension 1 we also have two extremes, the "Rate-Other" category ("RateCodeID" variable) and the "Dispatch" category ("Trip_type" variable). As we have said, this means that these categories are rarely represented in this dimension.
+As we can see, the “no paid” category (f.payment_type variable) is the one farthest from the center of the plot (in dimension 2). The farther from the center of gravity, the more rarely this feature value appears in the sample represented by the dimension. In addition, we see that in dimension 1 we also have two extremes, the "code_rate_id_other" category ("f.code_rate_id" variable) and the "trip_dispatch" category ("f.trip_type" variable). As we have said, this means that these categories are rarely represented in this dimension.
 
 Regardering the center of mass, we can say that we find the categories most represented by the dimensions.
 
 To give an example, let's suppose we look at the first dimension. An observation that we could find with high probability would be the following:
 
-* RateCodeID = Rate-1
-* Trip_type = Street-Hail
+* f.code_rate_id = code_rate_id_1
+* f.trip_type = Street-Hail
 
 On the other hand, an observation that we could rarely find there would be...
 
-* RateCodeID = Rate-Other
-* Trip_type = Street-Dispatch
+* f.code_rate_id = code_rate_id_other
+* f.trip_type = trip_dispatch
 
-We would follow the same logic for dimension 2 considering the Payment_type variable.
+We would follow the same logic for dimension 2 considering the f.payment_type variable.
 
 ### Interpreting the axes association to factor map
 ```{r}
@@ -1738,16 +1712,13 @@ There is no info for the **quantitative** variables here.
 
 In the first dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
 
-* RateCodeID (0.95)
-* Trip_type (0.94)
+* f.rate_code_id (0.96)
+* f.trip_type (0.959)
 
 If we look at the **categories**, we see that the most related are,
 
-* for Trip_type:
-  + Dispatch (1.68)
-  + Long_dist (0.24)
-* and for RateCodeID:
-  + Rate-Other (1.58)
+* f.trip_type=trip_dispatch (1.74)
+* f.rate_code_id=rate_code_id_other (1.66)
 
 #### Description of dimension 2
 ```{r}
@@ -1758,24 +1729,23 @@ There is no info for the **quantitative** variables here.
 
 For the second dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
 
-* Payment_type (0.53)
-* VendorID (0.26)
+* f.payment_type (0.51)
+* f.vendor_id (0.26)
 
 We see that they are not very large numbers, however.
 
 If we look at the **categories**, we see that the most related are,
 
-* for Payment_type:
-  + No paid (1.84)
-* and for VendorID:
-  + f.Vendor-Mobile (0.26)
+* f.payment_type=no paid (1.86)
+* f.vendor_id=vendor_id_mobile (0.26)
 
 ### Perform a MCA taking into account also supplementary variables (use all numeric variables) quantitative and/or categorical. How supplementary variables enhance the axis interpretation?
 ```{r}
+names(df[,c(1:38)])
 res.mca_all <- MCA(
-  df[,c(1:32)],
-  quanti.sup=c(3:10, 12:13, 15, 18, 20:22),
-  quali.sup=c(27,31),
+  df[,c(1:38)],
+  quanti.sup=c(3,4,5,6,7,8,9,10,11,12,13,14,15,18,20,21,22),
+  quali.sup=c(26,37),
   graph=FALSE
 )
 ```
@@ -1791,33 +1761,29 @@ res.desc[[1]]
 
 In this dimension, since we have taken into account all the variables, we now have information for the **quantitative** variables. We see that, more or less, the most positively related are:
 
-* Fare_amount (0.35)
-* Trip_distance (0.31)
-* Total_amount (0.29)
+* q.trip_distance          0.53263364
+* q.fare_amount            0.53136451
+* q.tlenkm                 0.51800587
 
 We also see that they do not contribute much given the numbers.
 
-However, there is a little more inverse relationship with Extra, with a -0.47.
+However, there is a little more inverse relationship with 
+
+* q.extra                 -0.62829962
 
 Regarding the **qualitative** variables, the new relationship is as follows:
 
-* RateCodeID (0.69)
-* MTA_tax (0.71)
-* improvement_surcharge (0.70)
-* Trip_type (0.71)
+* f.period                0.475926312
+* qual.pickup             0.570138464
+* qual.dropoff            0.554006489 
+* f.trip_distance_range   0.297157633
 
 If we look at the **categories**, we see that the most related are,
 
-* for Trip_type:
-  + Dispatch (1.43) -> same as before but less related
-* for improvement_surcharge:
-  + improvement_surcharge_No (1.38)
-* for MTA_tax:
-  + MTA_tax_No (1.39)
-* for Trip_distance_range:
-  + Long_dist (0.24)
-* and for RateCodeID:
-  + Rate-Other (1.33) -> same as before but less related
+* f.hour=f.hour_other                      0.5642223317  
+* f.extra=extra_no                         0.3329791331
+* f.trip_distance_range=trip_dist_long     0.4386776525
+* f.dist=(5.5, 30]                         0.5076041966 
 
 
 ##### Description of dimension 2
@@ -1827,39 +1793,36 @@ res.desc[[2]]
 
 In this dimension, since we have taken into account all the variables, we now have information for the **quantitative** variables. We see that, more or less, the most positively related are:
 
-* Extra (0.59540871)
-* Passenger_count (0.18753711)
+* q.trip_distance          0.64383966 
+* q.tlenkm                 0.64273304 
+* q.target.total_amount    0.63306027 
+* q.fare_amount            0.59446156
 
 For the second dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
 
-* period (0.72)
-* pickup (0.78)
-* dropoff (0.76)
-* hcpck (0.45)
-* MTA_tax (0.16)
-* ...
-* Payment_type (0.0013) -> we see that it has lowed down in front of the other variables
-* VendorID -> it does not even appear
+* f.period                0.3956288348 
+* qual.pickup             0.4497408628 
+* qual.dropoff            0.4541554265
+* f.trip_distance_range   0.4677644156 
+* f.extra                 0.3202538147 
+* f.dist                  0.4694364650
+* f.cost                  0.4265269270 
+
 We see that they are not very large numbers, however.
 
 If we look at the **categories**, we see that the most related are,
 
-* for period:
-  + Period night (0.40)
-  + Period afternoon (0.46)
-* ...
-* for Payment_type:
-  + No paid (1.84) -> now it's inversed
-* and for VendorID:
-  + f.Vendor-Mobile  -> it does not even appear
+* f.dist=(5.5, 30]                         0.59673706 
+* f.extra=extra_yes                        0.27704085
+* f.trip_distance_range=trip_dist_long     0.51551902
 
 
 --------------------------------------------------------------------------------
+
 ## Hierarchical Clustering (from MCA)
 
-
 ```{r}
-res.hcpcMCA <- HCPC(res.mca,nb.clust = 5, order = TRUE)
+res.hcpcMCA <- HCPC(res.mca,nb.clust=5,order=TRUE)
 ```
 
 *Note*: If we chose the default number of cluster it would be 5, as we can guess from the inertia reduction plot, that follows the Elbow's rule (number of black lines plus 1). In our case, after trying with bigger number of clusters, we decided that the default number of cluster was fine for our case and data.
@@ -1875,53 +1838,35 @@ barplot(table(res.hcpcMCA$data.clust$clust), col="darkslateblue", border="darksl
 
 #### The description of the clusters by the variables
 ```{r}
-names(res.hcpcMCA$desc.var)
-res.hcpcMCA$desc.var$test.chi2   ## categorical variables which characterizes the clusters
+res.hcpcMCA$desc.var$test.chi2
 ```
-We start wit the description of the categorical variables that characterize the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variables that affect more to the clustering are **RateCodeID**, **Payment_type**, **Trip_type** and **period** because are the one with the smallest p.value. The variables associated to the clusters are the ones that appear on the output.
+We start wit the description of the categorical variables that characterize the clusters, so in this output we do not have dimensions because it is the total association. We can see the intensity of the variables, in our case the variables that affect more to the clustering are **f.rate_code_id**, **f.payment_type**, **f.trip_type** and **f.period** because are the one with the smallest p.value. The variables associated to the clusters are the ones that appear on the output.
 
 Next, we want to see for each cluster which are the categories that characterize them. The clusters that contain more individuals are the first, the second and the fourth one. Clusters number 1 and 5 are the ones that have less individuals. We proceed to analyze them.
 
 ```{r}
-res.hcpcMCA$desc.var$category    ## description of each cluster by the categories
+res.hcpcMCA$desc.var$category
 ```
 
-* Cluster 1
-  + The first thing we can notice from this cluster is that all observations are of **Payment_type=No paid**, even though this category only intervents in the sample 0.65% this cluster contains all the individuals of this payment type and all of the observations in the cluster are of **VendorID=f.Vendor-Mobile**, a category that intervents a 21.05% from the sample, but this cluster is that small that we only have a 3.08% of observations of this kind represented in the cluster. So, what is logical is that the other payment types represent a 0% in this cluster as well as the other vendor type. We can also see that all the observations in the did not left a tip, and again and because of the size of the cluster, even though the **TipIsGive=No** represents a 62.34% of the observations from sample, we only have a representation of the 1.04% of these individuals in this cluster. We can also notice that the majority of the trips are made by just one person (96.67%) and we have some morning trips (26.67%).
-* Cluster 2
-  + The first thing we can see from the cluster is that all of the observations present are of the category **Trip_type=Street-Hail** and we have in this cluster a representation of the 24.12% of the observations of this category from sample. Something similar happens to the category **RateCodeID=Rate-1**. We can also see that we have the 88.38% of the observations from sample of the category **period=Period afternoon** represented in this cluster and they represent the 95.77% of the observations of the cluster. We can also notice that around the 80% of the observations in this cluster are single passengers and we have 22.27% of the observations of this category from the sample represented here.
-* Cluster 3
-  + The first thing we can notice is that every observation in the cluster is of the kind of **passenger_groups=Single** and **Trip_type=Street-Hail** and we have represented the 36.89% and 31.77%, respectively, of the observations from the sample of these categories. We can also see that almost every observation in the cluster (99.86%) is of **RateCodeID=Rate-1** and we have represented in this cluster the 31.83% of the observations with this category from the sample. We can see that we have the 84.87% of the **period=Period morning** observations of the sample represented in this cluster, and the 77.22% of the **period=Period valley** observations as well. The 67.90% of the observations of the cluster are **period=Period morning**. The 69.29% of the observations in the cluster are short distance trips and the 65.60% observations in the cluster did not left any tips.
-* Cluster 4
-  + The first thing we can see is that every observation in the cluster is of the kind **Trip_type=Street-Hail** and we have the 43.27% of the observations from the sample of this kind are represented in this cluster. We can also notice that almost every observation in the cluster is of the kind **RateCodeID=Rate-1** and we have 43.35% of the observations  of this kind from the sample represented here. We can see that the 96.71% of the **period=Period night** observations from the sample are represented in the cluster, and the 81.35% of the observations in the cluster are of this kind too. We can see that we have represented the 74.43% of **passenger_groups=Group**, the 71.58% of **Trip_distance=Long_dist** and the 71.49% of **f.cost=(30,50]** observations of these kinds from the sample represented in this cluster.
-* Cluster 5
-  + The first thing we can notice from this cluster is that we have represented in this cluster all the observations of **Trip_type=Dispatch** from the sample here and they represent the 93.33% of the observations of this kind in the cluster, so the rest are **Trip_type=Street-Hail** and we only have a representation of 0.18% of the observations from the sample in this cluster. We can also see that the 80% of the observations in the cluster did not left any tip and the other 20% left some tips, we have a very small representation of observations from the sample of these two categories in this cluster. We can also see that almost every observation in the cluster (99.17%) is of **RateCodeID=Rate-Ohter** and we have the 93.70% of the observations from the sample of this category represented in this cluster. We can see that in this cluster we have represented the 15.87% of the observations from the sample of the category **f.cost=(50,129)**.
+!!! FALTA DESCRIPCIÓ CLUSTERS
 
 
 We now proceed to see the quantitative variables that characterizes the clusters.
 ```{r}
-res.hcpcMCA$desc.var$quanti.var  ## quantitative variables which characterizes the clusters
+res.hcpcMCA$desc.var$quanti.var 
 ```
 
-We can see in the output that the variable that appears is slightly over represented in the clusters. We can notice that **Total_amount** is over represented with 0.04 units over the global mean. So it is practically the same as the global mean.
+We can see in the output that the variable that appears is slightly over represented in the clusters. We can notice that **q.target.total_amount** is over represented with 0.04 units over the global mean. So it is practically the same as the global mean.
 
 
 We want to know now which variables are associated with the quantitative variables.
 ```{r}
-res.hcpcMCA$desc.var$quanti      ## description of each cluster by the quantitative variables
+res.hcpcMCA$desc.var$quanti
 ```
 
-We can notice that every cluster has remarked the Total_amount variable except the first one, that does not have any variable to be described.
+We can notice that every cluster has remarked the q.target.total_amount variable except the first one, that does not have any variable to be described.
 
-
-* Cluster 2
-  + We can see that the **Total_amount** is around 2 units under the overall mean.
-* Cluster 3
-  + We can see that the **Total_amount** is around 1 unit under the overall mean.
-* Cluster 4
-  + We can see that the **Total_amount** is around 2 units over the overall mean.
-* Cluster 5
-  + We can see that the **Total_amount** is around 6 units over the overall mean.
+!! FALTA DESCRIPCIÓ CLUSTERS
 
 #### Partition quality
 We are going to evaluate the partition quality.
@@ -1932,7 +1877,7 @@ We are going to evaluate the partition quality.
 ((res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[5])/res.hcpcMCA$call$t$within[1])*100
 ```
 
-The quality of this reduction if of 59.15%.
+The quality of this reduction if of 57.59%.
 
 
 In case we wanted to achieve an 80% of the clustering representativity we would need 13 clusters.
@@ -1986,7 +1931,8 @@ points(res.mca$ind$coord[para5,1],res.mca$ind$coord[para5,2],col="blue",cex=1,pc
 points(res.mca$ind$coord[dist5,1],res.mca$ind$coord[dist5,2],col="royalblue1",cex=1,pch=16)
 ```
 
-### Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA)focusing on...
+### Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on...
+32145. 39.76506
 
 ```{r}
 df$hcpckMCA<-res.hcpcMCA$data.clust$clust
@@ -1995,14 +1941,14 @@ df$hcpckMCA<-res.hcpcMCA$data.clust$clust
 table(df$hcpck,df$hcpckMCA)
 df$hcpckMCA_hcpck<-factor(
   df$hcpckMCA,
-  levels=c(4,3,2,1,5),
-  labels=c("kHPmca-4","kHPmca-3","kHPmca-2","kHPmca-1","kHPmca-5")
+  levels=c(3,2,1,4,5),
+  labels=c("kHPmca-3","kHPmca-2","kHPmca-1","kHPmca-4","kHPmca-5")
 )
 tt1<-table(df$hcpck,df$hcpckMCA_hcpck); tt1
 100*sum(diag(tt1)/sum(tt1))
 ```
 
-We have a concordance of the 48.58% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
+We have a concordance of the 39.77% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
 
 
 ```{r}
@@ -2010,39 +1956,39 @@ We have a concordance of the 48.58% so we can say that they are different, if we
 table(df$claKM, df$hcpckMCA)
 df$hcpckMCA_claKM<-factor(
   df$hcpckMCA,
-  levels=c(2,3,1,4,5),
-  labels=c("kHPmca-2","kHPmca-3","kHPmca-1","kHPmca-4","kHPmca-5")
+  levels=c(3,4,1,2,5),
+  labels=c("kHPmca-3","kHPmca-4","kHPmca-1","kHPmca-2","kHPmca-5")
 )
 tt2<-table(df$claKM,df$hcpckMCA_claKM); tt
 100*sum(diag(tt2)/sum(tt2))
 ```
 
-We have a concordance of the 39.69% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
+We have a concordance of the 49.16% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
 
 #### Quantitative target (Total_amount)
 
 * hcpc
 ```{r}
 ## res.hcpc$desc.var$quanti.var  ## quantitative variables which characterizes the clusters
-## ##                          Eta2       P-value
-## ## Total_amount      0.539522699  0.000000e+00
+## ##                               Eta2       P-value
+## ## q.target.total_amount  0.572312116  0.000000e+00
 ```
 
 * kmeans
 ```{r}
-## res.cat <-catdes(df,30)
+## res.cat <-catdes(df,29)
 ## res.cat
 ## ## Link between the cluster variable and the quantitative variables
 ## ## ================================================================
-## ##                          Eta2       P-value
-## ## Total_amount      0.688303660  0.000000e+00
+## ##                                Eta2       P-value
+## ## q.target.total_amount   0.065791515 5.688596e-70
 ```
 
 * hcpc_mca
 ```{r}
-## ## res.hcpcMCA$desc.var$quanti.var  ## quantitative variables which characterizes the clusters
-## ##                    Eta2      P-value
-## ## Total_amount 0.03950465 3.518655e-39
+## ## res.hcpcMCA$desc.var$quanti.var 
+## ##                             Eta2      P-value
+## ## q.target.total_amount 0.04259394 3.904378e-42
 ```
 
 ##### Comment
@@ -2050,9 +1996,9 @@ To compare the variable Total_amount in the three different classifications, we 
 
 * The closer to 1 is eta2 for a variable, the better the variance between groups is explained by this variable.
 * We can see that, in descending order, we have:
-  + k-means (0.69)
-  +  hcpc (0.54)
-  + hcpc_mca (0.04)
+  + hcpc (0.572312116)
+  + kmeans (0.065791515)
+  + hcpc_mca (0.04259394)
 * This means that in the last classification the variable to define the clusters is not taken into account so much.
 
 
@@ -2061,61 +2007,61 @@ To compare the variable Total_amount in the three different classifications, we 
 ```{r}
 ## res.hcpc$desc.var$category    ## description of each cluster by the categories
 ## ## $`1`
-## ##                                   Cla/Mod      Mod/Cla    Global
-## ## TipIsGiven=No                  43.6502429  65.18134715 62.340472
-## ## TipIsGiven=Yes                 38.5985066  34.81865285 37.659528
+## ##                                         Cla/Mod      Mod/Cla    Global
+## ## f.target.tip_is_given=tip_no           80.0278843 67.3906663 62.410268
+## ## f.target.tip_is_given=tip_yes          64.2939815 32.6093337 37.589732
 ## #
 ## ## $`2`
-## ##                                  Cla/Mod   Mod/Cla    Global
-## ## TipIsGiven=No                  38.965996 68.727050 62.340472
-## ## TipIsGiven=Yes                 29.350948 31.272950 37.659528
-## ##
-## ## $`3`
-## ##                             Cla/Mod    Mod/Cla    Global
+## ##                                         Cla/Mod   Mod/Cla    Global
 ## ## nothing to see here
 ## ##
-## ## $`4`
-## ##                                   Cla/Mod   Mod/Cla    Global
-## ## TipIsGiven=Yes                 24.6984492 56.728232 37.659528
-## ## TipIsGiven=No                  11.3809854 43.271768 62.340472
+## ## $`3`
+## ##                                         Cla/Mod    Mod/Cla    Global
+## ## f.target.tip_is_given=tip_no         0.7319624    84        62.41027
+## ## f.target.tip_is_given=tip_yes        0.2314815    16        37.58973 
 ## ##
+## ## $`4`
+## ##                                          Cla/Mod   Mod/Cla    Global
+## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732
+## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
+## ## 
 ## ## $`5`
-## ##                                   Cla/Mod   Mod/Cla    Global
-## ## TipIsGiven=Yes                 1.60827111 71.794872 37.659528
-## ## TipIsGiven=No                  0.38167939 28.205128 62.340472
+## ##                                         Cla/Mod   Mod/Cla    Global
+## ## f.target.tip_is_given=tip_no          0.3834089  31.42857  62.41027 
+## ## f.target.tip_is_given=tip_yes         1.3888889  68.57143  37.58973
 ```
 
 ##### kmeans
 ```{r}
-## res.cat <-catdes(df,30)
+## res.cat<-catdes(df,30)
 ## res.cat
 ## ##
 ## ## Description of each cluster by the categories
 ## ## =============================================
 ## ## $`1`
-## ##                                   Cla/Mod    Mod/Cla    Global
-## ## TipIsGiven=Yes                  23.721999 49.6991576 37.659528
-## ## TipIsGiven=No                   14.503817 50.3008424 62.340472
+## ##                                          Cla/Mod   Mod/Cla    Global
+## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732 
+## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
 ## ##
 ## ## $`2`
-## ##                                    Cla/Mod    Mod/Cla    Global
-## ## TipIsGiven=Yes                  15.6232051 55.9670782 37.659528
-## ## TipIsGiven=No                    7.4253990 44.0329218 62.340472
+## ##                                          Cla/Mod   Mod/Cla    Global
+## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732 
+## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
 ## ##
 ## ## $`3`
-## ##                                    Cla/Mod     Mod/Cla     Global
-## ## TipIsGiven=No                   19.5697432  66.8246445 62.3404716
-## ## TipIsGiven=Yes                  16.0827111  33.1753555 37.6595284
+## ##                                          Cla/Mod   Mod/Cla    Global
+## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732 
+## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
 ## ##
 ## ## $`4`
-## ##                                     Cla/Mod    Mod/Cla     Global
-## ## TipIsGiven=Yes                    3.9058013 62.3853211 37.6595284
-## ## TipIsGiven=No                     1.4226232 37.6146789 62.3404716
+## ##                                          Cla/Mod   Mod/Cla    Global
+## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732 
+## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
 ## ##
 ## ## $`5`
-## ##                                   Cla/Mod     Mod/Cla     Global
-## ## TipIsGiven=No                   57.078418  69.9107522 62.3404716
-## ## TipIsGiven=Yes                  40.666284  30.0892478 37.6595284
+## ##                                          Cla/Mod   Mod/Cla    Global
+## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732 
+## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
 ```
 
 ##### hcpc_mca
