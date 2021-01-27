@@ -1,0 +1,1183 @@
+---
+title: "Deliverable 1"
+author: "Júlia Gasull i Claudia Sánchez"
+date: \today
+output:
+  word_document:
+    toc: no
+    toc_depth: '4'
+  pdf_document:
+    number_sections: yes
+    toc: yes
+    toc_depth: 4
+  html_document:
+    toc: no
+    toc_depth: '4'
+geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
+fontsize: 18pt
+subtitle: Data Processing, Description, Validation and Profiling
+classoption: a4paper
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Data description
+* Description http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml
+* Data Dictionary - SHL Trip Records -This data dictionary describes SHL trip data in visit http://www.nyc.gov/html/tlc/html/about/trip_record_data.shtml:
+
+## Variables
+* VendorID
+  * A code indicating the LPEP provider that provided the record.     
+  * Values: 
+    * 1= Creative Mobile Technologies, LLC
+    * 2= VeriFone Inc.   
+* lpep_pickup_datetime	
+  * The date and time when the meter was engaged.    
+* lpep_dropoff_datetime	
+  * The date and time when the meter was disengaged.     
+* Passenger_count	
+  * The number of passengers in the vehicle. 
+  * This is a driver-entered value.    
+* Trip_distance
+  * The elapsed trip distance in miles reported by the taximeter.   
+* Pickup_longitude
+  * Longitude where the meter was engaged.   
+* Pickup_latitude
+  * Latitude where the meter was engaged.   
+* RateCodeID
+  * The final rate code in effect at the end of the trip.
+  * Values: 
+      * 1=Standard rate  
+      * 2=JFK 
+      * 3=Newark 
+      * 4=Nassau or Westchester 
+      * 5=Negotiated fare 
+      * 6=Group ride   
+* Store_and_fwd_flag	
+  * This flag indicates whether the trip record was held in vehicle memory before sending to the vendor, aka "store and forward," because the vehicle did not have a connection to the server: 
+  * Values
+    * Y= store and forward trip  
+    * N= not a store and forward trip   
+* Dropoff_longitude	
+  * Longitude where the meter was timed off.   
+* Dropoff_latitude	
+  * Latitude where the meter was timed off.   
+* Payment_type
+  * A numeric code signifying how the passenger paid for the trip.
+  * Values:
+    * 1= Credit card 
+    * 2= Cash 
+    * 3= No charge 
+    * 4= Dispute 
+* Fare_amount	
+  * The time-and-distance fare calculated by the meter.   
+* Extra	 
+  * Miscellaneous extras and surcharges.  
+  * Currently, this only includes the $0.50 and $1 rush hour and overnight charges. 
+* MTA_tax	 
+  * $0.50 MTA tax that is automatically triggered based on the metered rate in use.   
+* Improvement_surcharge	
+  * $0.30 improvement surcharge assessed on hailed trips at the flag   drop. 
+  * The improvement surcharge began being levied in 2015.   
+* Tip_amount
+  * This field is automatically populated for credit card tips. 
+  * Cash tips are not included.   
+* Tolls_amount	
+  * Total amount of all tolls paid in trip.    
+* Total_amount	
+  * The total amount charged to passengers. 
+  * Does not include cash tips.   
+* Trip_type	
+  * A code indicating whether the trip was a street-hail or a dispatch that is automatically assigned based on the metered rate in use but can be altered by the driver. 
+  * Values:
+    * 1= Street-hail 
+    * 2= Dispatch  
+    
+# Load Required Packages for this deliverable
+We load the necessary packages and set working directory
+```{r echo = T, results = 'hide', message=FALSE, error=FALSE, warning=FALSE}
+
+setwd("~/Documents/uni/FIB-ADEI-LAB/finaldeliverable")
+
+# Load Required Packages
+options(contrasts=c("contr.treatment","contr.treatment"))
+
+requiredPackages <- c("missMDA","chemometrics","mvoutlier","effects","FactoMineR","car", "factoextra","RColorBrewer","dplyr","ggmap","ggthemes","knitr")
+missingPackages <- requiredPackages[!(requiredPackages %in% installed.packages()[,"Package"])]
+
+if(length(missingPackages)) install.packages(missingPackages)
+lapply(requiredPackages, require, character.only = TRUE)
+```
+
+## Select a sample of 5000 records
+From the proposed database, we need to select a sample of 5000 records randomly so we can start analyzing our data.
+```{r echo = T, results = 'hide'}
+if(!is.null(dev.list())) dev.off()  # Clear plots
+rm(list=ls())                       # Clean workspace
+```
+
+Data: green_tripdata_2016-01
+```{r}
+setwd("~/Documents/uni/FIB-ADEI-LAB/finaldeliverable")
+filepath<-"~/Documents/uni/FIB-ADEI-LAB/finaldeliverable"
+df<-read.table(paste0(filepath,"/green_tripdata_2016-01.csv"),header=T, sep=",")
+```
+
+Select your 5000 register sample (random sample). Use birthday of 1 member of the group --> Júlia's one
+```{r echo = T, results = 'hide'}
+set.seed(180998)
+sam<-as.vector(sort(sample(1:nrow(df),5000)))
+```
+
+Verification and storage of the sample
+```{r}
+head(df)
+df<-df[sam,]
+summary(df)
+```
+
+Save the image
+```{r echo = T, results = 'hide'}
+save.image("Taxi5000_raw.RData")
+```
+
+
+## Some useful functions
+```{r}
+calcQ <- function(x) { # Function to calculate the different quartiles
+  s.x <- summary(x)
+  iqr<-s.x[5]-s.x[2]
+  list(souti=s.x[2]-3*iqr, mouti=s.x[2]-1.5*iqr, min=s.x[1], q1=s.x[2], q2=s.x[3], 
+       q3=s.x[5], max=s.x[6], mouts=s.x[5]+1.5*iqr, souts=s.x[5]+3*iqr ) 
+}
+
+countNA <- function(x) { # Function to count the NA values
+  mis_x <- NULL
+  for (j in 1:ncol(x)) {mis_x[j] <- sum(is.na(x[,j])) }
+  mis_x <- as.data.frame(mis_x)
+  rownames(mis_x) <- names(x)
+  mis_i <- rep(0,nrow(x))
+  for (j in 1:ncol(x)) {mis_i <- mis_i + as.numeric(is.na(x[,j])) }
+  list(mis_col=mis_x,mis_ind=mis_i) 
+}
+
+countX <- function(x,X) { # Function to count a specific number of appearences
+  n_x <- NULL
+  for (j in 1:ncol(x)) {n_x[j] <- sum(x[,j]==X) }
+  n_x <- as.data.frame(n_x)
+  rownames(n_x) <- names(x)
+  nx_i <- rep(0,nrow(x))
+  for (j in 1:ncol(x)) {nx_i <- nx_i + as.numeric(x[,j]==X) }
+  list(nx_col=n_x,nx_ind=nx_i) 
+}
+```
+
+--------------------------------------------------------------------------------
+
+# Initiating missings, outliers and errors 
+Initialization of counts for missings, outliers and errors. All numerical variables have to be checked before
+```{r}
+imis<-rep(0,nrow(df))  # rows - trips
+jmis<-rep(0,2*ncol(df))  # columns - variables
+
+mis1<-countNA(df)
+imis<-mis1$mis_ind 
+
+iouts<-rep(0,nrow(df))  # rows - trips
+jouts<-rep(0,2*ncol(df))  # columns - variables
+
+ierrs<-rep(0,nrow(df))  # rows - trips
+jerrs<-rep(0,2*ncol(df))  # columns - variables
+```
+
+# Univariate Descriptive Analysis
+```{r}
+summary(df)
+names(df)
+```
+
+## Qualitative Variables (Factors) / Categorical
+**Description**: Original numeric variables corresponding to qualitative concepts have to be converted to factors. New factors grouping original levels will be considered very positively.
+
+We need to do an analysis of all the variables to be able to identify missings, errors and outliers. We will also try to factorize each variable to make it easier to understand the sample.
+
+### New variable: Period
+```{r}
+df$hour<-as.numeric(substr(strptime(df$lpep_pickup_datetime, "%Y-%m-%d %H:%M:%S"),12,13))
+df$period<-1
+df$period[df$hour>7]<-2
+df$period[df$hour>10]<-3
+df$period[df$hour>16]<-4
+df$period[df$hour>20]<-1
+df$period<-factor(df$period,labels=paste("Period",c("night","morning","valley","afternoon")))
+barplot(summary(df$period),main="period Barplot",col = "DarkSlateBlue")
+```
+
+
+### 1. VendorID
+This variable expresses the Creative Mobile Technologies, LLC as 1 and Verifone Inc as 2, so we create a factor to make it more readable. With the initial summary we see that this variable does not have any missing value, so we proceed to factor it.
+```{r}
+df$VendorID<-factor(df$VendorID,labels=c("Mobile","VeriFone"))
+levels(df$VendorID)<-paste0("f.Vendor-",levels(df$VendorID))
+barplot(summary(df$VendorID),main="VendorID Barplot",col = "DarkSlateBlue")
+```
+
+### 8. RateCodeID
+This variable expresses the different RateCodeIDs that we can have as numerical values, so we need to categorize them in order to be able to work with them.
+```{r}
+df$RateCodeID<-factor(df$RateCodeID)
+barplot(summary(df$RateCodeID),main="RateCodeID Barplot",col = "DarkSlateBlue")
+```
+
+We see that most samples are in RateCodeID = 1, which is what we are interested in. Therefore, we factorize and create only two groups, the one with RateCodeID = 1 and the rest.
+```{r}
+df$RateCodeID[df$RateCodeID != 1] = 2
+df$RateCodeID <- factor(df$RateCodeID, labels =c("Rate-1","Rate-Other"))
+barplot(summary(df$RateCodeID),main="RateCodeID Barplot",col = "DarkSlateBlue")
+```
+Now is more balanced.
+
+### 9. Store_and_fwd_flag
+This is a categorical variable with the values Y and N, so we need to factor it.
+```{r}
+df$Store_and_fwd_flag<-factor(df$Store_and_fwd_flag)
+barplot(summary(df$Store_and_fwd_flag),main="Store_and_fwd_flag Barplot",col = "DarkSlateBlue")
+```
+
+### 12. Payment_type
+This variable is categorical but it is expressed as numerical, so we need to factor it in order to be able to work with it.
+```{r}
+df$Payment_type<-factor(df$Payment_type,labels=c("Credit card","Cash","No charge","Dispute"))
+barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkSlateBlue")
+```
+
+As we can see, there are few values with "No charge" or "Dispute" category, so we decided to categorize it into a new category ("No paid").
+```{r}
+levels(df$Payment_type) <- c("Credit card","Cash","No paid","No paid")
+barplot(summary(df$Payment_type),main="Payment_type Barplot",col = "DarkSlateBlue")
+```
+
+### 21. Trip_type
+This variable is categorical but it is expressed as numerical, so we need to factor it in order to be able to work with it.
+```{r}
+df$Trip_type<-factor(df$Trip_type,labels=c("Street-Hail","Dispatch"))
+barplot(summary(df$Trip_type),main="Trip_type Barplot",col = "DarkSlateBlue")
+```
+
+## Quantitative Variables
+**Description**: Original numeric variables corresponding to real quantitative concepts are kept as numeric but additional factors should also be created as a discretization of each numeric variable.
+
+We only keep the hours (variables 2 and 3) to be able to work with time slots in the future.
+
+Create new variables derived from the original ones, as effective speed, travel time, hour of request, period of request, effective trip distance (in km) 
+
+### New variables: Trip Length in km, Travel time un min and Effective speed
+#### Trip length in km
+```{r}
+df$tlenkm<-df$Trip_distance*1.609344 # Miles to km
+```
+#### Travel time in min
+```{r}
+df$traveltime<-(as.numeric(as.POSIXct(df$Lpep_dropoff_datetime)) - as.numeric(as.POSIXct(df$lpep_pickup_datetime)))/60
+```
+#### Effective speed in km/h
+```{r}
+df$espeed<-(df$tlenkm/(df$traveltime))*60
+```
+##### Missing data
+```{r}
+sel<-which(is.na(df$espeed<=0)) #;length(sel)
+imis[sel]<-imis[sel]+1
+jmis[26]<-length(sel)
+```
+##### Error detection
+We detect as error those speeds smaller than 0 and bigger than 200
+```{r}
+summary(df$espeed)
+sel<-which((df$espeed<=0)|(df$espeed > 200))
+ierrs[sel]<-ierrs[sel]+1
+jerrs[26]<-length(sel)
+```
+Sel contains the rownames of the individuals with "0" as  value for longitude
+```{r}
+df[sel,"espeed"]<-NA 
+```
+##### Check outliers
+```{r}
+calcQ(df$espeed)
+```
+##### Outlier detection
+```{r}
+Boxplot(df$espeed)
+var_out<-calcQ(df$espeed)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+
+llout<-which((df$espeed<=3)|(df$espeed>80))
+iouts[llout]<-iouts[llout]+1
+jouts[26]<-length(llout)
+df[llout,"espeed"]<-NA 
+```
+
+
+
+### 2. lpep_pickup_datetime
+We just keep the hours
+```{r}
+df$pickup<-substr(strptime(df$lpep_pickup_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13) 
+```
+
+### 3. lpep_dropoff_datetime
+We just keep the hours
+```{r}
+df$dropoff<-substr(strptime(df$Lpep_dropoff_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13)
+```
+
+### 4. Passenger_count
+```{r}
+summary(df$Passenger_count)
+```
+We set the 0 as an error because it is not possible to have a trip without passengers
+```{r}
+sel<-which(df$Passenger_count == 0)
+ierrs[sel]<-ierrs[sel]+1
+jerrs[10]<-length(sel)
+```
+Sel contains the rownames of the individuals with "0" as value for passengers
+```{r}
+df[sel,"Passenger_count"]<-NA
+```
+
+### 5. Trip_distance
+```{r}
+summary(df$Trip_distance)
+```
+
+We see on the summary that there are not NA values, so we proceed to the outlier and error detection.
+
+#### Outlier detection
+In order to evalute or data, we decide to set the maximum trip distance to 30, so we proceed to delete the outliers.
+```{r}
+Boxplot(df$Trip_distance)
+var_out<-calcQ(df$Trip_distance)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+abline(h=30,col="blue",lwd=2)
+
+llout<-which(df$Trip_distance>30)
+iouts[llout]<-iouts[llout]+1
+jouts[11]<-length(llout)
+```
+
+#### Error detection
+We decide that an incorrect trip distance is the one with 0 miles or less. In order to be aware of this error we store it at ierrs, and jerrs. ierrs stores the number of errors in a row, and jerrs stores the total amount of errors in a variable.
+```{r}
+sel<-which(df$Trip_distance <= 0)
+ierrs[sel]<-ierrs[sel]+1
+jerrs[11]<-length(sel)
+```
+
+#### Errors and outliers
+Now, we set NA values in order to remove errors and outliersfrom the dataset
+```{r}
+setNA<-which((df$Trip_distance<=0) | (df$Trip_distance > 30))
+df[setNA,"Trip_distance"]<-NA
+```
+
+#### Caterogial variable for Trip_distance
+We are going to set a categorical variable for the Trip_distancerange. 
+
+We decided to create 3 levels: "Short_dist", "Medium_dist" and"Long_dist".
+
+* Short_dist <= 2.5
+* Medium_dist 2.5 < Trip_distance <= 5
+* Long_dist > 5
+
+```{r}
+df$Trip_distance_range[df$Trip_distance <= 2.5] = "Short_dist"
+df$Trip_distance_range[(df$Trip_distance > 2.5) & (df$Trip_distance <= 5)] = "Medium_dist"
+df$Trip_distance_range[df$Trip_distance > 5] = "Long_dist"
+```
+
+We see, though, that it is not a factor yet, so we factor it.
+```{r}
+df$Trip_distance_range <- factor(df$Trip_distance_range)
+```
+
+We see a barplot for the factor we created.
+```{r}
+barplot(table(df$Trip_distance_range),main="Trip_distance_range Barplot",col = "DarkSlateBlue")
+```
+
+
+### 6. Pickup_longitude
+We know that New York's longitude is -73.9385, so values that differ a lot from this value is an error or an outlier.
+```{r}
+summary(df$Pickup_longitude)
+```
+0.00 looks to be an error
+Seeing the individuals with this "0" value: df[which(df[,"Pickup_longitude"]==0),] it is a quantitive variable. Non-possible values will be recoded as errors, so will be transformed to NA.
+```{r}
+sel<-which(df$Pickup_longitude == 0)
+ierrs[sel]<-ierrs[sel]+1
+jerrs[6]<-length(sel)
+```
+Sel contains the rownames of the individuals with "0" as value for longitude.
+```{r}
+df[sel,"Pickup_longitude"]<-NA   
+```
+Non-possible values are replaced by NA, missing value symbol in R.
+
+#### Which trips are not running in New-York?
+Consider if, at least, one of the pick-up and drop-off points belong to New-York area. if not, this trip is an "out-of-scope" individual and has to be eliminated of the basis. Nevertheless, you have to justify thiselimination and count how many individuals were in this situation.
+Look at that!! possibly, starting from the outliers..."0" is missing value, outliers can help to detect trips running outside of New York...
+
+We are deleting trips from outside New York. This means we are not using longitudes bigger than -73.80 and smaller than -74.02.
+```{r}
+llout <-which((df$Pickup_longitude < -74.02) | (df$Pickup_longitude > -73.80))
+iouts[llout]<-iouts[llout]+1
+jouts[6]<-length(llout)
+```
+Now that we have the outliers, we are setting them as NA
+```{r}
+df[llout,"Pickup_longitude"]<-NA
+```
+
+### 7. Pickup_latitude
+We know that New York's latitude is 40.6643, so values that differ a lot from this value is an error or an outlier.
+```{r}
+summary(df$Pickup_latitude)
+```
+0.00 looks to be an error.
+Seeing the individuals with this "0" value: df[which(df[,"Pickup_latitude"]==0),] it is a quantitive variable. non-possible values will be recoded as errors, so will be transformed to NA.
+```{r}
+sel<-which(df$Pickup_latitude == 0)
+ierrs[sel]<-ierrs[sel]+1
+jerrs[7]<-length(sel)
+```
+Sel contains the rownames of the individuals with "0" as value for longitude
+```{r}
+df[sel,"Pickup_latitude"]<-NA  
+```
+Non-possible values are replaced by NA, missing value symbol in R. 
+We are deleting trips from outside New York. This means we are not using latitudes bigger than 40.54 and smallerthan 40.86
+```{r}
+llout <-which((df$Pickup_latitude < 40.54) | (df$Pickup_latitude > 40.86))
+iouts[llout]<-iouts[llout]+1
+jouts[7]<-length(llout)
+```
+Now that we have the outliers, we are setting them as NA
+```{r}
+df[llout,"Pickup_latitude"]<-NA
+```
+
+
+### 10. Dropoff_longitude
+We know that New York's longitude is -73.9385, so values that differ a lot from this value is an error or an outlier.
+
+```{r}
+summary(df$Dropoff_longitude)
+```
+0.00 looks to be an error
+Seeing the individuals with this "0" value: df[which(df[,"Dropoff_longitude"]==0),] it is a quantitive variable.  
+Non-possible values will be recoded as errors, so will be transformed to NA.
+```{r}
+sel<-which(df$Dropoff_longitude == 0)
+ierrs[sel]<-ierrs[sel]+1
+jerrs[8]<-length(sel)
+```
+Sel contains the rownames of the individuals with "0" as value for longitude
+```{r}
+df[sel,"Dropoff_longitude"]<-NA 
+```
+Non-possible values are replaced by NA, missing value symbol in R.
+We are deleting trips from outside New York. This means we are not using longitudes bigger than -73.80 and smaller than -74.02.
+```{r}
+llout <-which((df$Dropoff_longitude < -74.02) | (df$Dropoff_longitude > -73.80))
+iouts[llout]<-iouts[llout]+1
+jouts[8]<-length(llout)
+```
+Now that we have the outliers, we are setting them as NA
+```{r}
+df[llout,"Dropoff_longitude"]<-NA
+```
+
+### 11. Dropoff_latitude
+We know that New York's latitude is 40.6643, so values that differ a lot from this value is an error or an outlier.
+
+```{r}
+summary(df$Dropoff_latitude)
+```
+0.00 looks to be an error
+Seeing the individuals with this "0" value: df[which(df[,"Dropoff_latitude"]==0),] it is a quantitive variable. Non-possible values will be recoded as errors, so will be transformed to NA.
+```{r}
+sel<-which(df$Dropoff_latitude == 0)
+ierrs[sel]<-ierrs[sel]+1
+jerrs[9]<-length(sel)
+```
+Sel contains the rownames of the individuals with "0" as value for longitude
+```{r}
+df[sel,"Dropoff_latitude"]<-NA   
+```
+Non-possible values are replaced by NA, missing value symbol in R. We are deleting trips from outside New York. This means we are not using latitude bigger than 40.54 and smaller than 40.86
+```{r}
+llout <-which((df$Dropoff_latitude < 40.54) | (df$Dropoff_latitude > 40.86))
+iouts[llout]<-iouts[llout]+1
+jouts[9]<-length(llout)
+```
+Now that we have the outliers, we are setting them as NA
+```{r}
+df[llout,"Dropoff_latitude"]<-NA
+```
+
+### 13. Fare_amount
+We know that the fare should be positive, as it is the price of the trip, so we'll treat as error those values. The next we'll do is decide the outliers.
+
+```{r}
+summary(df$Fare_amount)
+```
+```{r}
+sel<-which(df$Fare_amount <= 0)
+ierrs[sel]<-ierrs[sel]+1
+jerrs[12]<-length(sel)
+df[sel,"Fare_amount"]<-NA    
+```
+Non-possible values are replaced by NA, missing value symbol in R
+
+#### Outlier detection
+```{r}
+Boxplot(df$Fare_amount)
+var_out<-calcQ(df$Fare_amount)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+abline(h=60,col="blue",lwd=2)
+```
+
+We decide to set outliers for fare amounts bigger than 60, because the majority of the values are concentrated between 0 and 60.
+```{r}
+llout<-which(df$Fare_amount>60)
+iouts[llout]<-iouts[llout]+1
+jouts[12]<-length(llout)
+df[llout,"Fare_amount"]<-NA 
+```
+
+### 14. Extra
+As this variable is price related, it cannot have negative values, so this individuals will be treated as errors.
+```{r}
+summary(df$Extra)
+```
+We execute table in order to see every different value in the sample
+```{r}
+table(df$Extra)
+```
+As it is a price related variable, negative values should be treated as errors, and the other values are the ones defined for this variable, so there are not outliers.
+```{r}
+sel<-which(df$Extra < 0)
+ierrs[sel]<-ierrs[sel]+1
+jerrs[13]<-length(sel)
+df[sel,"Extra"]<-NA 
+```
+
+### 15. MTA_tax
+This variable corresponds to a tax that must be charged in every trip and its cost is $0.50, so values different from this are errors, and we don't have to take into account outliers because after the errors detection all values should be the MTA_tax.
+```{r}
+summary(df$MTA_tax)
+```
+
+**Important note:** We assume that when this tax is smaller than 0, it is an error. If tax is 0, we say that payment in these cases is equivalent to “no paid”.
+```{r}
+sel<-which(df$MTA_tax < 0)
+ierrs[sel]<-ierrs[sel]+1
+jerrs[14]<-length(sel)
+df[sel,"MTA_tax"]<-NA 
+```
+
+### 16. Improvement_surcharge
+This variable corresponds to a charge that must be charged in every trip and its cost is $0.30, so values smaller than 0 are errors, and we don't have to take into account outliers because after the errors detection all values should be the Improvement surcharge.
+```{r}
+summary(df$improvement_surcharge)
+table(df$improvement_surcharge)
+```
+We know that this surcharge was leived in 2015, so we need to check if the 0 values correspond to trips before this year. That is what we are going to do.
+```{r}
+df$yearGt2015[(df$lpep_pickup_datetime >= "2015-01-01 00:00:00") & (df$improvement_surcharge == 0.3)] = 1
+df$yearGt2015[(df$lpep_pickup_datetime < "2015-01-01 00:00:00") | (df$improvement_surcharge != 0.3)] = 0
+
+table(df$yearGt2015)
+```
+We see that the 0 individuals are errors.
+```{r}
+sel<-which(df$improvement_surcharge < 0)
+ierrs[sel]<-ierrs[sel]+1
+jerrs[18]<-length(sel)
+df[sel,"improvement_surcharge"]<-NA 
+```
+
+### 17. Ehail_fee
+We don’t take this into account because every value of our sample is NA.
+```{r}
+summary(df$Ehail_fee)
+```
+
+### 18. Tip_amount
+As this is a price related variable, negative values should be considered as errors, and big tips should be considered as outliers. Also tip amounts bigger than 0 for individuals with payment_type = "Cash" should be considered as errors as well.
+```{r}
+summary(df$Tip_amount)
+```
+We proceed to check if the 0 values are related with payment_type = "Credit card" and the passenger did not tip.
+```{r}
+df$CashTips[(df$Tip_amount > 0) & (df$Payment_type == "Cash")] = 1
+df$CashTips[(df$Payment_type == "Credit card")] = 0
+table(df$CashTips)
+```
+
+Now, we proceed to the outlier detection.
+
+#### Outlier detection
+```{r}
+Boxplot(df$Tip_amount)
+var_out<-calcQ(df$Tip_amount)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+abline(h=40,col="blue",lwd=2)
+
+llout<-which(df$Tip_amount>40)
+iouts[llout]<-iouts[llout]+1
+jouts[15]<-length(llout)
+df[llout,"Tip_amount"]<-NA 
+```
+
+### 19. Tolls_amount
+As this is a price related variable, negative values should be considered as errors.
+```{r}
+summary(df$Tolls_amount)
+```
+We see that there are not negative values, so we do not have errors. We proceed now to the outlier detection.
+```{r}
+Boxplot(df$Tolls_amount)
+var_out<-calcQ(df$Tolls_amount)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+
+table(df$Tolls_amount)
+```
+As we see in the boxplot and the table, the majority of the individuals are 0, so the values bigger than 5.54 will be outliers.
+```{r}
+llout<-which(df$Tolls_amount>5.54)
+iouts[llout]<-iouts[llout]+1
+jouts[16]<-length(llout)
+df[llout,"Tolls_amount"]<-NA 
+```
+
+### 20. Total_amount
+This is a price related variable, so negative values should be treated as errors. Also, we need to sum the "Fare_amount", "Extra","MTA_tax", "Improvement_surcharge", "Tip_amount" and the "Tolls_amount" in order to see if the Total_amount matches with this sum.
+```{r}
+summary(df$Total_amount)
+```
+Negative values seem to be errors 
+- 0 Total_amount is possible when Payment_type =="No charge"
+
+We proceed to check if total amount is correctsumming the other variables and checking negatives values:
+```{r}
+df$Sum_total_amount = (df$Fare_amount + df$Extra + df$MTA_tax + df$improvement_surcharge + df$Tip_amount + df$Tolls_amount)
+
+sel<-which((df$Total_amount != df$Sum_total_amount) | (df$Total_amount<0))
+if (length(sel)>0) {
+  ierrs[sel]<-ierrs[sel]+1
+  jerrs[19]<-length(sel)
+}
+df[sel,"Total_amount"]<-NA
+```
+#### Outlier detection
+```{r}
+Boxplot(df$Total_amount)
+var_out<-calcQ(df$Total_amount)
+abline(h=var_out$souts,col="red")
+abline(h=var_out$souti,col="red")
+abline(h=150,col="blue",lwd=2)
+
+llout<-which(df$Total_amount>150)
+iouts[llout]<-iouts[llout]+1
+jouts[19]<-length(llout)
+df[llout,"Total_amount"]<-NA 
+```
+
+
+--------------------------------------------------------------------------------
+
+# Data Quality Report
+
+## Per variable
+Per each variable, we have to count the following:
+
+* number of missing values
+* number of errors (including inconsistencies)
+* number of outliers
+* rank variables according the sum of missing values (and errors).
+
+### Number of missing values of each variable (with ranking)
+```{r}
+missings_ranking_sortlist <- sort.list(mis1$mis_col, decreasing = TRUE)
+for (j in missings_ranking_sortlist) {
+  print(paste(names(df)[j], " : ", mis1$mis_col$mis_x[j]))
+}
+```
+
+### Number of errors per each variable (with ranking)
+```{r}
+errors_ranking_sortlist <- sort.list(jerrs, decreasing = TRUE)
+for (j in errors_ranking_sortlist) {
+  if(!is.na(names(df)[j])) { print(paste(names(df)[j], " : ", jerrs[j])) }
+}
+```
+
+### Number of outliers per each variable (with ranking)
+```{r}
+errors_ranking_sortlist <- sort.list(jouts, decreasing = TRUE)
+for (j in errors_ranking_sortlist) {
+  if(!is.na(names(df)[j])) print(paste(names(df)[j], " : ", jouts[j]))
+}
+```
+
+## Per individual
+Per each individuals, we have to count the following:
+
+* number of missing values
+* number of errors
+* number of outliers
+
+### Number of missing values
+```{r}
+barplot(table(imis),main="Missings per individual Barplot",col = "DarkSlateBlue")
+```
+
+The one is from from the variable "Ehail_fee" and the observations that have two missing values are because of the "espeed" variable (maybe because the traveltime was 0 and nothing can be divided by 0).
+
+
+### Number of errors
+As we can see, most individuals have no mistakes. Those who do have errors, they tend to have more than one.
+```{r}
+barplot(table(ierrs),main="Errors per individual Barplot",col = "DarkSlateBlue")
+```
+
+### Number of outliers
+```{r}
+barplot(table(iouts),main="Outliers per individual Barplot",col = "DarkSlateBlue")
+```
+
+## Create variable adding the total number missing values, outliers and errors
+```{r}
+total_missings <- 0; total_outliers <- 0; total_errors <- 0;
+for (m in imis) {total_missings <- total_missings + m} 
+for (o in iouts) {total_outliers <- total_outliers + o}
+for (e in ierrs) {total_errors <- total_errors + e}
+```
+Now, let's print this variables:
+```{r}
+total_missings
+total_outliers
+total_errors
+```
+
+--------------------------------------------------------------------------------
+
+# Imputation
+```{r}
+library(missMDA)
+```
+
+What we do with imputation is be able to eliminate all those values that may be missings, outliers or errors to turn them into values that can be realistic within our sample.
+
+## Numeric variables
+We will now do the study by variables and try to impute the necessary observations.
+
+**Note**: we do not include MTA_tax (14) nor improvement_surcharge(18). We proceed to delete NA values from Total_amount because it is our target variable, so we do not impute it, but we need to have this variable without NAs.
+```{r}
+df <- df[!is.na(df$Total_amount),]
+vars_quantitatives<-names(df)[c(10:13,15,16,24:26)]
+```
+
+```{r}
+summary(df[,vars_quantitatives])
+res.imputation<-imputePCA(df[,vars_quantitatives],ncp=5)
+summary(res.imputation$completeObs)
+```
+
+We proceed now to fix all the numeric variables that have errors or outliers:
+
+#### > Trip_distance
+```{r}
+ll<-which(res.imputation$completeObs[,"Trip_distance"] < 0)
+res.imputation$completeObs[ll,"Trip_distance"] <- 1
+ll<-which(res.imputation$completeObs[,"Trip_distance"] > 30)
+res.imputation$completeObs[ll,"Trip_distance"] <- 30
+```
+
+#### > Fare_amount
+```{r}
+ll<-which(res.imputation$completeObs[,"Fare_amount"] > 60)
+res.imputation$completeObs[ll,"Fare_amount"] <- 60
+```
+
+#### > Tip_amount
+```{r}
+ll<-which(res.imputation$completeObs[,"Tip_amount"] > 17)
+res.imputation$completeObs[ll,"Tip_amount"] <- 17
+```
+We see that we have correct data, so we proceed to create the binary factor TipIsGiven.
+```{r}
+df$TipIsGiven[(res.imputation$completeObs[,"Tip_amount"] > 0)] = "Yes"
+df$TipIsGiven[(res.imputation$completeObs[,"Tip_amount"] == 0)] = "No"
+df$TipIsGiven <- factor(df$TipIsGiven)
+summary(df$TipIsGiven)
+```
+
+#### > tlenkm
+```{r}
+ll<-which(res.imputation$completeObs[,"tlenkm"] <= 1)
+res.imputation$completeObs[ll,"tlenkm"] <- 1
+ll<-which(res.imputation$completeObs[,"tlenkm"] > 48.28)
+res.imputation$completeObs[ll,"tlenkm"] <- 48.28
+```
+
+#### > traveltime
+```{r}
+ll<-which(res.imputation$completeObs[,"traveltime"] > 60)
+res.imputation$completeObs[ll,"traveltime"] <- 60
+```
+
+#### > espeed
+```{r}
+ll<-which(res.imputation$completeObs[,"espeed"] < 3)
+res.imputation$completeObs[ll,"espeed"] <- 3
+ll<-which(res.imputation$completeObs[,"espeed"] > 55)
+res.imputation$completeObs[ll,"espeed"] <- 55
+```
+
+### > Passenger_count
+We decided to create categorical for this variable so we categorize it for single passengers, couple and groups (3 or more)
+```{r}
+df$passenger_groups[res.imputation$completeObs[,"Passenger_count"]  == 1] = "Single"
+df$passenger_groups[res.imputation$completeObs[,"Passenger_count"] > 1 & res.imputation$completeObs[,"Passenger_count"] <= 2] = "Couple"
+df$passenger_groups[res.imputation$completeObs[,"Passenger_count"] >= 3] = "Group"
+df$passenger_groups <- factor(df$passenger_groups)
+```
+We see the barplot in order to see the distribution of passenger per trip
+```{r}
+barplot(table(df$passenger_groups),main="passenger_groups Barplot",col = "DarkSlateBlue")
+```
+
+### > Extra
+If we execute a table, we'll see that we have 0, 0'5 and 1 values, so we proceed to categorize this variable to see if has extra or not.
+```{r}
+table(df$Extra)
+df$Extra[df$Extra == 0] = 0
+df$Extra[df$Extra > 0] = 1
+df$Extra <- factor(df$Extra, labels =c("No","Yes"))
+```
+We see the barplot in order to see the distribution.
+```{r}
+barplot(table(df$Extra),main="Extra Barplot",col = "DarkSlateBlue")
+```
+
+### > MTA_tax
+If we execute a summary, we'll see that every value should be 0.5 or 0, so we proceed to categorize this variable in order to see if the tax has been paid or not.
+```{r}
+summary(df$MTA_tax)
+df$MTA_tax <- factor(df$MTA_tax, labels =c("No","Yes"))
+```
+We see the barplot in order to see the distribution.
+```{r}
+barplot(table(df$MTA_tax),main="MTA_tax Barplot",col = "DarkSlateBlue")
+```
+
+### > Improvement_surcharge
+
+If we execute a table, we'll see that every value should be 0.3 or 0, so we proceed to categorize this variable in order to see if the surcharge has been paid or not.
+```{r}
+table(df$improvement_surcharge)
+
+df$improvement_surcharge <- factor(df$improvement_surcharge)
+df$improvement_surcharge <- factor(df$improvement_surcharge, labels =c("No","Yes"))
+```
+We see the barplot in order to see the distribution.
+```{r}
+barplot(table(df$improvement_surcharge),main="improvement_surcharge Barplot",col = "DarkSlateBlue")
+```
+
+### > Tolls_amount
+As we checked before the imputation and detected as errors those individuals with negative amount, the negative values found now are going to be set as 0 because they result negative during the imputation. After treating this values, we proceed to categorize this variable to see if an individual has paid or not  for a toll.
+```{r}
+ll<-which(res.imputation$completeObs[,"Tolls_amount"] < 0)
+res.imputation$completeObs[ll,"Tolls_amount"] <- 0
+
+df$paidTolls[res.imputation$completeObs[,"Tolls_amount"] == 0] = "No"
+df$paidTolls[res.imputation$completeObs[,"Tolls_amount"] > 0] = "Yes"
+df$paidTolls <- factor(df$paidTolls)
+```
+
+
+
+We proceed to impute all NAs in our numerical variables that are stored in: `res.imputation$completeObs`
+```{r}
+df[,vars_quantitatives] <- res.imputation$completeObs
+```
+
+
+## Categorical variables / Factors
+```{r}
+ vars_categorical<-names(df)[c(1,4,5,20:21,23,29,35)]
+ summary(df[,vars_categorical])
+ res.input<-imputeMCA(df[,vars_categorical],ncp=10)
+ summary(res.input$completeObs)
+```
+We proceed to impute all NAs in our numerical variables that are stored in: `res.input$completeObs`
+```{r}
+df[,"VendorID"] <- res.input$completeObs[,"VendorID"]
+df[,"Store_and_fwd_flag"] <- res.input$completeObs[,"Store_and_fwd_flag"]
+df[,"RateCodeID"] <- res.input$completeObs[,"RateCodeID"]
+df[,"Payment_type"] <- res.input$completeObs[,"Payment_type"]
+df[,"Trip_type"] <- res.input$completeObs[,"Trip_type"]
+df[,"period"] <- res.input$completeObs[,"period"]
+df[,"Trip_distance_range"] <- res.input$completeObs[,"Trip_distance_range"]
+# df[,"passenger_groups"] <- res.input$completeObs[,"passenger_groups"]
+```
+
+--------------------------------------------------------------------------------
+
+## Describe these variables, to which other variables exist higher associations
+### Compute the correlation with all other variables. 
+```{r}
+library(mvoutlier)
+library(FactoMineR)
+res <- cor(df[,vars_quantitatives])
+round(res, 2)
+```
+
+### Rank these variables according the correlation:
+```{r}
+library(corrplot)
+corrplot(res)
+```
+
+As we can see in this graph, we have the correlation between all quantitative variables. We must say, however, that there are two variables (espeed and traveltime) which we had to modify when making the imputation.
+
+In case of not having made the imputation of espeed and traveltime, we would have the following plot:
+
+[insert image], 
+
+which means that there is a negative correlation between these two variables, since the longer the time, the slower the trip. However, we think it is necessary to remove the outliers we have had from these variables because they are unrealistic.
+
+Now, let's describe each correlation we obtained in the first graph:
+
+* Diagonals:
+  + Being exactly the same variable, it is directly related to itself.
+* Fare_amount + Trip_distance:
+  + More distance, more time, therefore more price.
+* Tip_amount + Trip_distance:
+  + If the trip has been longer, there may be more reason to tip.
+* Total_amount + Trip_distance:
+  + As before, more distance, more time, therefore more price.
+* tlenkm + Trip_distance:
+  + They are exactly the same, only with a metric change.
+* traveltime + Trip_distance:
+  + The further away, the longer.
+* espeed + Trip_distance:
+  + The reason we think these variables are related to a direct and positive proportion is that since short trips have to be, logically cheaper, what taxi drivers do is slow down so that the trip take longer and thus charge more. Therefore, by increasing the distance of the journey, taxi drivers do not need to go so slow and therefore the speed increases.
+* Amount_type + Amount_mount:
+  + In the USA it is normal to give a tip proportional to the price of the service that has been offered.
+* Total_amount + Fare_amount:
+  + The variable Total_amount is equivalent to Fare_amount plus the fees, tips, among others, that have been applied to the trip.
+* tlenkm + Fare_amount:
+  + As before, more distance, more time, therefore more price.
+* traveltime + Fare_amount:
+  + More time, more price.
+* espeed + Fare_amount:
+  + As we said before, more speed means more distance, therefore more travel time, causing more price.
+* Total_amount + Type_amount:
+  + As before, in the USA it is normal to give a tip proportional to the price of the service that has been offered.
+* tlenkm + Mount_type:
+  + If the trip has been longer, there may be more reason to tip.
+* traveltime + Tip_amount:
+  + The longer it takes, the more price, and therefore the more tip given the proportionality.
+* espeed + Tip_amount:
+  + The more speed, as we said before, the more distance, and therefore the longer it takes. This causes more price and therefore more tip.
+* tlenkm + Total_amount:
+  + More distance, more time, therefore more price.
+* traveltime + Total_amount:
+  + More time, more price.
+* espeed + Total_amount:
+  + As we said before, more speed means more distance, therefore more travel time, causing more price.
+* traveltime + tlenkm:
+  + The more km to travel, the longer it takes.
+* speed + tlenkm:
+  + Same as for espeed + Trip_distance correlation.
+
+--------------------------------------------------------------------------------
+
+### Identify individuals considered as multivariant outliers
+```{r}
+library(chemometrics)
+multivariant_outliers <- Moutlier(df[, c(11:12, 19, 26)], quantile = 0.995)
+multivariant_outliers$cutoff
+par(mfrow=c(1,1))
+plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
+text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(11:12, 19, 26)])) 
+abline(col="red",lwd=2, h=qchisq(0.995, ncol(df[, c(11:12, 19, 26)])))
+```
+
+
+As we can see, above the defined line we have all the possible observations that we call multivariate outliers. These mean that, viewed only from the point of view of a variable, it does not have to be an outlier, but that viewed with various dimensions (variables), it may be so.
+
+We want to look at two observations that have caught our attention. The first is 488540 and the second is 1180476. 
+
+As we can see, observation 488540 is the one at the boundary of the two axes. So that means it’s most likely a multivariate outlier. On the other hand, the 1180476 is not exactly very central on both axes. This may lead us to think that he is not as likely as the other observation to be a multivariate outlier.
+
+```{r}
+df[which(row.names(df)=="488540"), 1:35]
+df[which(row.names(df)=="1180476"), 1:35]
+```
+
+--------------------------------------------------------------------------------
+
+# Profiling
+## Numeric target: Total_amount
+Profiling is used to finish profiling our sample.
+
+We will now proceed to the profiling that asks us for our numeric target (Total_amount) and then we have to use the original variables and factors.
+
+In order to observe the relationship of our numerical target with the other variables we use the condes tool that provides us with information about the relationships between the indicated variables and the target.
+
+```{r}
+library(FactoMineR)
+summary(df$Total_amount)
+```
+
+```{r}
+vars_res<-names(df)[c(19,34)]
+res.condes <- condes(df[, c(vars_res,vars_quantitatives, vars_categorical)],1)
+```
+
+Let's now look at the correlations between our Total_amount target and the variables in the following groups. We will basically look at p.value, which we know that the smaller the correlation between the variables.
+
+#### > Numerical variables
+```{r}
+res.condes$quanti # Global association to numeric variables
+```
+
+* Fare_amount: 
+  + The variable Total_amount is equivalent to Fare_amount plus the fees, tips, among others, that have been applied to the trip.
+* Trip_distance:
+  + As before, more distance, more time, therefore more price.
+* tlenkm
+  + More distance, more time, therefore more price.
+* traveltime
+  + More time, more price.
+* Tip_amount
+  + The more you pay, since the tip is a proportion of the final price, the more it will increase.
+* espeed
+  + As we said before, more speed means more distance, therefore more travel time, causing more price.
+
+#### > Qualitative variables
+```{r}
+res.condes$quali # Global association to factors
+```
+
+* Trip_distance_range
+  + Obviously, the longer the journey, the longer it will take and the more price it will have.
+* TipIsGiven
+  + Like before, the more you pay, since the tip is a proportion of the final price, the more it will increase.
+* Payment_type
+  + This is the least related variable. However, we can predict that the more the trip is worth, the more likely it is to be paid by credit card.
+* RateCodeID
+  + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+
+#### > Categorical variables
+```{r}
+res.condes$category # Partial association to significative levels in factors
+```
+
+* Trip_distance_range
+   + We can see that, the further away, the more correlation, as it takes longer to travel.
+* TipIsGiven
+   + We see that it is more likely to tip if the price is high.
+* Payment_type
+   + We see that it is easier for the guy to be with CreditCard if the trip costs more.
+* RateCodeID
+   + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+* period
+   + We see that in the morning travel costs less.
+
+
+## Factor (Y.bin - TipIsGiven)
+And now, we are profiling the qualitative target:
+```{r}
+res.catdes <- catdes(df[, c(vars_res,vars_quantitatives, vars_categorical)],2)
+```
+
+Let's now look at the correlations between our TipIsGiven target and the variables in the following groups. We will basically look at p.value, which we know that the smaller the correlation between the variables.
+
+#### > Test.Chi2
+```{r}
+res.catdes$test.chi2
+```
+* Payment_type
+   + We see that it is very likely that there will be a tip if it is paid in a concise manner.
+* Trip_distance_range
+   + As we can see, there is tip as long as the trip is, or very short, or very long.
+* Trip_type
+   + We don't think the type of trip is important.
+* RateCodeID
+   + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+* period
+   + We see that in the morning people are not in a very good mood and are more inclined to tip the "valley".
+
+#### > Quantitative variables
+```{r}
+res.catdes$quanti.var
+```
+* Tip_amount
+   + If there is a tip, it must have value.
+* Total_amount
+   + We see that it is more likely to tip if the price is high.
+* Fare_amount
+   + We see that it is more likely to tip if the price is high.
+* tlenkm
+   + The more distance, the more time, therefore the more price. So, more chances of there being a tip.
+* Trip_distance
+   + Exactly the same as above.
+* traveltime
+   + The longer, therefore the more price. So, more chances of there being a tip.
+* espeed
+   + The faster you get to the site, the more satisfaction and therefore the likelihood of tipping.
+
+#### > Categorical variables
+```{r}
+res.catdes$category
+```
+
+* TipIsGiven
+  + Same variable.
+* Payment_type
+   + We see that it is very likely that there will be a tip if it is paid in a concise manner.
+* Trip_distance_range
+   + As we can see, there is tip as long as the trip is, or very short, or very long.
+* Trip_type
+   + We don't think the type of trip is important.
+* RateCodeID
+   + As we have seen before, virtually all observations were of type 1. Therefore it is not worth looking at the correlation.
+* period
+   + We see that in the morning people are not in a very good mood and are more inclined to tip the "valley".
+
+
+--------------------------------------------------------------------------------
+
+# Finally, save the data
+```{r}
+save.image("Taxi5000_del1.RData")
+```
+
