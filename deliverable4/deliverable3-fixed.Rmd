@@ -792,6 +792,8 @@ llwork<-sample(1:nrow(dff),0.70*nrow(dff),replace=FALSE)
 llwork<-sort(llwork);length(llwork)
 dffwork<-dff[llwork,]
 dfftest<-dff[-llwork,]
+
+table(df$target.tip_is_given, df$f.payment_type)
 ```
 
 Steps to follow:
@@ -894,6 +896,9 @@ We are going, though, to propose a model which brings us more chances:
 ```{r}
 model_24 <- glm(target.tip_is_given~poly(q.tlenkm, 2)+f.mta_tax+q.extra+q.espeed,family = "binomial",data=dffwork); summary(model_24)
 residualPlots(model_24)
+marginalModelPlots(model_24)
+(model_16)
+
 ```
 
 * q.tlenkm: 
@@ -920,6 +925,7 @@ Thus, we are going to redp the model:
 model_24 <- glm(target.tip_is_given~poly(q.tlenkm, 2)+f.mta_tax,family = "binomial",data=dffwork); summary(model_24)
 vif(model_24)
 residualPlots(model_24)
+marginalModelPlots(model_24)
 Anova(model_24, test="Wald")
 ```
 
@@ -986,6 +992,8 @@ We keep with the 25.
 We can see now the effects of it:
 ```{r}
 plot(allEffects(model_25))
+marginalModelPlots(model_25)
+residualPlots(model_25)
 ```
 
 * We can observe that only the tips is given in certain range of driven km, due to the fact that for few km, it makes no sense to give it, and for many km it is too much.

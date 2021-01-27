@@ -3,16 +3,16 @@ title: "Deliverable 4"
 author: "Júlia Gasull i Claudia Sánchez"
 date: \today
 output:
+  html_document:
+    toc: no
+    toc_depth: '4'
+  word_document:
+    toc: no
+    toc_depth: '4'
   pdf_document:
     number_sections: yes
     toc: yes
     toc_depth: 4
-  word_document:
-    toc: no
-    toc_depth: '4'
-  html_document:
-    toc: no
-    toc_depth: '4'
 geometry: left=1.9cm,right=1.9cm,top=1.25cm,bottom=1.52cm
 fontsize: 18pt
 subtitle: Final deliverable
@@ -332,19 +332,19 @@ jouts[25]<-length(llout)
 df[llout,"q.espeed"]<-NA 
 ```
 
-#### lpep_pickup_datetime
+#### Lpep pickup datetime
 We just keep the hours
 ```{r}
 df$qual.pickup<-substr(strptime(df$qual.lpep_pickup_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13)
 ```
 
-#### lpep_dropoff_datetime
+#### Lpep dropoff datetime
 We just keep the hours
 ```{r}
 df$qual.dropoff<-substr(strptime(df$qual.lpep_dropoff_datetime, "%Y-%m-%d %H:%M:%S"), 12, 13)
 ```
 
-#### Passenger_count
+#### Passenger count
 ```{r}
 summary(df$q.passenger_count)
 ```
@@ -359,7 +359,7 @@ Sel contains the rownames of the individuals with "0" as value for passengers
 df[sel,"q.passenger_count"]<-NA
 ```
 
-#### Trip_distance
+#### Trip distance
 ```{r}
 summary(df$q.trip_distance)
 ```
@@ -414,7 +414,7 @@ barplot(table(df$f.trip_distance_range),main="trip_distance_range Barplot",col="
 ```
 
 
-#### Pickup_longitude
+#### Pickup longitude
 We know that New York's longitude is -73.9385, so values that differ a lot from this value is an error or an outlier.
 ```{r}
 summary(df$q.pickup_longitude)
@@ -437,7 +437,7 @@ jouts[6]<-length(llout)
 df[llout,"q.pickup_longitude"]<-NA
 ```
 
-#### Pickup_latitude
+#### Pickup latitude
 We know that New York's latitude is 40.6643, so values that differ a lot from this value is an error or an outlier.
 ```{r}
 summary(df$q.pickup_latitude)
@@ -459,7 +459,7 @@ jouts[7]<-length(llout)
 df[llout,"q.pickup_latitude"]<-NA
 ```
 
-#### Dropoff_longitude
+#### Dropoff longitude
 We know that New York's longitude is -73.9385, so values that differ a lot from this value is an error or an outlier.
 ```{r}
 summary(df$q.dropoff_longitude)
@@ -482,7 +482,7 @@ jouts[8]<-length(llout)
 df[llout,"q.dropoff_longitude"]<-NA
 ```
 
-#### Dropoff_latitude
+#### Dropoff latitude
 We know that New York's latitude is 40.6643, so values that differ a lot from this value is an error or an outlier.
 ```{r}
 summary(df$q.dropoff_latitude)
@@ -509,7 +509,7 @@ Now that we have the outliers, we are setting them as NA
 df[llout,"q.dropoff_latitude"]<-NA
 ```
 
-#### 13. Fare_amount
+#### Fare amount
 We know that the fare should be positive, as it is the price of the trip, so we'll treat as error those values. The next we'll do is decide the outliers.
 
 ```{r}
@@ -551,7 +551,7 @@ jerrs[13]<-length(sel)
 df[sel,"q.extra"]<-NA 
 ```
 
-#### MTA_tax
+#### Mta tax
 This variable corresponds to a tax that must be charged in every trip and its cost is $0.50, so values different from this are errors, and we don't have to take into account outliers because after the errors detection all values should be the MTA_tax.
 ```{r}
 table(df$q.mta_tax)
@@ -565,8 +565,7 @@ jerrs[14]<-length(sel)
 df[sel,"q.mta_tax"]<-NA 
 ```
 
-
-#### Improvement_surcharge
+#### Improvement surcharge
 This variable corresponds to a charge that must be charged in every trip and its cost is $0.30, so values smaller than 0 are errors, and we don't have to take into account outliers because after the errors detection all values should be the Improvement surcharge.
 ```{r}
 table(df$q.improvement_surcharge)
@@ -579,7 +578,7 @@ jerrs[17]<-length(sel)
 df[sel,"q.improvement_surcharge"]<-NA 
 ```
 
-#### Tip_amount
+#### Tip amount
 As this is a price related variable, negative values should be considered as errors, and big tips should be considered as outliers. Also tip amounts bigger than 0 for individuals with payment_type = "Cash" should be considered as errors as well.
 ```{r}
 summary(df$q.tip_amount)
@@ -605,7 +604,7 @@ jouts[15]<-length(llout)
 df[llout,"q.tip_amount"]<-NA 
 ```
 
-#### Tolls_amount
+#### Tolls amount
 As this is a price related variable, negative values should be considered as errors.
 ```{r}
 table(df$q.tolls_amount)
@@ -625,8 +624,8 @@ jouts[16]<-length(llout)
 df[llout,"q.tolls_amount"]<-NA 
 ```
 
-#### 20. Total_amount
-This is a price related variable, so negative values should be treated as errors. Also, we need to sum the "Fare_amount", "Extra","MTA_tax", "Improvement_surcharge", "Tip_amount" and the "Tolls_amount" in order to see if the Total_amount matches with this sum.
+#### Total amount
+This is a price related variable, so negative values should be treated as errors. Also, we need to sum the "q.fare_amount", "q.extra","q.mta_tax", "q.improvement_surcharge", "q.tip_amount" and the "q.tolls_amount" in order to see if the q.target.total_amount matches with this sum.
 ```{r}
 summary(df$q.target.total_amount)
 ```
@@ -771,8 +770,8 @@ vars_quantitatives <- names(df)[c(4,5,6,7,8,9,10,11,12,13,14,15,16,21,22,23)]
 #  [7] "q.fare_amount"           "q.extra"                
 #  [9] "q.mta_tax"               "q.tip_amount"           
 # [11] "q.tolls_amount"          "q.improvement_surcharge"
-# [13] "q.tlenkm"                "q.travel_time"          
-# [15] "q.espeed"   
+# [13] "q.target.total_amount"   "q.tlenkm"               
+# [15] "q.travel_time"           "q.espeed"   
 ```
 
 ```{r}
@@ -977,6 +976,7 @@ corrplot(res,method="square",type="upper",tl.col="black",tl.cex=0.75,)
 As we can see in this graph, we have the correlation between all quantitative variables. We must say, however, that there are two variables (espeed and traveltime) which we had to modify when making the imputation.
 
 Now, let's describe each correlation we obtained in the graph (we will only mention one relation once):
+
 * Diagonals: Being exactly the same variable, it is directly related to itself.
 * q.passanger_count: not too related to any other not seen before
 * q.trip_distance
@@ -1456,8 +1456,6 @@ library("factoextra")
 
 According to the previous plot, the optimal number of clusters per k-means is 3, so we guess maybe something is wrong or missing.
 
-!!!! fins aquí
-
 
 ### Classification
 
@@ -1624,14 +1622,23 @@ library(factoextra)
 Now, we can start computing the MCA for our categorical variables:
 
 ```{r}
-names(df[,c(1,2,15,16,17,19,25,29,26,37)])
-res.mca <- MCA(df[,c(1,2,15,16,17,19,25,29,26,37)],quanti.sup=c(3),quali.sup=c(8,10),graph=FALSE)
+names(df)
+vars_con <- names(df)[c(10,11,14,15,18,20)]; length(vars_con)
+vars_dis <- names(df)[c(1,2,16,17,19,25,16,27,28,29,30,31,32,33,34,37,38)]; length(vars_dis)
+res.mca <- MCA( 
+  df[,c(vars_dis,vars_con)],
+  quanti.sup=c(18:23),
+  quali.sup=c(10,16),
+  graph=FALSE
+)
 ```
 
 Let’s look at the supplementary quantitative variable q.target.total_amount. We can see that it is closer to the Dim2 than to the Dim1.
 ```{r}
 fviz_mca_var(res.mca, choice="quanti.sup", repel=TRUE, ggtheme=theme_minimal())
 ```
+
+We can see that improvement subcharge and mta_tax are moving to the -1 value of dimension 2, while, for example, total amount and trip distance are moving to the 1 value of dimension 1. On the other hand, extra and hour are moving negatively towards both dimensions.
 
 Cloud of individuals:
 ```{r}
@@ -1642,15 +1649,15 @@ fviz_mca_ind(res.mca,geom=c("point"),col.ind="darkslateblue")
 
 **How many axes we have to consider for next Hierarchical Classification stage?**
 
-We consider, according to the generalized Kaiser theorem, all those dimensions such that their eigenvalue is greater than the mean. We see that the average gives us 0.1428571. Therefore, we will take up to dimension 6, which represents the 62.02% of the sample.
+We consider, according to the generalized Kaiser theorem, all those dimensions such that their eigenvalue is greater than the mean. We see that the average gives us 0.06666667. Therefore, we will take up to dimension 13, which represents the 73.66% of the sample.
 ```{r}
 mean(res.mca$eig[,1])
-head(get_eigenvalue(res.mca), 10)
+head(get_eigenvalue(res.mca), 15)
 ```
 
 We can also visualize the percentages of inertia explained by each MCA dimensions:
 ```{r}
-fviz_screeplot(res.mca,addlabels=TRUE,ylim=c(0,20),barfill="darkslateblue",barcolor="darkslateblue",linecolor="skyblue1")
+fviz_screeplot(res.mca,addlabels=TRUE,ylim=c(0,15),barfill="darkslateblue",barcolor="darkslateblue",linecolor="skyblue1")
 ```
 
 ### Individuals point of view
@@ -1672,7 +1679,7 @@ We can see that individuals are more grouped according to some variables than ot
 
 Before looking at the categories, let's look at its variables:
 
-As we can see in the plot "Variables representation", the correlation between the f.payment_type factor taking into account the eta2 and the second factorial axis is a value greater than 0.5. On the other hand, we can see that something similar happens with the f.trip_type factor and f.rate_code_id in dimension 1.
+As we can see in the plot "Variables representation", the correlation between the f.dist factor taking into account the eta2 and the second factorial axis is a value greater than 0.5. On the other hand, we can see that something similar happens with the f.extra factor and f.rate_code_id in dimension 1.
 ```{r}
 fviz_mca_var(res.mca, choice="mca.cor", repel=TRUE)
 ```
@@ -1683,14 +1690,16 @@ Now, let’s analyze the categories.
 fviz_mca_var(res.mca, repel=TRUE)
 ```
 
-As we can see, the “no paid” category (f.payment_type variable) is the one farthest from the center of the plot (in dimension 2). The farther from the center of gravity, the more rarely this feature value appears in the sample represented by the dimension. In addition, we see that in dimension 1 we also have two extremes, the "code_rate_id_other" category ("f.code_rate_id" variable) and the "trip_dispatch" category ("f.trip_type" variable). As we have said, this means that these categories are rarely represented in this dimension.
+As we can see, the “tolls_yes” category (f.paid_tolls variable) is the one farthest from the center of the plot (in dimension 2). The farther from the center of gravity, the more rarely this feature value appears in the sample represented by the dimension. 
+
+In addition, we see that in dimension 1 we also have two extremes, the "code_rate_id_other" category ("f.code_rate_id" variable) and the "trip_dispatch" category ("f.trip_type" variable), as well as other variables. As we have said, this means that these categories are rarely represented in this dimension.
 
 Regardering the center of mass, we can say that we find the categories most represented by the dimensions.
 
 To give an example, let's suppose we look at the first dimension. An observation that we could find with high probability would be the following:
 
 * f.code_rate_id = code_rate_id_1
-* f.trip_type = Street-Hail
+* f.trip_type = trip_street_hail
 
 On the other hand, an observation that we could rarely find there would be...
 
@@ -1712,13 +1721,19 @@ There is no info for the **quantitative** variables here.
 
 In the first dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
 
-* f.rate_code_id (0.96)
-* f.trip_type (0.959)
+* q.mta_tax               (-0.97)
+* q.improvement_surcharge (-0.96)
 
 If we look at the **categories**, we see that the most related are,
 
-* f.trip_type=trip_dispatch (1.74)
-* f.rate_code_id=rate_code_id_other (1.66)
+* f.improvement_surcharge=improvement_no    (1.61)
+* f.mta_tax=mta_no                          (1.62)
+* f.trip_type=trip_dispatch                 (1.67)
+* f.rate_code_id=rate_code_id_other         (1.58)
+* f.rate_code_id=rate_code_id_1             (-1.58)
+* f.trip_type=trip_street_hail              (-1.67)
+* f.mta_tax=mta_yes                         (-1.62)
+* f.improvement_surcharge=improvement_yes   (-1.61)
 
 #### Description of dimension 2
 ```{r}
@@ -1729,15 +1744,19 @@ There is no info for the **quantitative** variables here.
 
 For the second dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
 
-* f.payment_type (0.51)
-* f.vendor_id (0.26)
+* q.target.total_amount    (0.84)
+* q.tlenkm                 (0.84)
 
 We see that they are not very large numbers, however.
 
 If we look at the **categories**, we see that the most related are,
 
-* f.payment_type=no paid (1.86)
-* f.vendor_id=vendor_id_mobile (0.26)
+* f.travel_time=(20,60]                          (0.54)
+* f.cost=(18,30]                                 (0.28)
+* f.dist=(5.5, 30]                               (0.64)
+* f.trip_distance_range=trip_dist_long           (0.55)
+* f.dist=(0, 1.6]                                (-0.53)
+* f.trip_distance_range=trip_dist_short          (-0.56)
 
 ### Perform a MCA taking into account also supplementary variables (use all numeric variables) quantitative and/or categorical. How supplementary variables enhance the axis interpretation?
 ```{r}
@@ -1759,31 +1778,16 @@ res.desc <- dimdesc(res.mca_all, axes = c(1,2))
 res.desc[[1]]
 ```
 
-In this dimension, since we have taken into account all the variables, we now have information for the **quantitative** variables. We see that, more or less, the most positively related are:
+In this dimension, since we have taken into account all the variables, we now have information for the **quantitative** variables. We see that, more or less, the most related are:
 
-* q.trip_distance          0.53263364
-* q.fare_amount            0.53136451
-* q.tlenkm                 0.51800587
-
-We also see that they do not contribute much given the numbers.
-
-However, there is a little more inverse relationship with 
-
-* q.extra                 -0.62829962
-
-Regarding the **qualitative** variables, the new relationship is as follows:
-
-* f.period                0.475926312
-* qual.pickup             0.570138464
-* qual.dropoff            0.554006489 
-* f.trip_distance_range   0.297157633
+* q.trip_distance          (0.53)
+* q.fare_amount            (0.53)
+* q.extra                  (-0.63)
 
 If we look at the **categories**, we see that the most related are,
 
-* f.hour=f.hour_other                      0.5642223317  
-* f.extra=extra_no                         0.3329791331
-* f.trip_distance_range=trip_dist_long     0.4386776525
-* f.dist=(5.5, 30]                         0.5076041966 
+* f.hour=f.hour_other       (0.56)
+* f.extra=extra_no          (0.33)
 
 
 ##### Description of dimension 2
@@ -1793,28 +1797,16 @@ res.desc[[2]]
 
 In this dimension, since we have taken into account all the variables, we now have information for the **quantitative** variables. We see that, more or less, the most positively related are:
 
-* q.trip_distance          0.64383966 
-* q.tlenkm                 0.64273304 
-* q.target.total_amount    0.63306027 
-* q.fare_amount            0.59446156
-
-For the second dimension we see that for the **qualitative** variables the most positively related, from more to less, are:
-
-* f.period                0.3956288348 
-* qual.pickup             0.4497408628 
-* qual.dropoff            0.4541554265
-* f.trip_distance_range   0.4677644156 
-* f.extra                 0.3202538147 
-* f.dist                  0.4694364650
-* f.cost                  0.4265269270 
-
-We see that they are not very large numbers, however.
+* q.trip_distance          (0.64)
+* q.tlenkm                 (0.64)
+* q.target.total_amount    (0.63)
+* q.fare_amount            (0.59)
 
 If we look at the **categories**, we see that the most related are,
 
-* f.dist=(5.5, 30]                         0.59673706 
-* f.extra=extra_yes                        0.27704085
-* f.trip_distance_range=trip_dist_long     0.51551902
+* f.dist=(5.5, 30]                         (0.60)
+* f.extra=extra_yes                        (0.28)
+* f.trip_distance_range=trip_dist_long     (0.52)
 
 
 --------------------------------------------------------------------------------
@@ -1856,7 +1848,7 @@ We now proceed to see the quantitative variables that characterizes the clusters
 res.hcpcMCA$desc.var$quanti.var 
 ```
 
-We can see in the output that the variable that appears is slightly over represented in the clusters. We can notice that **q.target.total_amount** is over represented with 0.04 units over the global mean. So it is practically the same as the global mean.
+We can see in the output that the variable that appears is slightly over represented in the clusters. We can notice that **q.target.total_amount** is over represented with 0.7 units over the global mean. So it is practically the same as the global mean.
 
 
 We want to know now which variables are associated with the quantitative variables.
@@ -1877,12 +1869,12 @@ We are going to evaluate the partition quality.
 ((res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[5])/res.hcpcMCA$call$t$within[1])*100
 ```
 
-The quality of this reduction if of 57.59%.
+The quality of this reduction if of 73.95%
 
 
-In case we wanted to achieve an 80% of the clustering representativity we would need 13 clusters.
+In case we wanted to achieve an 80% of the clustering representativity we would need 6 clusters.
 ```{r}
-((res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[13])/res.hcpcMCA$call$t$within[1])*100
+((res.hcpcMCA$call$t$within[1]-res.hcpcMCA$call$t$within[6])/res.hcpcMCA$call$t$within[1])*100
 ```
 
 
@@ -1932,7 +1924,6 @@ points(res.mca$ind$coord[dist5,1],res.mca$ind$coord[dist5,2],col="royalblue1",ce
 ```
 
 ### Comparison of clusters obtained after K-Means (based on PCA) and/or Hierarchical Clustering (based on PCA) focusing on...
-32145. 39.76506
 
 ```{r}
 df$hcpckMCA<-res.hcpcMCA$data.clust$clust
@@ -1941,14 +1932,12 @@ df$hcpckMCA<-res.hcpcMCA$data.clust$clust
 table(df$hcpck,df$hcpckMCA)
 df$hcpckMCA_hcpck<-factor(
   df$hcpckMCA,
-  levels=c(3,2,1,4,5),
-  labels=c("kHPmca-3","kHPmca-2","kHPmca-1","kHPmca-4","kHPmca-5")
-)
-tt1<-table(df$hcpck,df$hcpckMCA_hcpck); tt1
-100*sum(diag(tt1)/sum(tt1))
+  levels=c(1,2,5,4,3),
+  labels=c("kHPmca-1","kHPmca-2","kHPmca-5","kHPmca-4","kHPmca-3")
+); tt1<-table(df$hcpck,df$hcpckMCA_hcpck); tt1; 100*sum(diag(tt1)/sum(tt1))
 ```
 
-We have a concordance of the 39.77% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
+We have a concordance of the 66.30% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
 
 
 ```{r}
@@ -1956,14 +1945,12 @@ We have a concordance of the 39.77% so we can say that they are different, if we
 table(df$claKM, df$hcpckMCA)
 df$hcpckMCA_claKM<-factor(
   df$hcpckMCA,
-  levels=c(3,4,1,2,5),
-  labels=c("kHPmca-3","kHPmca-4","kHPmca-1","kHPmca-2","kHPmca-5")
-)
-tt2<-table(df$claKM,df$hcpckMCA_claKM); tt
-100*sum(diag(tt2)/sum(tt2))
+  levels=c(2,1,5,3,4),
+  labels=c("kHPmca-2","kHPmca-1","kHPmca-5","kHPmca-3","kHPmca-4")
+);tt2<-table(df$claKM,df$hcpckMCA_claKM); tt2;100*sum(diag(tt2)/sum(tt2))
 ```
 
-We have a concordance of the 49.16% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
+We have a concordance of the 44.90% so we can say that they are different, if we had a greater concordance, this would mean that they would be more similar.
 
 #### Quantitative target (Total_amount)
 
@@ -1971,7 +1958,7 @@ We have a concordance of the 49.16% so we can say that they are different, if we
 ```{r}
 ## res.hcpc$desc.var$quanti.var  ## quantitative variables which characterizes the clusters
 ## ##                               Eta2       P-value
-## ## q.target.total_amount  0.572312116  0.000000e+00
+## ## q.target.total_amount 0.572312116  0.000000e+00
 ```
 
 * kmeans
@@ -1988,7 +1975,7 @@ We have a concordance of the 49.16% so we can say that they are different, if we
 ```{r}
 ## ## res.hcpcMCA$desc.var$quanti.var 
 ## ##                             Eta2      P-value
-## ## q.target.total_amount 0.04259394 3.904378e-42
+## ## q.target.total_amount   0.696374175 0.000000e+00
 ```
 
 ##### Comment
@@ -1996,9 +1983,9 @@ To compare the variable Total_amount in the three different classifications, we 
 
 * The closer to 1 is eta2 for a variable, the better the variance between groups is explained by this variable.
 * We can see that, in descending order, we have:
-  + hcpc (0.572312116)
+  + hcpc_mca (0.696374175)
   + kmeans (0.065791515)
-  + hcpc_mca (0.04259394)
+  + hcpc (0.572312116)
 * This means that in the last classification the variable to define the clusters is not taken into account so much.
 
 
@@ -2006,93 +1993,69 @@ To compare the variable Total_amount in the three different classifications, we 
 ##### hcpc
 ```{r}
 ## res.hcpc$desc.var$category    ## description of each cluster by the categories
-## ## $`1`
-## ##                                         Cla/Mod      Mod/Cla    Global
-## ## f.target.tip_is_given=tip_no           80.0278843 67.3906663 62.410268
-## ## f.target.tip_is_given=tip_yes          64.2939815 32.6093337 37.589732
-## #
-## ## $`2`
-## ##                                         Cla/Mod   Mod/Cla    Global
-## ## nothing to see here
-## ##
-## ## $`3`
-## ##                                         Cla/Mod    Mod/Cla    Global
-## ## f.target.tip_is_given=tip_no         0.7319624    84        62.41027
-## ## f.target.tip_is_given=tip_yes        0.2314815    16        37.58973 
-## ##
-## ## $`4`
-## ##                                          Cla/Mod   Mod/Cla    Global
-## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732
-## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
-## ## 
-## ## $`5`
-## ##                                         Cla/Mod   Mod/Cla    Global
-## ## f.target.tip_is_given=tip_no          0.3834089  31.42857  62.41027 
-## ## f.target.tip_is_given=tip_yes         1.3888889  68.57143  37.58973
+# # $`1`
+# #                                           Cla/Mod    Mod/Cla    Global     
+# # f.target.tip_is_given=tip_no           80.0278843 67.3906663 62.410268 
+# # f.target.tip_is_given=tip_yes          64.2939815 32.6093337 37.589732  
+# # 
+# # $`2`
+# #                                         Cla/Mod     Mod/Cla    Global      
+# # nothing to see here
+# # 
+# # $`3`
+# #                                        Cla/Mod Mod/Cla   Global     p.value
+# # f.target.tip_is_given=tip_no         0.7319624      84 62.41027 0.021898539
+# # f.target.tip_is_given=tip_yes        0.2314815      16 37.58973 0.021898539
+# # 
+# # $`4`
+# #                                          Cla/Mod   Mod/Cla    Global  
+# # f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732
+# # f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268 
+# # 
+# # $`5`
+# #                                         Cla/Mod  Mod/Cla   Global 
+# # f.target.tip_is_given=tip_yes         1.3888889 68.57143 37.58973 
+# # f.target.tip_is_given=tip_no          0.3834089 31.42857 62.41027
+
 ```
 
 ##### kmeans
 ```{r}
-## res.cat<-catdes(df,30)
-## res.cat
-## ##
-## ## Description of each cluster by the categories
-## ## =============================================
-## ## $`1`
-## ##                                          Cla/Mod   Mod/Cla    Global
-## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732 
-## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
-## ##
-## ## $`2`
-## ##                                          Cla/Mod   Mod/Cla    Global
-## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732 
-## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
-## ##
-## ## $`3`
-## ##                                          Cla/Mod   Mod/Cla    Global
-## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732 
-## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
-## ##
-## ## $`4`
-## ##                                          Cla/Mod   Mod/Cla    Global
-## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732 
-## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
-## ##
-## ## $`5`
-## ##                                          Cla/Mod   Mod/Cla    Global
-## ## f.target.tip_is_given=tip_yes          26.909722 58.197747 37.589732 
-## ## f.target.tip_is_given=tip_no           11.641687 41.802253 62.410268
+## wtf
 ```
 
 ##### hcpc_mca
 ```{r}
 ## res.hcpcMCA$desc.var$category    ## description of each cluster by the categories
-## ## $`1`
-## ##                                Cla/Mod   Mod/Cla     Global
-## ## TipIsGiven=No                1.0409438 100.00000 62.3404716
-## ## TipIsGiven=Yes               0.0000000   0.00000 37.6595284
-## ##
-## ## $`2`
-## ##                                  Cla/Mod     Mod/Cla     Global
-## ## nothing to see here
-## ##
-## ## $`3`
-## ##                                  Cla/Mod     Mod/Cla     Global
-## ## TipIsGiven=No                  32.616239  65.5966504 62.3404716
-## ## TipIsGiven=Yes                 28.317059  34.4033496 37.6595284
-## ##
-## ## $`4`
-## ##                                  Cla/Mod     Mod/Cla     Global
-## ## TipIsGiven=Yes                 46.984492  41.9057377 37.6595284
-## ## TipIsGiven=No                  39.347675  58.0942623 62.3404716
-## ##
-## ## $`5`
-## ##                                     Cla/Mod    Mod/Cla    Global
-## ## TipIsGiven=No                    3.33102012 80.0000000 62.340472
-## ## TipIsGiven=Yes                   1.37851809 20.0000000 37.659528
+# # $`1`
+# #                                                  Cla/Mod      Mod/Cla     Global
+# # f.target.tip_is_given=tip_no                  66.6434298  70.76239822 62.4102676
+# # f.target.tip_is_given=tip_yes                 45.7175926  29.23760178 37.5897324
+# # 
+# # $`2`
+# #                                                   Cla/Mod      Mod/Cla     Global
+# # f.target.tip_is_given=tip_yes                 36.57407407  53.15391085 37.5897324
+# # f.target.tip_is_given=tip_no                  19.41443012  46.84608915 62.4102676
+# # 
+# # $`3`
+# #                                                  Cla/Mod   Mod/Cla     Global    
+# # f.target.tip_is_given=tip_no                    1.010805 100.00000 62.4102676 
+# # f.target.tip_is_given=tip_yes                   0.000000   0.00000 37.5897324
+# #
+# # $`4`
+# #                                                   Cla/Mod     Mod/Cla     Global
+# # f.target.tip_is_given=tip_yes                 16.66666667  50.5263158 37.5897324
+# # f.target.tip_is_given=tip_no                   9.82920878  49.4736842 62.4102676
+# # 
+# # $`5`
+# #                                                    Cla/Mod     Mod/Cla    Global
+# # f.target.tip_is_given=tip_no                    3.10212618  83.1775701 62.410268
+# # f.target.tip_is_given=tip_yes                   1.04166667  16.8224299 37.589732
 ```
 
 ##### Comment
+FALTA
+
 To compare the variable TipIsGiven in the three different classifications, we will look at Cla / Mod, Mod / Cla and Global:
 
 * Cluster 1:
@@ -2117,7 +2080,1032 @@ To compare the variable TipIsGiven in the three different classifications, we wi
    + hcpc_mca: TipIsGiven = No is overrepresented
 
 #### Final comment
+
+FALTA 
+
 We think that at first glance, we do not find the relationship between the different clusters of the different types of analysis. As we can see in the data, they are not distributed in the same way with respect to the two variables we had to analyze.
 
 It makes sense to think this, since these variables have not been taken into account in the analyzes, as they had the role of supplementary variables, which means that they only served us as explanatory variables, and not to decide how to form clusters.
+
+--------------------------------------------------------------------------------
+
+# DELIVERABLE 3
+
+## Clean some data
+```{r}
+names(df)
+df$hcpck <- NULL
+df$claKM <- NULL
+df$hcpckMCA <- NULL
+df$hcpckMCA_hcpck <- NULL
+df$hcpckMCA_claKM <- NULL
+df$qual.dropoff <- NULL
+df$qual.pickup <- NULL
+#df<-df[!(df$q.target.total_amount=="0"),]
+length(df[!(df$q.target.total_amount=="0"),]);
+```
+
+## Listing out variables
+```{r}
+names(df)
+vars_con<-names(df)[c(3:15,18,20:22)];vars_con
+vars_dis<-names(df)[c(1,2,16,17,19,23:34)]; vars_dis
+vars_res<-names(df)[c(15,27)];vars_res
+vars_cexp<-names(df)[c(7,8,9,10,11,12,13,14,18,20,21,22)];vars_cexp
+```
+
+## Quantitative Logistics Regression
+
+Before we begin to see correlations with our target, we should consider the normality of this.
+
+### (0) Normality
+```{r}
+hist(df$q.target.total_amount,50,freq=F,col="darkslateblue",border = "darkslateblue")
+mm<-mean(df$q.target.total_amount);ss<-sd(df$q.target.total_amount)
+curve(dnorm(x,mean=mm,sd=ss),col="red",lwd=2,lty=3, add=T)
+shapiro.test(df$q.target.total_amount)
+```
+
+We see that the target total_amount is not normally distributed for the following reasons:
+
+* graph: there is no symmetry in the plot
+* shapiro: we see that the p-value is too large to accept the assumption that target.total_amount is normally distributed
+
+#### Symmetry
+```{r}
+skewness(df$q.target.total_amount)
+```
+
+Normal data should have 0 skewness: we see that our data is right skewed (3.18).
+
+#### Kurtosis
+```{r}
+kurtosis(df$q.target.total_amount)
+```
+
+Normal data should be 3. We have 21.1, so, in this case, our data is not normal.
+
+
+### Start to find models
+
+Steps to follow:
+
+1. Enter all relevant numerical variables in the model
+2. See if you need to replace a number with its equivalent factor
+3. Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
+4. Add interactions: between factor-factor and between factor-numeric (doubles).
+5. Diagnosis of waste and observations. Lack of adjustment and / or influential.
+
+### (1) Numerical variables
+
+#### Method 1: take the most correlated variables
+
+We use spearman method since out target is not normally distributed
+
+```{r}
+round(cor(df[,c("q.target.total_amount",vars_cexp)], method="spearman"),dig=2)
+```
+
+We see that the diagonal is full of '1', since this command gives us the correlation between the same variable. Apart from this diagonal, however, there are more high correlations. Let's see which ones are correlated with our target:
+
+* q.fare_amount: 0.97
+* q.trip_distance: 0.93
+* q.tlenkm: 0.91 (like trip_distance)
+* q.traveltime: 0.90
+* q.tip_amount: 0.41 (not much, but must be taken into account)
+* q.espeed: 0.29 (not much, but must be taken into account)
+* q.tolls_amount: 0.15  (not much, but must be taken into account)
+* we can see that some of them are not correlated:
+  + q.extra (0.03)
+  + q.passenger_count (0.01)
+  + q.hour (-0.01)
+
+After seeing the correlation, to make an initial model, we should select the ones that are most correlated, which are:
+
+* q.fare_amount
+* q.trip_distance (we are not taking tlenkm because of redundance)
+* q.traveltime
+* q.tip_amount
+* q.espeed
+* q.tolls_amount
+
+#### Method 2: take the entire dataset with a condes
+```{r}
+res.con <- condes(df,num.var=which(names(df)=="q.target.total_amount"))
+```
+
+```{r}
+res.con$quanti
+```
+
+As we have seen before, the most correlated variables are:
+
+* q.fare_amount: 0.94
+  + it is normal for the rate to go up when the price goes up
+* q.trip_distance: 0.90
+  + the more distance, the more time, and therefore the more price
+* q.tlenkm: 0.88
+  + just like the previous one
+* q.traveltime: 0.76
+  + the longer, the more price
+* q.tip_amount: 0.57
+  + not so much related, but we can keep in mind that people tend to give a percentage of the total price
+* q.espeed: 0.40
+* q.tolls_amount: 0.26
+
+```{r}
+res.con$quali
+```
+
+To talk about factor variables, we need to visualize res.con$quali. So let's see:
+
+* f.trip_distance_range
+  + we see that they are totally related, just as we see with que.trip_distance, since the longer distance, the longer time, and therefore the more price
+* f.cost
+  + is equivalent to our target
+* f.tt
+  + he longer time, the more price
+* f.dist
+  + just like with f.trip_distance_range
+* f.paid_tolls
+  + if you pay more, it means that the trip has lasted longer, and therefore has been longer, and is more likely to have gone through more tolls
+* target.tip_is_given
+  + just like before, but we can keep in mind that people tend to give a percentage of the total price
+
+#### Method 3: if few explanatory variables are available -> take all of them
+```{r}
+vars_cexp
+cor(df$q.trip_distance,df$q.tlenkm)
+```
+
+To give an example, we see that the two distances we have, trip_distance and tlenkm, are closely related, since they represent the same.
+
+#### Model 1
+```{r}
+model_1 <- lm(target.total_amount~.,data=df[,c("q.target.total_amount",vars_cexp)]);summary(model_1)
+```
+
+Model_1 explains 93.4% of the variability of the target. We also see, according to the F-statistic, that it should be rejected.
+
+We cannot use variables that are so correlated at the same time to act as explanatory variables. Therefore, we need to make a model in which we do not have these correlations.
+
+But first, let's see which of them are that correlated:
+```{r}
+vif(model_1)
+```
+
+When the variance inflation factor is greater than 5, we need to consider whether or not we keep a variable.
+
+* q.trip_distance: 137.215426
+* q.tlenkm: 116.473412
+* q.fare_amount: 10.203484
+* q.traveltime: 5.069225
+
+In this case we have to choose how far we stay. Since we work better with km than with miles (or inches, or whatever it is), we could choose the variable q.tlenkm.
+
+#### Model 1 with BIC
+```{r}
+model_1_bic <- step( model_1, k=log(nrow(df)) )
+```
+
+The BIC has been eliminating the variables it has considered, without worsening the AIC. However, since it does not take into account either correlations or concepts, it is probably not optimal.
+
+Let's see how it turned out:
+
+```{r}
+vif(model_1_bic)
+```
+
+Note that tlenkm still has a vif greater than 5 (9.377307), and so does fare_amount (7.898396).
+
+```{r}
+summary(model_1_bic)
+```
+
+However, we see that it continues to explain much of the variability of our target (93.39%).
+
+Therefore, we will try to make a model manually based on what model_1_bic has shown us and our knowledge of the data:
+
+#### Model 2
+
+```{r}
+model_2 <- lm(target.total_amount~q.passenger_count+q.fare_amount+q.extra+q.tip_amount+q.tolls_amount+q.hour+q.tlenkm+q.traveltime+q.espeed,data=df[,c("q.target.total_amount",vars_cexp)]);summary(model_2)
+```
+
+We see that the explainability is now 93.39%.
+
+```{r}
+vif(model_2)
+```
+
+Even so, owning one is still beyond the reach of the average person.
+
+We try to make a new model without the distance:
+
+#### Model 3
+
+```{r}
+model_3 <- lm(target.total_amount~q.passenger_count+q.fare_amount+q.extra+q.tip_amount+q.tolls_amount+q.hour+q.traveltime+q.espeed,data=df[,c("q.target.total_amount",vars_cexp)]);summary(model_3)
+```
+
+We see that the explainability is now 92.99%.
+
+```{r}
+vif(model_3)
+```
+
+The live ones are fine now. Still, we’ve pulled the distance, which conceptually we can’t afford. Therefore, we will try to remove another variable with a high vif (q.fare_amount), instead of q.tlenkm:
+
+#### Model 4
+
+```{r}
+model_4 <- lm(target.total_amount~q.passenger_count+q.extra+q.tip_amount+q.tolls_amount+q.hour+q.tlenkm+q.traveltime+q.espeed,data=df[,c("q.target.total_amount",vars_cexp)]);summary(model_4)
+```
+
+We see that the explainability is now 86.17%.
+
+```{r}
+vif(model_4)
+```
+
+Despite having high vifs, we still have high explicability of the variability of our target and, given that the variable we have taken out we can remove with time and distance from the trip, we do not need it.
+
+So we continue to stay with this variable and make new models. We apply BIC to help us a little:
+```{r}
+model_4_bic <- step( model_4, k=log(nrow(df)) )
+```
+
+Following BIC, we have to eliminate variables until the vif's are less than 5. Therefore, the model that meets this is:
+
+#### Model 5
+
+```{r}
+model_5 <- lm(target.total_amount~q.passenger_count+q.extra+q.tip_amount+q.tolls_amount+q.tlenkm+q.traveltime,data=df);summary(model_5)
+```
+
+We see that the explainability is now 86.09%
+
+```{r}
+vif(model_5)
+```
+
+There is no vif that exceeds 5.
+
+Let's now discriminate the variables independently:
+
+```{r}
+marginalModelPlots(model_5)
+```
+
+We see that there is not much mismatch of the marginal variables. If there were any, we would have to transform our explanatory variables.
+
+### Diagnostics
+
+```{r}
+par(mfrow=c(2,2))
+plot(model_5, id.n=0 )
+par(mfrow=c(1,1))
+```
+
+Looking at the results, we can say that:
+
+* There is no normality
+* And, in terms of the Residual vs Leverage graph, our variables are within the R model, but it's not very reliable, so it doesn't help us much.
+
+All this is due to the fact that our target variable was no longer normally distributed. To solve this, we apply the logarithm:
+
+```{r}
+model_6 <- lm(log(target.total_amount)~q.passenger_count+q.extra+q.tip_amount+q.tolls_amount+q.tlenkm +q.traveltime,data=df);summary(model_6)
+```
+
+We see that when doing the logarithm, the coefficient of determination is getting lower and lower, now it is 79.51%. We have seen that it has gotten worse than the previous model. Therefore, we discard it. We will work with model_5.
+
+However, let's remember the last three models we used:
+
+* Model 4
+  + Coefficient of determination = 86,17%
+  + VIFs:
+    - q.passenger_count: 1.004128
+    - q.extra: 1.065604
+    - q.tip_amount: 1.227688
+    - q.tolls_amount: 1.063359
+    - q.hour: 1.072115
+    - q.tlenkm: 6.195063
+    - q.traveltime: 4.147204
+    - q.espeed: 2.731942
+* Model 5
+  + Coefficient of determination = 86.09%
+  + VIFs:
+    - q.passenger_count: 1.003687
+    - q.extra: 1.006299
+    - q.tip_amount: 1.226347
+    - q.tolls_amount: 1.063286
+    - q.tlenkm: 2.431645
+    - q.traveltime: .249571
+* Model 6
+  + Coefficient of determination = 79.51%
+  + VIFs:
+    - q.passenger_count: 1.003687
+    - q.extra: 1.006299
+    - q.tip_amount: 1.226347
+    - q.tolls_amount: 1.063286
+    - q.tlenkm: 2.431645
+    - q.traveltime: 2.249571
+
+According to the coefficient of explicability, the ranking is: model_4 >> model_5 >> model_6. As for the VIFs, however, the ranking is: model_6 >> model_5 >> model_4. Since VIFs are acceptable on both model_5 and model_6, and not acceptable on model_4, the smartest option is to choose model_5.
+
+So, let's look at the effects of this model:
+
+```{r}
+Anova(model_5)
+```
+
+We see that now the net effects are significant.
+
+```{r}
+library(effects)
+plot(allEffects(model_5))
+```
+
+We see that our model defines the following:
+
+* q.passenger_count does not depend on target.total_amount
+* q.extra grows if target.total_amount grows
+* q.tip_amount grows if target.total_amount grows
+* q.tolls_amount grows if target.total_amount grows
+* q.tlenkm grows if target.total_amount grows
+* q.traveltime grows if target.total_amount grows
+
+```{r}
+par(mfrow=c(2,2))
+plot(model_5, id.n=0 )
+par(mfrow=c(1,1))
+```
+
+We see that the residues are not completely optimal.
+
+#### Exhaustive
+````{r}
+ll1<-Boxplot(rstudent(model_5));ll1
+sel2<-which(hatvalues(model_5)>5*length(model_5$coefficients)/nrow(df));sel2;length(sel2)
+```
+
+```{r}
+library(MASS)
+boxcox(target.total_amount~q.passenger_count+q.extra+q.tip_amount+q.tolls_amount+q.tlenkm+q.traveltime,data=df)
+```
+
+We see the lambda parameter estimation method in the boxcox method. This gives us an idea of the power to which we need to raise the target variable in order to improve the properties of the linear model.
+
+It is worth trying a new model with a square root in the target variable:
+
+```{r}
+model_7 <- lm(sqrt(target.total_amount)~q.passenger_count+q.extra+q.tip_amount+q.tolls_amount+q.tlenkm+q.traveltime,data=df);summary(model_7)
+```
+
+We see that the coefficient has improved, from 85.09% (model_5) to 86.41% (model_7). But ... is it worth it from a residual point of view?
+
+```{r}
+par(mfrow=c(2,2));plot( model_7, id.n=0 );par(mfrow=c(1,1))
+```
+
+We see we haven’t won too much. So we stick to model_5.
+
+### (2) Factors
+
+```{r}
+model_8<-lm(log(target.total_amount)~ q.extra + q.tip_amount +  q.tolls_amount + f.improvement_surcharge + q.espeed  + log(q.tlenkm), data=df)
+summary(model_8)
+```
+
+We see that the explainability is now 87.77%. The more influent effects in this models are the length in km of the trip and the tip amount given.
+
+```{r}
+Anova(model_8)
+vif(model_8)
+residualPlots(model_8)
+```
+
+```{r}
+df$f.extra <- factor(df$q.extra)
+
+model_9<-lm(log(target.total_amount)~f.extra + q.tip_amount + q.tolls_amount + f.improvement_surcharge + q.espeed + log(q.tlenkm),data=df)
+BIC(model_8,model_9)
+```
+
+We can see from the BIC that the model_9 is better than the model_8, so it is correct to consider extra as factor. Next, we will do the same with the tolls_amount and use the factor we had already created (paid_tolls).
+
+```{r}
+model_10<-lm(log(target.total_amount)~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + q.espeed + log(q.tlenkm),data=df)
+BIC(model_8,model_9,model_10)
+```
+
+We see can see that it is correct to use the paid_tolls factor to improve our model. We will try it now with the effective speed.
+
+```{r}
+model_11<-lm(log(target.total_amount)~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + f.espeed + log(q.tlenkm),data=df)
+BIC(model_8,model_9,model_10,model_11)
+```
+We can see that the best approach is the model_10, so we are going to stick to it for now.
+
+```{r}
+model_12 <- model_10
+
+Anova(model_12)
+summary(model_12)
+```
+We can see from the Anova test that f.extra has 2 freedom degrees and globally it does have a significant net effect once the other variables are in the model.
+
+We are going to take a look at the residues.
+```{r}
+par(mfrow=c(2,2));plot( model_12, id.n=0 );par(mfrow=c(1,1))
+```
+Looking at the results, we can say that:
+
+* There is no normality
+* And, in terms of the Residual vs Leverage graph, our variables are within the R model, but it's not very reliable, so it doesn't help us much.
+
+
+We proceed to take a look at the influence plot to check our influent residuals for model_12.
+```{r}
+influencePlot( model_12, id=c(list="noteworthy",n=5))
+```
+
+We see this model as a disaster. That is, we have a student waste of the order of 35. We can confirm that this is too much. We have to compare student waste with a normal standard. Therefore, we would say that the model we have so far is a model that has a serious waste problem.
+
+--------------------------------------------------------------------------------
+
+#### Remove multivariant outliers to improve influence plot
+
+Since we’ve realized that this should have been removed from the start, what we’re going to do is put it at the beginning of the last deliverable in order to have a more consistent delivery. For now, however, we leave this section here so as not to have to change the entire delivery.
+
+```{r}
+library(mvoutlier)
+library(chemometrics)
+multivariant_outliers <- Moutlier(df[, c(15,20)], quantile = 0.995)
+multivariant_outliers$cutoff
+par(mfrow=c(1,1))
+plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
+text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(15,20)]), cex=0.5)
+
+ll_mvoutliers<-c('1237379', '1208612', '1171898', '488540', '211894', '638666', '329000', '1175981', '604912')
+
+df <- df[!(row.names(df) %in% ll_mvoutliers),]
+
+multivariant_outliers <- Moutlier(df[, c(15,20)], quantile = 0.995)
+multivariant_outliers$cutoff
+par(mfrow=c(1,1))
+plot(multivariant_outliers$md, multivariant_outliers$rd, type="n")
+text(multivariant_outliers$md, multivariant_outliers$rd, labels=rownames(df[, c(15,20)]), cex=0.75)
+
+```
+
+--------------------------------------------------------------------------------
+
+In order for this not to happen to us, we need to work on the variable q.tlenkm.
+
+So let's create a new model that does not give so many problems:
+
+```{r}
+model_13<-lm(log(target.total_amount)~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + q.espeed + log(q.tlenkm),data=df); summary(model_13)
+vif(model_13)
+
+influencePlot( model_13, id=c(list="noteworthy",n=5))
+```
+
+After doing certain tests, taking into account the influences, the coefficients of explicability and the vifs, we decided that the best we can get is a model where q.tlenkm does not apply any operation.
+
+So let's analyze it:
+
+```{r}
+residualPlots(model_13)
+```
+
+In the residualPlots, what we find is, for each factor, a boxplot of its categories and, for each quantitative variable, a pearson graph.
+
+Let's use another tool to fully understand our model:
+
+```{r}
+marginalModelPlots(model_13)
+```
+
+In relation to the variable q.tip_amount, we see that there is a bit of mismatch, but not much, since tips given in cash are always declared as 0. Therefore, the data are not entirely real.
+
+As for the variable q.tlenkm, we see that some observations do not follow the required pattern, and we have to modify them in some way.
+
+How do we do that?
+
+```{r}
+ll1<-Boxplot(rstudent(model_13));ll1
+ll1<-c(4269, 80, 2621)
+df[ll1,]
+```
+
+Let's see the strangest:
+
+* 4269
+  + target.total_amount: 5.0
+  + q.tip_amount: 0
+  + q.espeed: 11.06889
+  + q.tlenkm: 16.769364
+* 80
+  + target.total_amount: 3.8
+  + q.tip_amount: 0
+  + q.espeed: 23.16672
+  + q.tlenkm: 9.012326
+* 2621
+  + target.total_amount: 3.8
+  + q.tip_amount: 0
+  + q.espeed: 23.05353
+  + q.tlenkm: 8.851392
+
+Veiem que són observacionsa vastant normals. Tot i això, per exemple, podem destacar que la observació 4269, a la qual ja se li aplica una tarifa de 5$, per molts km és que hagi fet, el preu no ha pujat.
+
+We do the same for the cook distance:
+
+```{r}
+ll4 <- Boxplot(cooks.distance(model_13));ll4
+ll4<-c(4269, 2005, 2434)
+df[ll4,]
+```
+
+* 4269
+  + target.total_amount: 5.0
+  + q.tip_amount: 0
+  + q.espeed: 11.06889
+  + q.tlenkm: 16.769364
+* 2005
+  + target.total_amount: 50.00
+  + q.tip_amount: 0
+  + q.espeed: 27.33968
+  + q.tlenkm: 1.00000
+* 2434
+  + target.total_amount: 49.99
+  + q.tip_amount: 0
+  + q.espeed: 23.79045
+  + q.tlenkm: 1.00000
+
+We see that, apart from the first, explained above, the other two observations have a trip length of 1km, but instead has been paid about $ 50. We see that this is not possible.
+
+It is necessary to eliminate these observations that do not have the same tendency as our model:
+
+```{r}
+dfred<-df[-ll4,]
+
+model_14<-lm(log(target.total_amount)~ f.extra + q.tip_amount + f.paid_tolls + f.improvement_surcharge + q.espeed + log(q.tlenkm),data=dfred);summary(model_14)
+Anova(model_14)
+vif(model_14)
+```
+
+We see that the coefficient of determination has increased a bit and it seems that we have no collinearity problems.
+
+### (3) Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
+
+```{r}
+names(df)
+model_15<-lm(log(target.total_amount) ~ q.tip_amount + log(q.tlenkm)+ f.paid_tolls+ f.improvement_surcharge + f.espeed + f.extra + f.code_rate_id + f.vendor_id + f.payment_type+f.period ,data=df); summary(model_15)
+Anova(model_15)
+```
+
+We see that, of all the new explanatory variables introduced, the ones we can save are:
+
+* f.espeed: 22.49
+* f.code_rate_id: 11.06
+* f.payment_type: 4.19
+
+We create a new model with them:
+
+```{r}
+model_16<-lm(log(target.total_amount) ~ q.tip_amount + log(q.tlenkm)+ f.paid_tolls+ f.espeed + f.extra + f.code_rate_id + f.payment_type+f.period ,data=df)
+
+anova(model_15, model_16)
+
+
+influencePlot( model_16, id=c(list="noteworthy",n=5))
+residualPlots(model_16)
+marginalModelPlots(model_16)
+```
+
+We see that we haven't lost anything.
+
+### (4) Interactions
+
+```{r}
+model_17<-lm( log(target.total_amount) ~ (q.tip_amount + log(q.tlenkm))*(f.paid_tolls + f.espeed + f.extra + f.code_rate_id + f.payment_type + f.period),data=df)
+model_17<-step( model_17, k=log(nrow(df)))
+```
+
+This method tells us that:
+
+* log(target.total_amount) depends on:
+  + q.tip_amount
+  + log(q.tlenkm)
+  + f.paid_tolls
+  + f.espeed
+  + f.extra
+  + f.code_rate_id
+  + f.payment_type
+* and there are interactionsa between:
+  + q.tip_amount:f.espeed
+  + q.tip_amount:f.code_rate_id
+  + log(q.tlenkm):f.espeed
+  + log(q.tlenkm):f.extra
+  + log(q.tlenkm):f.code_rate_id
+  + log(q.tlenkm):f.payment_type
+
+```{r}
+Anova(model_17)
+summary(model_17)
+```
+
+
+#### Exhaustive
+````{r}
+ll1<-Boxplot(rstudent(model_17));ll1
+sel2<-which(hatvalues(model_17)>5*length(model_17$coefficients)/nrow(df));sel2;length(sel2)
+```
+
+
+--------------------------------------------------------------------------------
+
+## Binary Logistics Regression
+
+```{r}
+vars_cexp <- vars_cexp[c(1:4,6:10)]; vars_cexp
+
+table(df$target.tip_is_given, df$f.payment_type)
+```
+
+We can see from the table that it is no credible the fact that any of the people that paid in cash did not leave any tip.
+
+```{r}
+res.cat <- catdes(df, num.var = which(names(df)=="target.tip_is_given"))
+res.cat$quanti.var
+res.cat$test.chi2
+```
+
+From the quanti.var we can see that tip_is_given depends on tip_amount which seems obvious, due to the fact that they are the same variable treated in different ways.
+
+From the test.chi2 we can see that payment_type has something really clear with the tip_is_given, as we have p-value of 0. Which means that we cannot use payment_type as a predictor.
+
+### Filter
+
+```{r}
+ll<-which(df$f.payment_type=="Cash"); length(ll)
+dff<-df[-ll,]
+set.seed(12345)
+llwork<-sample(1:nrow(dff),0.70*nrow(dff),replace=FALSE)
+llwork<-sort(llwork);length(llwork)
+dffwork<-dff[llwork,]
+dfftest<-dff[-llwork,]
+
+table(df$target.tip_is_given, df$f.payment_type)
+```
+
+Steps to follow:
+
+1. Enter all relevant numerical variables in the model
+2. See if you need to replace a number with its equivalent factor
+3. Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
+4. Add interactions: between factor-factor and between factor-numeric (doubles).
+5. Diagnosis of waste and observations. Lack of adjustment and / or influential.
+
+### (1) Numerical variables
+#### Model 20
+
+```{r}
+model_20 <- glm(target.tip_is_given~.,family = "binomial",data=dffwork[,c("target.tip_is_given",vars_cexp)]);summary(model_20)
+Anova(model_20, test="Wald") #binary target
+```
+
+Comments:
+
+* We can see that the most influent variable, in our case, is the q.hour.
+* We can see that the residual deviance is of 1386.6 on 1472  degrees of freedom.
+
+```{r}
+vif(model_20)
+```
+
+We can see that we have some variables with very high vifs:
+
+* q.trip_distance (66.67)
+* q.tlenkm (63.09) --> correlated with the previous
+* q.fare_amount (9.48)
+* q.traveltime (5.16)
+
+#### Model 21
+
+*NOTE: we are aware that we should not have factors in this section, but we have decided to include them due to the fact that we overwrote their numeric values and created their factors in the previous deliverables.*
+
+We know there is not colinearity, so we create a new model:
+
+```{r}
+model_21 <- glm(target.tip_is_given~f.improvement_surcharge+f.mta_tax+q.passenger_count+q.extra+q.tolls_amount+q.hour+q.espeed+q.tlenkm+q.traveltime ,family = "binomial",data=dffwork);summary(model_21)
+vif(model_21)
+
+Anova(model_21, test="Wald") #binary target
+
+anova(model_21, model_20, test="Chisq") # only for nested models
+```
+
+We can transform tlenkm and remove improvement_surcharge in order to have lower vifs:
+
+#### Model 22
+
+```{r}
+model_22 <- glm(target.tip_is_given~f.mta_tax+q.passenger_count+q.extra+q.tolls_amount+q.hour+q.espeed+poly(q.tlenkm,2)+q.traveltime,family = "binomial",data=dffwork); summary(model_22)
+vif(model_22)
+anova(model_21, model_22, test="Chisq") # only for nested models
+Anova(model_22, test="Wald") # binary target
+```
+
+Now, we can do a step:
+
+#### Model 23
+```{r}
+model_23 <- step(model_22, k=log(nrow(dffwork)))
+summary(model_23)
+```
+
+Due to the fact that this model is really ppor, we will take also the q.extra variable in order to be able to extract more information. For instance, we could do the marginal plots:
+
+```{r}
+model_23 <- glm(target.tip_is_given~f.mta_tax+q.extra,family = "binomial",data=dffwork); summary(model_23)
+```
+
+##### Understanding the model
+
+```{r}
+plot(allEffects(model_23))
+```
+
+* For the f.mta_tax: we that if the value of the variable is "Yes", it is more probable that the target.tip_is_given value will be "Yes" as well.
+* For the q.extra: as we have said before, this variable does not really affect to the target, but we will include it in order to be able to do more plots. At most, we could say that it is inversely proportional to the target.
+
+```{r}
+marginalModelPlots(model_23)
+```
+
+We can observe that q.extra is a candidate to be a factor.
+
+```{r}
+residualPlots(model_23)
+```
+
+We see that the smoothers are relatively plain, so we could say that, for now, everything is ok.
+
+
+We are going, though, to propose a model which brings us more chances:
+
+#### Model 24
+```{r}
+model_24 <- glm(target.tip_is_given~poly(q.tlenkm, 2)+f.mta_tax+q.extra+q.espeed,family = "binomial",data=dffwork); summary(model_24)
+residualPlots(model_24)
+marginalModelPlots(model_24)
+(model_16)
+
+```
+
+* q.tlenkm:
+  + we see that the smoothe is plain, so it is ok.
+  + the "weird" shapes that appear are because of the binery response model.
+* q.extra:
+  + we observe that the smoother is plain, so it is ok.
+* q.espeed:
+  + we see that the smoother is plain, so it is ok.
+  + the "weird" shapes that appear are because of the binery response model.
+* the whole model:
+  + we see that the smoothe is not completely straight, but as it was said in class, we can work with unfitted values in the model, due to the fact that it is a really dense topic.
+
+
+```{r}
+Anova(model_24, test="Wald")
+```
+
+We have to ensure that we do not have any variable with a non significant net effect.
+
+Thus, we are going to redp the model:
+
+```{r}
+model_24 <- glm(target.tip_is_given~poly(q.tlenkm, 2)+f.mta_tax,family = "binomial",data=dffwork); summary(model_24)
+vif(model_24)
+residualPlots(model_24)
+marginalModelPlots(model_24)
+Anova(model_24, test="Wald")
+```
+
+With Anova(model_24), we see that it is fulfilled.
+
+
+### (2) Factors
+
+We look if any of the numeric variables can be substituted by a factor.
+
+The first thing we will do, it would be change the "q.mta_tax" (if it existed in our dataset) for a "f.mta_tax". Due to the fact that mta_tax is already a factor, we do not need to do this step.
+
+Given that the other variable that could be a factor depends on a polynomial, we keep as it is. The code that should be done in case of a new model with an added factor, would be the following:
+
+
+```{r}
+model_25 <- glm(
+  target.tip_is_given~
+    poly(q.tlenkm, 2)+
+    f.mta_tax
+  ,family = "binomial"
+  ,data=dffwork
+); summary(model_25)
+
+BIC(model_24, model_25) # same model --> same bic
+```
+
+Thanks to the BIC(model_24, model_25) we could see te changes generated by the new model. The less the BIC is, the better the model will be. We need to remember that, in case of have done an exchange of a numeric variable to a factor, we could not have done it with an anova test, due to the fact that there is an exchange, which means that any model is bigger than the other.
+
+### (3) Add to the best model of step 2, the main effects of the factors and retain the significant net effects.
+
+We decide to keep with the model_25.
+
+
+### (4) Interactions
+
+Now that we have a defined model, we are going to do some interactions with all of the factor variables we think are the relevant:
+
+```{r}
+model_26 <- glm(target.tip_is_given~(poly(q.tlenkm, 2))*(f.mta_tax+f.vendor_id+f.period+f.espeed+f.paid_tolls+f.tt+f.extra), family="binomial",data=dffwork); summary(model_26)
+Anova(model_26, test="Wald")
+```
+
+We remove the non significant variables:
+```{r}
+model_27 <- step(model_26, k=log(nrow(dffwork)))
+```
+
+From what we can see, it only stays with the tax, but in order to have more freedom, we will keep what we had before.
+
+Hence:
+```{r}
+model_27 <- glm(target.tip_is_given~(poly(q.tlenkm,2))*(f.mta_tax),family = "binomial",data=dffwork); summary(model_27)
+Anova(model_27, test="Wald")
+```
+
+We do a comparison:
+```{r}
+BIC(model_27, model_25)
+```
+
+We keep with the 25.
+
+We can see now the effects of it:
+```{r}
+plot(allEffects(model_25))
+marginalModelPlots(model_25)
+residualPlots(model_25)
+```
+
+* We can observe that only the tips is given in certain range of driven km, due to the fact that for few km, it makes no sense to give it, and for many km it is too much.
+* As we have previously commented, it is more likely to give some tips if a tax is present.
+
+
+Although, for this deliverable it is asked to do some interactions between factors, we will do it even though the results could not be realistic:
+
+```{r}
+# interaccions dobles entre factors:
+model_factors_1 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)+(f.mta_tax+f.vendor_id+f.espeed)^2,family="binomial",data=dffwork); summary(model_factors_1)
+model_factors_1_step <- step(model_factors_1, k=log(nrow(dffwork)))
+```
+
+We stick with what we had.
+
+
+```{r}
+# interaccions dobles entre factor-numèrica
+model_factors_2 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)*(f.mta_tax+f.vendor_id+f.espeed),family="binomial",data=dffwork); summary(model_factors_2)
+model_factors_2_step <- step(model_factors_2, k=log(nrow(dffwork)))
+```
+
+We stick with what we had.
+
+
+```{r}
+# interaccions dobles entre factor-numèrica + dobles entre factors
+model_factors_3 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)*(f.mta_tax+f.vendor_id+f.espeed)^2,family="binomial",data=dffwork); summary(model_factors_3)
+model_factors_3_step <- step(model_factors_3, k=log(nrow(dffwork)))
+```
+
+We stick with what we had.
+
+
+Conclusion: we stick with the idea that the best model is model_25.
+
+Now, we are going to do some diagnosis:
+
+### (5) Diagnosis
+
+```{r}
+Boxplot(rstudent(model_25), id.n=15)
+sout <- which(abs(rstudent(model_25))>2); length(sout) # posem 2 en comptes de 2.5 perquè no tenim observacions en aquell rang
+llout <- which(row.names(dffwork) %in% names(rstudent(model_25)[sout])); llout
+table(dffwork[llout,]$f.mta_tax, dffwork[llout,]$target.tip_is_given)
+```
+
+We see that they are samples that contain mta_tax, but in the other hand they do not have tip.
+
+
+We are going to determine which are the potencially influent observations:
+
+```{r}
+quantile(hatvalues(model_25), seq(0,1,0.1))
+mean(hatvalues(model_25))
+
+hh <- 5*mean(hatvalues(model_25)); hh
+shat <- which(hatvalues(model_25)>hh); length(shat); shat
+
+summary(dffwork[shat,])
+```
+
+They tend to:
+
+* have rate=Rate-Other
+* be in the same location (they have very similar latitudes and longitudes)
+* have extra=0
+* don't have mta_tax
+* be at night
+* be one passenger
+* be long (distance) but short (time)
+
+Now, to decide the influences, we are going to take a look at the cook distances:
+
+```{r}
+Boxplot(cooks.distance(model_25))
+scoo <- which(cooks.distance(model_25) > 0.02); length(scoo)
+llcoo <- which(row.names(dffwork) %in% names(cooks.distance(model_25)[scoo])); llcoo
+llista<-influencePlot(model_25, id=c(list="noteworthy", n=10))
+
+summary(dffwork[llcoo,])
+```
+
+They tend to:
+
+* have rate=Rate-1
+* be in the same location (they have very similar latitudes and longitudes)
+* be one passanger
+* be between 20 and 60 min long
+* have mta_tax
+* be long (distance) but short (time)
+
+
+We redo the model now:
+
+```{r}
+llout<-row.names(llista)
+ll<-which(row.names(dffwork)%in%llout);
+dffwork<-dffwork[-ll,]
+
+model_25 <- glm(target.tip_is_given~poly(q.tlenkm, 2)+f.mta_tax,family = "binomial",data=dffwork); summary(model_25)
+influencePlot(model_25, id=c(list="noteworthy", n=10))
+```
+
+```{r}
+# interaccions dobles entre factors:
+model_factors_5 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)+(f.mta_tax+f.vendor_id+f.espeed)^2,family="binomial",data=dffwork); summary(model_factors_5)
+model_factors_5_step <- step(model_factors_5, k=log(nrow(dffwork)))
+```
+
+We stick with what we had.
+
+```{r}
+# interaccions dobles entre factor-numèrica
+model_factors_6 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)*(f.mta_tax+f.vendor_id+f.espeed),family="binomial",data=dffwork); summary(model_factors_6)
+model_factors_6_step <- step(model_factors_6, k=log(nrow(dffwork)))
+```
+
+We stick with what we had.
+
+```{r}
+# interaccions dobles entre factor-numèrica + dobles entre factors
+model_factors_7 <- glm(target.tip_is_given~(poly(q.tlenkm,2)+q.extra)*(f.mta_tax+f.vendor_id+f.espeed)^2,family="binomial",data=dffwork); summary(model_factors_7)
+model_factors_7_step <- step(model_factors_7, k=log(nrow(dffwork)))
+```
+
+We stick with what we had.
+
+## Confusion Table
+```{r}
+fit.tip_is_given <- factor(ifelse(predict(model_25, type="response")<0.5,0,1), labels=c("fit.no", "fit.yes"))
+tt <- table(fit.tip_is_given,dffwork$target.tip_is_given); tt
+100*sum(diag(tt)/sum(tt)) #accuracy
+100*(tt[2,2]/(tt[2,2] + tt[1,2])) # recall (sensitivity)
+100*(tt[1,1]/(tt[1,1] + tt[2,1])) # specificity
+100*(tt[2,2]/(tt[2,1]+ tt[2,2])) # precision
+```
+
+We have an accuracy of 83.05%. We have a recall of 99.42% which means that the positive results of this confusion table is very accurate. We can see that we have 1201 + 7 positive observations, from which 1201 of them have been correctly classified. Now, we are going to do the same, but for the negative results (specificity). We can see that only a 3.61% of specificity, which is a very bad result. Only 9 of the 240 + 9 negative observations have been classified as negative. To conclude, we see that the precision of this confusion table is 83.34%.
+
+
+--------------------------------------------------------------------------------
+
+## Finally, save the data
+```{r}
+save.image("Taxi5000_del4.RData")
+```
 
